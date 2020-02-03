@@ -49,11 +49,11 @@ private:
 
     // BSpline
     int degree;
-    double *knotVector;
+    std::vector<double> knotVector;
     int knotIndex;
 
     // BSpline
-    double* generateUniformKnotVector(int k);
+    std::vector<double> generateUniformKnotVector(int k);
     Vec deBoor(double u, int i, int r);
     Vec* splineDerivative(int k);
     Vec deBoorDerivative(double u, int i, int r, int k);
@@ -64,7 +64,7 @@ private:
 
     //bool isControlPoint(int index);
 
-    double* generateCatmullKnotVector(double alpha);
+    std::vector<double> generateCatmullKnotVector(double alpha);
 
     void initConnections();
     //void updateConnections(ControlPoint*);

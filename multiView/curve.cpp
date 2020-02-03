@@ -106,11 +106,12 @@ Vec Curve::deBoorDerivative(double u, int j, int r, int k){
     return deBoor(u, j, r);
 }
 
-double* Curve::generateUniformKnotVector(int a){
+std::vector<double> Curve::generateUniformKnotVector(int a){
     int k = degree - a;
     int n = nbControlPoint - a;
     int m = n + k + 1;
-    double* kv = new double[static_cast<unsigned long long>(m)];
+    std::vector<double> kv;
+    kv.resize(static_cast<unsigned long long>(m));
 
     double denom = static_cast<double>(m) - 2.0* static_cast<double>(k) - 1.0;
 
@@ -130,8 +131,9 @@ void Curve::reintialiseCurve(){
     Q_EMIT curveReinitialised();
 }
 
-double* Curve::generateCatmullKnotVector(double alpha){
-    double* kv = new double[static_cast<unsigned long long>(nbControlPoint)];
+std::vector<double> Curve::generateCatmullKnotVector(double alpha){
+    std::vector<double> kv;
+    kv.resize(static_cast<unsigned long long>(nbControlPoint));
 
     kv[0] = 0;
 
