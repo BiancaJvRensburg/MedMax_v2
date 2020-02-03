@@ -47,7 +47,7 @@ void Viewer::draw() {
 
     curve->draw();
 
-    //curve->drawControl(); // We want to visualise this at all times
+     // curve->drawControl(); // We want to visualise this at all times
     // curve->drawTangent(curveIndexL);
 
     glPopMatrix();

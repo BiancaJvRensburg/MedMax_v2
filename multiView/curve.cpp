@@ -53,6 +53,7 @@ void Curve::generateCatmull(long& n){
 
     this->nbU = n;
     this->nbU -= n%nbSeg;
+    n = nbU;    // update the nbU in viewer
     this->knotIndex = 0;
     this->degree = 3;
 

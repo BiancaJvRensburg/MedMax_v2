@@ -15,9 +15,10 @@ ControlPoint::ControlPoint(double x, double y, double z)
     initialise();
 }
 
+
 void ControlPoint::initialise(){
-    mf = Frame();
-    mf.setPosition(this->p.x, this->p.y, this->p.z);
+    mf = new Frame();
+    mf->setPosition(this->p.x, this->p.y, this->p.z);
     //connect(mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
@@ -27,16 +28,16 @@ void ControlPoint::moveControlPoint(Vec newPos){
     p.y = newPos.y;
     p.z = newPos.z;
 
-    mf.setPosition(this->p.x, this->p.y, this->p.z);
+    mf->setPosition(this->p.x, this->p.y, this->p.z);
 }
 
 void ControlPoint::draw(){
 
     glPushMatrix();
-    glMultMatrixd(mf.matrix());
+    glMultMatrixd(mf->matrix());
 
-    //if(mf->grabsMouse()) glColor3f(0, 1, 1);
-    //else glColor3f(0, 0, 1);
+    /*if(mf->grabsMouse()) glColor3f(0, 1, 1);
+    else glColor3f(0, 0, 1);*/
 
     glPointSize(10.0);
     glBegin(GL_POINTS);
@@ -52,7 +53,7 @@ void ControlPoint::draw(){
 void ControlPoint::cntrlMoved(){
     double x,y,z;
 
-    mf.getPosition(x,y,z);
+    mf->getPosition(x,y,z);
     p.x = x;
     p.y = y;
     p.z = z;

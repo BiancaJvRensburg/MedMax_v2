@@ -3,17 +3,15 @@
 CurvePoint::CurvePoint(Vec p) : ControlPoint (p)
 {
     //this->p = p;
-    this->mf = ManipulatedFrame();
+    this->mf = new ManipulatedFrame();
     //this->curveIndex = curveIndex;
-    // TODO FEB open comments
-    //connect((ManipulatedFrame&)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
+    connect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
 void CurvePoint::draw(){
 
-    // TODO FEB open comments
-    //if(((ManipulatedFrame*)mf)->grabsMouse()) glColor3f(0, 1, 1);
-    //else glColor3f(0.6f, 0, 0.4f);
+    if(((ManipulatedFrame*)mf)->grabsMouse()) glColor3f(0, 1, 1);
+    else glColor3f(0.6f, 0, 0.4f);
 
     glPointSize(10.0);
     glBegin(GL_POINTS);
@@ -28,7 +26,7 @@ void CurvePoint::draw(){
 void CurvePoint::cntrlMoved(){
     double x,y,z;
 
-    mf.getPosition(x,y,z);
+    mf->getPosition(x,y,z);
 
     Vec offset = Vec(x - p.x, y - p.y , z - p.z);
 
