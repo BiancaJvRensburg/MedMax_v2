@@ -370,7 +370,7 @@ void Viewer::moveLeftPlane(int position){
 
     if(isGhostPlanes) initGhostPlanes();        // TODO change this
 
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
+    leftPlane->setPosition(*(curve->getPoint(curveIndexL)));
     leftPlane->setOrientation(getNewOrientation(curveIndexL));
 
     mesh.updatePlaneIntersections(leftPlane);
@@ -435,7 +435,7 @@ void Viewer::moveRightPlane(int position){
 
     if(isGhostPlanes) initGhostPlanes();        // TODO to change
 
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
+    rightPlane->setPosition(*(curve->getPoint(curveIndexR)));
     rightPlane->setOrientation(getNewOrientation(curveIndexR));
 
     mesh.updatePlaneIntersections(rightPlane);
@@ -510,8 +510,8 @@ void Viewer::initPlanes(Movable status){
     leftPlane = new Plane(40.0, status);
     rightPlane = new Plane(40.0, status);
 
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
+    leftPlane->setPosition(*(curve->getPoint(curveIndexL)));
+    rightPlane->setPosition(*(curve->getPoint(curveIndexR)));
 
     leftPlane->setOrientation(getNewOrientation(curveIndexL));
     rightPlane->setOrientation(getNewOrientation(curveIndexR));
@@ -531,7 +531,7 @@ void Viewer::addGhostPlanes(int nb){
         //std::cout << "size : " << ghostPlanes.size() << std::endl;
         // ! HERE IS WHERE THE DESTRUCTOR CRASHES (in set Orientation)
         ghostPlanes[i].setOrientation(getNewOrientation(ghostLocation[i]));
-        ghostPlanes[i].setPosition(curve->getPoint(ghostLocation[i]));
+        ghostPlanes[i].setPosition(*(curve->getPoint(ghostLocation[i])));
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
     }
@@ -566,8 +566,8 @@ void Viewer::updateCamera(const Vec3Df & center, float radius){
 }
 
 void Viewer::updatePlanes(){
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
+    leftPlane->setPosition(*(curve->getPoint(curveIndexL)));
+    rightPlane->setPosition(*(curve->getPoint(curveIndexR)));
 
     leftPlane->setOrientation(getNewOrientation(curveIndexL));
     rightPlane->setOrientation(getNewOrientation(curveIndexR));

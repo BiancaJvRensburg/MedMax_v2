@@ -3,7 +3,7 @@
 
 #include <QGLViewer/manipulatedFrame.h>
 
-ControlPoint::ControlPoint(Vec* p)
+ControlPoint::ControlPoint(Vec p)
 {
     this->p = p;
     initialise();
@@ -11,29 +11,29 @@ ControlPoint::ControlPoint(Vec* p)
 
 ControlPoint::ControlPoint(double x, double y, double z)
 {
-    this->p = new Vec(x,y,z);
+    this->p = Vec(x,y,z);
     initialise();
 }
 
 void ControlPoint::initialise(){
-    mf = new Frame();
-    mf->setPosition(this->p->x, this->p->y, this->p->z);
+    mf = Frame();
+    mf.setPosition(this->p.x, this->p.y, this->p.z);
     //connect(mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
 // Call this to move a point without setting off a signal to update
 void ControlPoint::moveControlPoint(Vec newPos){
-    p->x = newPos.x;
-    p->y = newPos.y;
-    p->z = newPos.z;
+    p.x = newPos.x;
+    p.y = newPos.y;
+    p.z = newPos.z;
 
-    mf->setPosition(this->p->x, this->p->y, this->p->z);
+    mf.setPosition(this->p.x, this->p.y, this->p.z);
 }
 
 void ControlPoint::draw(){
 
     glPushMatrix();
-    glMultMatrixd(mf->matrix());
+    glMultMatrixd(mf.matrix());
 
     //if(mf->grabsMouse()) glColor3f(0, 1, 1);
     //else glColor3f(0, 0, 1);
@@ -52,10 +52,10 @@ void ControlPoint::draw(){
 void ControlPoint::cntrlMoved(){
     double x,y,z;
 
-    mf->getPosition(x,y,z);
-    p->x = x;
-    p->y = y;
-    p->z = z;
+    mf.getPosition(x,y,z);
+    p.x = x;
+    p.y = y;
+    p.z = z;
 
     Q_EMIT ControlPoint::cntrlPointTranslated();
 
