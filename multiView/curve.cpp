@@ -15,21 +15,23 @@
     initConnections();
 }*/
 
-Curve::Curve(long nbCP, ControlPoint *cntrlPoints[]){
+Curve::Curve(long nbCP, std::vector<Vec>& cntrlPoints){
     this->nbU = new long();
     nbControlPoint = nbCP;
-    TabControlPoint = new ControlPoint*[static_cast<unsigned long long>(nbControlPoint)];
 
-    for(int i=0; i<nbCP; i++){
-        TabControlPoint[i] = cntrlPoints[i];
+    //this->TabControlPoint = cntrlPoints;
+
+    for(unsigned int i=0; i<nbCP; i++){
+        TabControlPoint.push_back(new ControlPoint(static_cast<Vec>(cntrlPoints[i])));
     }
 
     initConnections();
 }
 
+// TODO FEB comment
 void Curve::initConnections(){
     for(int i=0; i<nbControlPoint; i++){
-        connect(TabControlPoint[i], &ControlPoint::cntrlPointTranslated, this, &Curve::reintialiseCurve);
+        //connect(TabControlPoint[i], &ControlPoint::cntrlPointTranslated, this, &Curve::reintialiseCurve);
     }
 }
 

@@ -1,7 +1,7 @@
 #include "viewer.h"
 #include "Triangle.h"
 #include "Vec3D.h"
-#include "controlpoint.h"
+//#include "controlpoint.h"
 #include <QGLViewer/manipulatedFrame.h>
 
 Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(parent) {
@@ -476,21 +476,21 @@ void Viewer::openOFF(QString filename) {
 
 void Viewer::initCurve(){
     const long nbCP = 9;
-    ControlPoint *control[nbCP];
+    std::vector<Vec> control;
 
-    control[0] = new ControlPoint(-56.9335, -13.9973, 8.25454);
+    control.push_back(Vec(-56.9335, -13.9973, 8.25454));
 
-    control[1] = new ControlPoint(-50.8191, -20.195, -19.53);
-    control[2] = new ControlPoint(-40.155, -34.5957, -50.7005);
-    control[3] = new ControlPoint(-27.6007, -69.2743, -67.6769);
+    control.push_back(Vec(-50.8191, -20.195, -19.53));
+    control.push_back(Vec(-40.155, -34.5957, -50.7005));
+    control.push_back(Vec(-27.6007, -69.2743, -67.6769));
 
-    control[4] = new ControlPoint(0, -85.966, -68.3154);
+    control.push_back(Vec(0, -85.966, -68.3154));
 
-    control[5] = new ControlPoint(26.7572, -69.0705, -65.6261);
-    control[6] = new ControlPoint(40.3576, -34.3609, -50.7634);
-    control[7] = new ControlPoint(46.2189, -21.3245, -17.9009);
+    control.push_back(Vec(26.7572, -69.0705, -65.6261));
+    control.push_back(Vec(40.3576, -34.3609, -50.7634));
+    control.push_back(Vec(46.2189, -21.3245, -17.9009));
 
-    control[8] = new ControlPoint(52.3669, -15.4613, 8.70223);
+    control.push_back(Vec(52.3669, -15.4613, 8.70223));
 
 
     curve = new Curve(nbCP, control);

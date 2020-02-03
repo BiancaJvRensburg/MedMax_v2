@@ -41,7 +41,7 @@ void ViewerFibula::createPolyline(){
     polyline.clear();
 
     polyline.push_back(leftPlane->getPosition());
-    for(int i=0; i<ghostPlanes.size(); i++) polyline.push_back(ghostPlanes[i].getPosition());
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) polyline.push_back(ghostPlanes[i].getPosition());
     polyline.push_back(rightPlane->getPosition());
 }
 
@@ -295,14 +295,14 @@ void ViewerFibula::reinitialisePlanes(unsigned int nbToInit){
 // Initialise the curve that the planes follow (to eventually be changed to automatically calculate the points)
 void ViewerFibula::initCurve(){
     const long nbCP = 6;
-    ControlPoint* control[nbCP];
+    std::vector<Vec> control;
 
-    control[0] = new ControlPoint(108.241, 69.6891, -804.132);
-    control[1] = new ControlPoint(97.122, 82.1788, -866.868);
-    control[2] = new ControlPoint(93.5364, 90.1045, -956.126);
-    control[3] = new ControlPoint(83.3966, 92.5807, -1069.7);
-    control[4] = new ControlPoint(80.9, 90.1, -1155);
-    control[5] = new ControlPoint(86.4811, 90.9929, -1199.7);
+    control.push_back(Vec(108.241, 69.6891, -804.132));
+    control.push_back(Vec(97.122, 82.1788, -866.868));
+    control.push_back(Vec(93.5364, 90.1045, -956.126));
+    control.push_back(Vec(83.3966, 92.5807, -1069.7));
+    control.push_back(Vec(80.9, 90.1, -1155));
+    control.push_back(Vec(86.4811, 90.9929, -1199.7));
 
     curve = new Curve(nbCP, control);
 

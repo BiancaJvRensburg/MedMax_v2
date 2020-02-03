@@ -13,7 +13,7 @@ class Curve : public QObject
 public:
     //Curve(){}
     //Curve(long nbCP);
-    Curve(long nbCP, ControlPoint *cntrlPoints[]);
+    Curve(long nbCP, std::vector<Vec>& cntrlPoints);
 
     void generateBSpline(long nbU, int degree);
     Vec** getCurve(){ return curve; }
@@ -41,7 +41,7 @@ Q_SIGNALS:
     void curveReinitialised();
 
 private:
-    ControlPoint **TabControlPoint;
+    std::vector<ControlPoint*> TabControlPoint;
     long nbControlPoint;
     Vec **curve;
     long* nbU;
