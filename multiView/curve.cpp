@@ -72,19 +72,19 @@ Vec Curve::deBoor(double u, int j, int r){
 
 
 // Returns the kth derivative of the curve ( 0 <= k <= 2 )
-Vec** Curve::splineDerivative(int k){
+Vec* Curve::splineDerivative(int k){
 
     this->knotIndex = 0;
 
-    Vec** c = new Vec*[static_cast<unsigned long long>(nbU)];
+    Vec *c = new Vec[static_cast<unsigned long long>(nbU)];
 
     for(int i=0; i<nbU; i++){
         double u = (1.0 / static_cast<double>(nbU-1)) * static_cast<double>(i);
-        c[i] = new Vec();
+        c[i] = Vec();
 
         while(u >= knotVector[knotIndex+1] && knotVector[knotIndex+1] != 1.0) knotIndex++;
 
-        *c[i] += Vec(deBoorDerivative(u, knotIndex, degree, k));
+        c[i] += Vec(deBoorDerivative(u, knotIndex, degree, k));
     }
     return c;
 }
@@ -144,7 +144,7 @@ double* Curve::generateCatmullKnotVector(double alpha){
 }
 
 // Catmull rom
-void Curve::calculateCatmullPoints(Vec* c, Vec* cp, double t){
+void Curve::calculateCatmullPoints(Vec& c, Vec& cp, double t){
     Vec p[4] = {TabControlPoint[knotIndex-1]->getPoint(), TabControlPoint[knotIndex]->getPoint(), TabControlPoint[knotIndex+1]->getPoint(), TabControlPoint[knotIndex+2]->getPoint()};
 
     double t0 = knotVector[knotIndex-1];
@@ -166,16 +166,16 @@ void Curve::calculateCatmullPoints(Vec* c, Vec* cp, double t){
     Vec b1p = 1.0/(t2-t0)*(a2-a1) + (t2-t)/(t2-t0)*a1p + (t-t0)/(t2-t0)*a2p;
     Vec b2p = 1.0/(t3-t1)*(a3-a2) + (t3-t)/(t3-t1)*a2p + (t-t1)/(t3-t1)*a3p;
 
-    *c = (t2-t)/(t2-t1)*b1 + (t-t1)/(t2-t1)*b2;
-    *cp = 1.0/(t2-t1)*(b2-b1) + (t2-t)/(t2-t1)*b1p + (t-t1)/(t2-t1)*b2p;
+    c = (t2-t)/(t2-t1)*b1 + (t-t1)/(t2-t1)*b2;
+    cp = 1.0/(t2-t1)*(b2-b1) + (t2-t)/(t2-t1)*b1p + (t-t1)/(t2-t1)*b2p;
 }
 
 void Curve::catmullrom(){
     int nbSeg = nbControlPoint-3;
     int uPerSeg = nbU/nbSeg;
 
-    curve = new Vec*[static_cast<unsigned long long>(nbU)];
-    dt = new Vec*[static_cast<unsigned long long>(nbU)];
+    curve = new Vec[static_cast<unsigned long long>(nbU)];
+    dt = new Vec[static_cast<unsigned long long>(nbU)];
    // controlPointIndicies = new bool[static_cast<unsigned long long>(*nbU)];
 
     //for(int i=0; i<*nbU; i++) controlPointIndicies[i] = false;
@@ -186,8 +186,8 @@ void Curve::catmullrom(){
         //controlPointIndicies[(j-1)*uPerSeg] = true;
         for(double i=knotVector[j]; i<knotVector[j+1]; i+=((knotVector[j+1]-knotVector[j])/static_cast<double>(uPerSeg))){
             if((j-1)*uPerSeg+it >= nbU) return;
-            curve[(j-1)*uPerSeg+it] = new Vec();
-            dt[(j-1)*uPerSeg+it] = new Vec();
+            curve[(j-1)*uPerSeg+it] = Vec();
+            dt[(j-1)*uPerSeg+it] = Vec();
 
             calculateCatmullPoints(curve[(j-1)*uPerSeg+it], dt[(j-1)*uPerSeg+it], i);
             it++;
@@ -197,7 +197,7 @@ void Curve::catmullrom(){
 
 // Length as the crow flies
 double Curve::discreteLength(int indexS, int indexE){
-    return sqrt( pow((curve[indexE]->x - curve[indexS]->x), 2) + pow((curve[indexE]->y - curve[indexS]->y), 2) + pow((curve[indexE]->z - curve[indexS]->z), 2));
+    return sqrt( pow((curve[indexE].x - curve[indexS].x), 2) + pow((curve[indexE].y - curve[indexS].y), 2) + pow((curve[indexE].z - curve[indexS].z), 2));
 }
 
 // Length of the chord
@@ -234,8 +234,8 @@ void Curve::draw(){
       glColor3f(0.0, 1.0, 0.0);
 
       for(int i=0; i<nbU; i++){
-        Vec *p = curve[i];
-        glVertex3f(static_cast<float>(p->x), static_cast<float>(p->y), static_cast<float>(p->z));
+        Vec p = curve[i];
+        glVertex3f(static_cast<float>(p.x), static_cast<float>(p.y), static_cast<float>(p.z));
       }
 
       glEnd();
@@ -267,7 +267,7 @@ void Curve::drawControl(){
 }*/
 
 Vec Curve::tangent(int index){
-    Vec t = Vec(dt[index]->x, dt[index]->y, dt[index]->z);
+    Vec t = Vec(dt[index].x, dt[index].y, dt[index].z);
     t.normalize();
 
     return t;
@@ -280,8 +280,8 @@ void Curve::drawTangent(int index){
     glLineWidth(3);
 
     glBegin(GL_LINES);
-      glVertex3f(static_cast<float>(curve[index]->x), static_cast<float>(curve[index]->y), static_cast<float>(curve[index]->z));
-      glVertex3f(static_cast<float>(curve[index]->x + t.x*10), static_cast<float>(curve[index]->y + t.y*10), static_cast<float>(curve[index]->z + t.z*10));
+      glVertex3f(static_cast<float>(curve[index].x), static_cast<float>(curve[index].y), static_cast<float>(curve[index].z));
+      glVertex3f(static_cast<float>(curve[index].x + t.x*10), static_cast<float>(curve[index].y + t.y*10), static_cast<float>(curve[index].z + t.z*10));
     glEnd();
 
     glLineWidth(1);

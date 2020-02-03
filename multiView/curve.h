@@ -16,8 +16,8 @@ public:
     Curve(long nbCP, std::vector<Vec>& cntrlPoints);
 
     void generateBSpline(long& nbU, int degree);
-    Vec** getCurve(){ return curve; }
-    Vec* getPoint(int index){ return curve[index]; }
+    Vec* getCurve(){ return curve; }
+    Vec& getPoint(int index){ return curve[index]; }
 
     void generateCatmull(long& nbU);
 
@@ -43,7 +43,7 @@ Q_SIGNALS:
 private:
     std::vector<ControlPoint*> TabControlPoint;
     long nbControlPoint;
-    Vec **curve;
+    Vec *curve;
     long nbU;
     //bool *controlPointIndicies;
 
@@ -55,12 +55,12 @@ private:
     // BSpline
     double* generateUniformKnotVector(int k);
     Vec deBoor(double u, int i, int r);
-    Vec** splineDerivative(int k);
+    Vec* splineDerivative(int k);
     Vec deBoorDerivative(double u, int i, int r, int k);
 
     // Catmull rom
     void catmullrom();  // calculate the spline and the first derivative
-    void calculateCatmullPoints(Vec* c, Vec* cp, double t);
+    void calculateCatmullPoints(Vec& c, Vec& cp, double t);
 
     //bool isControlPoint(int index);
 
@@ -70,7 +70,7 @@ private:
     //void updateConnections(ControlPoint*);
 
     // Frenet frame
-    Vec** dt;
+    Vec* dt;
 
     //void getModVec(int j, int r, double t, int kI, double offset, double* newPoints);
 
