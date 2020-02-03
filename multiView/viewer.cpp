@@ -10,7 +10,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     setCamera(cam);
     delete c;
 
-    this->nbU = new long();
+    this->nbU = 0;
     this->sliderMax = sliderMax;
     this->isDrawMesh = false;
     this->nbGhostPlanes = 3;
@@ -354,12 +354,12 @@ void Viewer::moveLeftPlane(int position){
     //bool isPassed = false;
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
-    int index = static_cast<int>(percentage * static_cast<double>(*nbU) );
+    int index = static_cast<int>(percentage * static_cast<double>(nbU) );
 
     if( (curve->indexForLength(curveIndexR, -constraint) > index)){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
 
-        if(curveIndexL >= *nbU) curveIndexL = *nbU-1;
+        if(curveIndexL >= nbU) curveIndexL = nbU-1;
         else if(curveIndexL < 0) curveIndexL = 0;   // shouldn't ever happen
     }
     else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ) return;
@@ -394,13 +394,13 @@ void Viewer::moveLeftPlane(int position){
 void Viewer::onLeftSliderReleased(){
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
-    Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(*nbU)) * static_cast<double>(sliderMax) ) );
+    Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 void Viewer::onRightSliderReleased(){
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
-    Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(*nbU)) * static_cast<double>(sliderMax) ) );
+    Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 void Viewer::rotateLeftPlane(int position){
@@ -422,12 +422,12 @@ void Viewer::rotateRightPlane(int position){
 void Viewer::moveRightPlane(int position){
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
-    int index = *nbU - 1 - static_cast<int>(percentage * static_cast<double>(*nbU) );
+    int index = nbU - 1 - static_cast<int>(percentage * static_cast<double>(nbU) );
 
     if( index > curve->indexForLength(curveIndexL, constraint)){        // its within the correct boundaries
         curveIndexR = index;
 
-        if(curveIndexR >= *nbU) curveIndexR = *nbU-1; // shouldn't ever happen either, outside of testing
+        if(curveIndexR >= nbU) curveIndexR = nbU-1; // shouldn't ever happen either, outside of testing
         else if(curveIndexR < 0) curveIndexR = 0;   // shouldn't ever happen
     }
     else if(curveIndexR == curve->indexForLength(curveIndexL, constraint)) return;
@@ -497,14 +497,14 @@ void Viewer::initCurve(){
 
     connect(curve, &Curve::curveReinitialised, this, &Viewer::updatePlanes);
 
-    *nbU = 200;
+    nbU = 200;
     curve->generateCatmull(nbU);
 
    initPlanes(Movable::STATIC);
 }
 
 void Viewer::initPlanes(Movable status){
-    curveIndexR = *nbU - 1;
+    curveIndexR = nbU - 1;
     curveIndexL = 0;
 
     leftPlane = new Plane(40.0, status);

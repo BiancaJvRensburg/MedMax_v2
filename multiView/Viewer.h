@@ -86,7 +86,7 @@ protected:
 
     int curveIndexL;
     int curveIndexR;
-    long* nbU;
+    long nbU;
     int sliderMax;
     bool isDrawMesh;
 

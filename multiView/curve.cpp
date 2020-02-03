@@ -16,7 +16,7 @@
 }*/
 
 Curve::Curve(long nbCP, std::vector<Vec>& cntrlPoints){
-    this->nbU = new long();
+    this->nbU = 0;
     nbControlPoint = nbCP;
 
     //this->TabControlPoint = cntrlPoints;
@@ -28,10 +28,9 @@ Curve::Curve(long nbCP, std::vector<Vec>& cntrlPoints){
     initConnections();
 }
 
-// TODO FEB comment
 void Curve::initConnections(){
     for(int i=0; i<nbControlPoint; i++){
-        //connect(TabControlPoint[i], &ControlPoint::cntrlPointTranslated, this, &Curve::reintialiseCurve);
+        connect(TabControlPoint[i], &ControlPoint::cntrlPointTranslated, this, &Curve::reintialiseCurve);
     }
 }
 
@@ -39,8 +38,8 @@ void Curve::initConnections(){
     connect(p, &ControlPoint::cntrlPointTranslated, this, &Curve::reintialiseCurve);
 }*/
 
-void Curve::generateBSpline(long nbU, int degree){
-    *this->nbU = nbU;
+void Curve::generateBSpline(long& nbU, int degree){
+    this->nbU = nbU;
     this->degree = degree;
     this->knotIndex = 0;
 
@@ -49,11 +48,11 @@ void Curve::generateBSpline(long nbU, int degree){
     dt =  splineDerivative(1);
 }
 
-void Curve::generateCatmull(long* n){
+void Curve::generateCatmull(long& n){
     int nbSeg = nbControlPoint-3;
 
     this->nbU = n;
-    *this->nbU -= *n%nbSeg;
+    this->nbU -= n%nbSeg;
     this->knotIndex = 0;
     this->degree = 3;
 
@@ -77,10 +76,10 @@ Vec** Curve::splineDerivative(int k){
 
     this->knotIndex = 0;
 
-    Vec** c = new Vec*[static_cast<unsigned long long>(*nbU)];
+    Vec** c = new Vec*[static_cast<unsigned long long>(nbU)];
 
-    for(int i=0; i<*nbU; i++){
-        double u = (1.0 / static_cast<double>(*nbU-1)) * static_cast<double>(i);
+    for(int i=0; i<nbU; i++){
+        double u = (1.0 / static_cast<double>(nbU-1)) * static_cast<double>(i);
         c[i] = new Vec();
 
         while(u >= knotVector[knotIndex+1] && knotVector[knotIndex+1] != 1.0) knotIndex++;
@@ -173,10 +172,10 @@ void Curve::calculateCatmullPoints(Vec* c, Vec* cp, double t){
 
 void Curve::catmullrom(){
     int nbSeg = nbControlPoint-3;
-    int uPerSeg = *nbU/nbSeg;
+    int uPerSeg = nbU/nbSeg;
 
-    curve = new Vec*[static_cast<unsigned long long>(*nbU)];
-    dt = new Vec*[static_cast<unsigned long long>(*nbU)];
+    curve = new Vec*[static_cast<unsigned long long>(nbU)];
+    dt = new Vec*[static_cast<unsigned long long>(nbU)];
    // controlPointIndicies = new bool[static_cast<unsigned long long>(*nbU)];
 
     //for(int i=0; i<*nbU; i++) controlPointIndicies[i] = false;
@@ -186,7 +185,7 @@ void Curve::catmullrom(){
         knotIndex = j;
         //controlPointIndicies[(j-1)*uPerSeg] = true;
         for(double i=knotVector[j]; i<knotVector[j+1]; i+=((knotVector[j+1]-knotVector[j])/static_cast<double>(uPerSeg))){
-            if((j-1)*uPerSeg+it >= *nbU) return;
+            if((j-1)*uPerSeg+it >= nbU) return;
             curve[(j-1)*uPerSeg+it] = new Vec();
             dt[(j-1)*uPerSeg+it] = new Vec();
 
@@ -218,7 +217,7 @@ int Curve::indexForLength(int indexS, double length){
 
     // First condition should never happen, just extra protection to prevent crashes
     if(length > 0){
-        while(indexS+i < *nbU-1 && discreteLength(indexS, indexS+i) < length) i++;
+        while(indexS+i < nbU-1 && discreteLength(indexS, indexS+i) < length) i++;
     }
     else{
         while(indexS+i > 0 && discreteLength(indexS, indexS+i) < abs(length)) i--;
@@ -234,7 +233,7 @@ void Curve::draw(){
       glBegin(GL_LINE_STRIP);
       glColor3f(0.0, 1.0, 0.0);
 
-      for(int i=0; i<*nbU; i++){
+      for(int i=0; i<nbU; i++){
         Vec *p = curve[i];
         glVertex3f(static_cast<float>(p->x), static_cast<float>(p->y), static_cast<float>(p->z));
       }

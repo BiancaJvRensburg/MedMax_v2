@@ -15,11 +15,11 @@ public:
     //Curve(long nbCP);
     Curve(long nbCP, std::vector<Vec>& cntrlPoints);
 
-    void generateBSpline(long nbU, int degree);
+    void generateBSpline(long& nbU, int degree);
     Vec** getCurve(){ return curve; }
     Vec* getPoint(int index){ return curve[index]; }
 
-    void generateCatmull(long* nbU);
+    void generateCatmull(long& nbU);
 
     Vec tangent(int index);
 
@@ -30,7 +30,7 @@ public:
     double discreteLength(int indexS, int indexE);      // Returns the discrete length between 2 points (Straight line distance)
     double discreteChordLength(int indexS, int indexE); // To use for the initial visualisation
     int indexForLength(int indexS, double length);   // Returns the end index which will create a segment of a certain length
-    int getNbU(){ return *nbU; }
+    long& getNbU(){ return nbU; }
 
 public Q_SLOTS:
     void reintialiseCurve();
@@ -44,7 +44,7 @@ private:
     std::vector<ControlPoint*> TabControlPoint;
     long nbControlPoint;
     Vec **curve;
-    long* nbU;
+    long nbU;
     //bool *controlPointIndicies;
 
     // BSpline

@@ -48,10 +48,10 @@ void ViewerFibula::createPolyline(){
 // Move all planes by the same offset (right plane INCLUDED) - when the slider is dragged
 void ViewerFibula::movePlanes(int position){
 
-    int offset = static_cast<int>(static_cast<double>(position)/ static_cast<double>(maxOffset) * static_cast<double>(*nbU));
+    int offset = static_cast<int>(static_cast<double>(position)/ static_cast<double>(maxOffset) * static_cast<double>(nbU));
 
     // Check that it this offset doesn't exceed the size of the fibula
-    if(curveIndexL + offset < *nbU && curveIndexL + offset > 0 && curveIndexR + offset < *nbU && curveIndexR + offset > 0){
+    if(curveIndexL + offset < nbU && curveIndexL + offset > 0 && curveIndexR + offset < nbU && curveIndexR + offset > 0){
         indexOffset = offset;
 
         // Reset the position and orientations of ALL planes
@@ -188,7 +188,7 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles){
     if(ghostPlanes.size()==0) newIndex = curve->indexForLength(curveIndexL, distance);
     else newIndex = curve->indexForLength(ghostLocation[ghostPlanes.size()-1], distance);
 
-    if(newIndex + indexOffset >= *nbU) return;      // This should never happen
+    if(newIndex + indexOffset >= nbU) return;      // This should never happen
     else curveIndexR = newIndex;
 
     rightPlane->setPosition(*(curve->getCurve()[curveIndexR + indexOffset]));
@@ -224,7 +224,7 @@ void ViewerFibula::moveGhostPlaneDistance(double distance, std::vector<Vec> angl
     if(overload > 0){
         indexOffset -= overload;
         reinitialisePlanes(ghostPlanes.size()+1);
-        Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(*nbU)) * static_cast<double>(maxOffset) ));
+        Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(nbU)) * static_cast<double>(maxOffset) ));
     }
 
     rightPlane->setPosition(*(curve->getCurve()[curveIndexR + indexOffset]));
@@ -256,7 +256,7 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
     if(overload > 0){
         indexOffset -= overload;
         reinitialisePlanes(ghostPlanes.size()+1); // reinit everything but the right plane
-        Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(*nbU)) * static_cast<double>(maxOffset) ));
+        Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(nbU)) * static_cast<double>(maxOffset) ));
     }
 
     // update the right plane
@@ -306,10 +306,10 @@ void ViewerFibula::initCurve(){
 
     curve = new Curve(nbCP, control);
 
-    *nbU = 300;
+    nbU = 300;
 
     int nbSeg = nbCP-3;
-    nbU -= *nbU%nbSeg;
+    nbU -= nbU%nbSeg;
 
     curve->generateCatmull(nbU);
     //curve->generateBSpline(nbU, 3);
