@@ -59,7 +59,7 @@ std::vector<Vec> Viewer::updatePolyline(){
 
     // NOTE if this is in comments, the planes always line up on the two sides
     // if its not cut / are no ghost planes
-    if(!isGhostPlanes){
+    if(!isGhostPlanes || !isGhostActive){
         std::vector<Vec> angles;
         return angles;   // return an empty vector
     }
@@ -378,20 +378,21 @@ void Viewer::moveLeftPlane(int position){
 
     mesh.updatePlaneIntersections(leftPlane);
 
+    if(isGhostPlanes && isGhostActive) handlePlaneMoveStart();
+
     double distance;
 
     // Get the info and send it to the fibula
     std::vector<Vec> angles = updatePolyline();
 
-    if(!isGhostPlanes) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
+    update();
+
+    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
     else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
     else{
         distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
     }
 
-    if(isGhostPlanes) handlePlaneMoveStart();
-
-    update();
     Q_EMIT leftPosChanged(distance, angles);
     Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
 }
@@ -445,19 +446,20 @@ void Viewer::moveRightPlane(int position){
 
     mesh.updatePlaneIntersections(rightPlane);
 
+    if(isGhostPlanes && isGhostActive) handlePlaneMoveStart();
+
     double distance;
 
     std::vector<Vec> angles = updatePolyline();
 
-    if(!isGhostPlanes) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
+    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
     else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
     else{
         distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
 
-    if(isGhostPlanes) handlePlaneMoveStart();
-
     update();
+
     Q_EMIT rightPosChanged(distance, angles);
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
