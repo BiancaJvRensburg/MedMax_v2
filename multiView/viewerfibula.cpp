@@ -83,7 +83,7 @@ void ViewerFibula::planesMoved(){
 
 // Add the ghost planes (this should only be called once)
 void ViewerFibula::addGhostPlanes(int nb){
-    std::cout << "Add ghost planes fibula called " << nb << std::endl;
+    // std::cout << "Add ghost planes fibula called " << nb << std::endl;
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
 
@@ -102,7 +102,7 @@ void ViewerFibula::addGhostPlanes(int nb){
         ghostPlanes[i]->setOrientation(getNewOrientation(index + indexOffset));
     }
 
-    std::cout << "Nb ghost planes fibula : " << ghostPlanes.size() << std::endl;
+    // std::cout << "Nb ghost planes fibula : " << ghostPlanes.size() << std::endl;
 
     update();
 }
@@ -206,43 +206,6 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles){
 
     mesh.updatePlaneIntersections(rightPlane);
     update();
-}
-
-// When we want to move all the planes (except the static left) by a distance (the left plane is moved in the jaw)
-void ViewerFibula::moveGhostPlaneDistance(double distance, std::vector<Vec> angles){
-    /*int offset = 0;
-    if(ghostPlanes.size()==0) movePlaneDistance(distance, angles);
-    else offset = curve->indexForLength(curveIndexL, distance) - ghostLocation[0];
-
-    // move all planes by the offset
-    for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        ghostLocation[i] += offset;
-        ghostPlanes[i]->setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
-        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
-    }
-
-    // Gives a problem in extreme cases, so we check the index is still within bounds
-    curveIndexR += offset;
-
-    // If we're too far along the fibula, take it all back
-    int overload = curveIndexR + indexOffset - curve->getNbU() + 1;   // The amount by which the actual index passes the end of the curve
-    if(overload > 0){
-        indexOffset -= overload;
-        reinitialisePlanes(ghostPlanes.size()+1);
-        Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(nbU)) * static_cast<double>(maxOffset) ));
-    }
-
-    rightPlane->setPosition(curve->getCurve()[curveIndexR + indexOffset]);
-    rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));   // initial orientation
-
-    angleVectors.clear();
-    angleVectors = angles;
-
-    setPlaneOrientations(angles);
-
-    mesh.updatePlaneIntersections(rightPlane);
-    update();*/
-    movePlaneDistance(distance, angles);
 }
 
 // One of the ghost planes is moved in the jaw

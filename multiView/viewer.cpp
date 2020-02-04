@@ -15,6 +15,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->isDrawMesh = false;
     this->nbGhostPlanes = 3;
     this->isGhostPlanes = false;
+    this->isGhostActive = true;
 }
 
 void Viewer::draw() {
@@ -28,7 +29,7 @@ void Viewer::draw() {
     mesh.draw();
     if(isDrawMesh) mesh.drawCut();
 
-    if(isGhostPlanes) drawPolyline();
+    if(isGhostPlanes && isGhostActive) drawPolyline();
 
     //glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
@@ -349,7 +350,7 @@ void Viewer::uncutMesh(){
     isGhostPlanes = false;
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
-    std::cout << "Ghost plane size : " << ghostPlanes.size() << std::endl;
+    //std::cout << "Ghost plane size : " << ghostPlanes.size() << std::endl;
     update();
 }
 
@@ -388,7 +389,7 @@ void Viewer::moveLeftPlane(int position){
         distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
     }
 
-    if(isGhostPlanes) handlePlaneMove();
+    if(isGhostPlanes) handlePlaneMoveStart();
 
     update();
     Q_EMIT leftPosChanged(distance, angles);
@@ -396,12 +397,14 @@ void Viewer::moveLeftPlane(int position){
 }
 
 void Viewer::onLeftSliderReleased(){
+    if(isGhostPlanes) handlePlaneMoveEnd();
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
     Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 void Viewer::onRightSliderReleased(){
+    if(isGhostPlanes) handlePlaneMoveEnd();
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
     Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
@@ -452,19 +455,23 @@ void Viewer::moveRightPlane(int position){
         distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
 
-    if(isGhostPlanes) handlePlaneMove();
+    if(isGhostPlanes) handlePlaneMoveStart();
 
     update();
     Q_EMIT rightPosChanged(distance, angles);
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
 
-void Viewer::handlePlaneMove(){
+void Viewer::handlePlaneMoveStart(){
+    isGhostActive = false;      // disable drawing the polyline
     // Uncut the mesh but keep the ghostPlane marker as true
     mesh.setIsCut(Side::INTERIOR, false, false);
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
+}
 
+void Viewer::handlePlaneMoveEnd(){
+    isGhostActive = true;       // enable the polyline
     // Recut
     Q_EMIT preparingToCut();
     if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
