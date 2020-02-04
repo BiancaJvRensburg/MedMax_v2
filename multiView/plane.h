@@ -16,7 +16,7 @@ public:
     Plane(double s, Movable status);
     ~Plane(){
         //std::cout << "destroying plane " << this << std::endl;
-        //delete cp;
+        // delete cp;
     }
 
     void setSize(double s){ size = s; }

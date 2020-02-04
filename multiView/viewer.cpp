@@ -345,7 +345,7 @@ void Viewer::cutMesh(){
 void Viewer::uncutMesh(){
     mesh.setIsCut(Side::INTERIOR, false, false);
     isGhostPlanes = false;
-    ghostPlanes.clear();
+    ghostPlanes.clear();        // TODO HANDLE THIS
     update();
 }
 

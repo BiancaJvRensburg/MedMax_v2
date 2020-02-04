@@ -15,7 +15,6 @@ ControlPoint::ControlPoint(double x, double y, double z)
     initialise();
 }
 
-
 void ControlPoint::initialise(){
     mf = new Frame();
     mf->setPosition(this->p.x, this->p.y, this->p.z);

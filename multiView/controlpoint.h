@@ -15,6 +15,9 @@ class ControlPoint : public QObject
 public:
     ControlPoint(Vec p);
     ControlPoint(double x, double y, double z);
+    ~ControlPoint(){
+        delete mf;
+    }
 
     const Vec& getPoint(){ return p; }
     double getX(){ return p.x; }
