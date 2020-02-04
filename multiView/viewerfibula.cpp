@@ -24,8 +24,8 @@ void ViewerFibula::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Ve
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         // +1 offset for the left plane
-        if(i%2==0) v = ghostPlanes[i].getPolylineVector(polyline[i]);     // even: look behind
-        else v = ghostPlanes[i].getPolylineVector(polyline[i+2]);       // odd : look forward
+        if(i%2==0) v = ghostPlanes[i]->getPolylineVector(polyline[i]);     // even: look behind
+        else v = ghostPlanes[i]->getPolylineVector(polyline[i+2]);       // odd : look forward
         polylineInPlanes.push_back(v);
     }
 
@@ -41,7 +41,7 @@ void ViewerFibula::createPolyline(){
     polyline.clear();
 
     polyline.push_back(leftPlane->getPosition());
-    for(unsigned int i=0; i<ghostPlanes.size(); i++) polyline.push_back(ghostPlanes[i].getPosition());
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) polyline.push_back(ghostPlanes[i]->getPosition());
     polyline.push_back(rightPlane->getPosition());
 }
 
@@ -61,8 +61,8 @@ void ViewerFibula::movePlanes(int position){
         rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));
 
         for(unsigned int i=0; i<ghostPlanes.size(); i++){
-            ghostPlanes[i].setPosition(curve->getPoint(ghostLocation[i] + indexOffset));
-            ghostPlanes[i].setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
+            ghostPlanes[i]->setPosition(curve->getPoint(ghostLocation[i] + indexOffset));
+            ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
         }
     }
 
@@ -83,10 +83,12 @@ void ViewerFibula::planesMoved(){
 
 // Add the ghost planes (this should only be called once)
 void ViewerFibula::addGhostPlanes(int nb){
+    std::cout << "Add ghost planes fibula called " << nb << std::endl;
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        ghostPlanes.push_back(Plane(25.0, Movable::STATIC));
+        ghostPlanes.push_back(new Plane(25.0, Movable::STATIC));
         int index = ghostLocation[i];
 
         // If we're too far along the fibula, take it all back
@@ -96,9 +98,11 @@ void ViewerFibula::addGhostPlanes(int nb){
             reinitialisePlanes(i+1);
             // Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(*nbU)) * static_cast<double>(maxOffset) ));
         }
-        ghostPlanes[i].setPosition(curve->getCurve()[index + indexOffset]);
-        ghostPlanes[i].setOrientation(getNewOrientation(index + indexOffset));
+        ghostPlanes[i]->setPosition(curve->getCurve()[index + indexOffset]);
+        ghostPlanes[i]->setOrientation(getNewOrientation(index + indexOffset));
     }
+
+    std::cout << "Nb ghost planes fibula : " << ghostPlanes.size() << std::endl;
 
     update();
 }
@@ -134,9 +138,9 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles){
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        normal = ghostPlanes[i].getNormal();
+        normal = ghostPlanes[i]->getNormal();
         s = Quaternion(normal, angles[i]);
-        ghostPlanes[i].setOrientation(s.normalized());
+        ghostPlanes[i]->setOrientation(s.normalized());
     }
 
     // Orientate the right plane
@@ -155,6 +159,7 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> angles){
     // if no ghost planes were actually recieved
     if(nb==0){
+        for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
         ghostPlanes.clear();        // TODO look at this (call noGhostPlanesToRecieve?)
         mesh.deleteGhostPlanes();
         return;
@@ -212,8 +217,8 @@ void ViewerFibula::moveGhostPlaneDistance(double distance, std::vector<Vec> angl
     // move all planes by the offset
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         ghostLocation[i] += offset;
-        ghostPlanes[i].setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
-        ghostPlanes[i].setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
+        ghostPlanes[i]->setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
+        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
     }
 
     // Gives a problem in extreme cases, so we check the index is still within bounds
@@ -247,8 +252,8 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
 
     // update the ghost planes
     for(unsigned int i=0; i<static_cast<unsigned int>(2*nb); i++){
-        ghostPlanes[i].setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
-        ghostPlanes[i].setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
+        ghostPlanes[i]->setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
+        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
     }
 
     // If we're too far along the fibula, take it all back
@@ -287,8 +292,8 @@ void ViewerFibula::reinitialisePlanes(unsigned int nbToInit){
     }
 
     for(unsigned int j=0; j<nbToInit-1; j++){
-        ghostPlanes[j].setPosition(curve->getCurve()[ghostLocation[j] + indexOffset]);
-        ghostPlanes[j].setOrientation(getNewOrientation(ghostLocation[j] + indexOffset));
+        ghostPlanes[j]->setPosition(curve->getCurve()[ghostLocation[j] + indexOffset]);
+        ghostPlanes[j]->setOrientation(getNewOrientation(ghostLocation[j] + indexOffset));
     }
 }
 
@@ -328,7 +333,7 @@ void ViewerFibula::handleCut(){
     if(isCutSignal && isPlanesRecieved){
 
         for(unsigned int i=0; i<ghostPlanes.size(); i++){
-            mesh.addPlane(&ghostPlanes[i]);
+            mesh.addPlane(ghostPlanes[i]);
         }
 
         if(ghostPlanes.size()==0) mesh.setIsCut(Side::EXTERIOR, true, true);    // call the update if an exterior plane isn't going to
@@ -344,6 +349,7 @@ void ViewerFibula::uncutMesh(){
     isPlanesRecieved = false;
     mesh.setIsCut(Side::EXTERIOR, false, false);
     isGhostPlanes = false;
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();        // NOTE To eventually be changed
     // Reset their orientations
     leftPlane->setOrientation(getNewOrientation(curveIndexL));

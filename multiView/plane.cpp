@@ -1,8 +1,8 @@
 #include "plane.h"
 
-Plane::Plane(double s, Movable status)
+Plane::Plane(double s, Movable status) : cp(Vec(0,0,0))
 {
-    Vec position = Vec(0, 0, 0);
+    //Vec position = Vec(0, 0, 0);
     size = s;
     rotationPercentage = 0;
     normal = Vec(0, 0, 1);
@@ -11,22 +11,22 @@ Plane::Plane(double s, Movable status)
 
     this->status = status;
 
-    if(status==Movable::DYNAMIC) cp = new CurvePoint(position);
-    else cp = new CurvePoint(position);
+    /*if(status==Movable::DYNAMIC) cp = CurvePoint(position);
+    else cp = CurvePoint(position);*/
 
     initBasePlane();
 }
 
 void Plane::initBasePlane(){
-        points[0] = Vec(cp->getPoint().x - size, cp->getPoint().y - size, cp->getPoint().z);
-        points[1] = Vec(cp->getPoint().x - size, cp->getPoint().y + size, cp->getPoint().z);
-        points[2] = Vec(cp->getPoint().x + size, cp->getPoint().y + size, cp->getPoint().z);
-        points[3] = Vec(cp->getPoint().x + size, cp->getPoint().y - size, cp->getPoint().z);
+        points[0] = Vec(cp.getPoint().x - size, cp.getPoint().y - size, cp.getPoint().z);
+        points[1] = Vec(cp.getPoint().x - size, cp.getPoint().y + size, cp.getPoint().z);
+        points[2] = Vec(cp.getPoint().x + size, cp.getPoint().y + size, cp.getPoint().z);
+        points[3] = Vec(cp.getPoint().x + size, cp.getPoint().y - size, cp.getPoint().z);
 }
 
 void Plane::draw(){
     glPushMatrix();
-    glMultMatrixd(cp->getFrame().matrix());
+    glMultMatrixd(cp.getFrame().matrix());
 
     glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
@@ -38,7 +38,7 @@ void Plane::draw(){
         glVertex3f(static_cast<float>(points[3].x), static_cast<float>(points[3].y), static_cast<float>(points[3].z));
     glEnd();
 
-    if(status==Movable::DYNAMIC) cp->draw();
+    if(status==Movable::DYNAMIC) cp.draw();
 
     glDisable(GL_DEPTH);
     glDisable(GL_DEPTH_TEST);
@@ -66,12 +66,12 @@ void Plane::rotatePlaneXY(double percentage){
 }
 
 void Plane::setPosition(Vec pos){
-    cp->setPosition(pos);
-    cp->getFrame().setPosition(cp->getX(), cp->getY(), cp->getZ());
+    cp.setPosition(pos);
+    cp.getFrame().setPosition(cp.getX(), cp.getY(), cp.getZ());
 
     // Only move it if cp is dynamic
     if(status==Movable::DYNAMIC){
-        cp->setPosition(pos);
+        cp.setPosition(pos);
     }
 }
 
@@ -94,9 +94,9 @@ Quaternion Plane::fromRotatedBasis(Vec x, Vec y, Vec z){
 bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
 
     // Put it all into local coordinates
-    Vec tr0 = cp->getFrame().localCoordinatesOf(v0);
-    Vec tr1 = cp->getFrame().localCoordinatesOf(v1);
-    Vec tr2 = cp->getFrame().localCoordinatesOf(v2);
+    Vec tr0 = cp.getFrame().localCoordinatesOf(v0);
+    Vec tr1 = cp.getFrame().localCoordinatesOf(v1);
+    Vec tr2 = cp.getFrame().localCoordinatesOf(v2);
 
     Vec tr[3] = {tr0, tr1, tr2};
 
@@ -127,17 +127,17 @@ bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
 }
 
 double Plane::getSign(Vec v){
-    Vec tr0 = cp->getFrame().localCoordinatesOf(v);
+    Vec tr0 = cp.getFrame().localCoordinatesOf(v);
 
     return tr0.z/(abs(tr0.z));
 }
 
 Vec Plane::getProjection(Vec p){
-    Vec localP = cp->getFrame().localCoordinatesOf(p);
+    Vec localP = cp.getFrame().localCoordinatesOf(p);
 
     double alpha = (localP * normal);
 
     Vec newP = localP - normal *alpha;
 
-    return cp->getFrame().localInverseCoordinatesOf(newP);
+    return cp.getFrame().localInverseCoordinatesOf(newP);
 }

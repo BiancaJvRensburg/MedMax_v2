@@ -40,7 +40,7 @@ void Viewer::draw() {
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         glColor3f(0,0,1.0);
-        ghostPlanes[i].draw();
+        ghostPlanes[i]->draw();
     }
 
     //glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
@@ -69,8 +69,8 @@ std::vector<Vec> Viewer::updatePolyline(){
     polyline.push_back(p);
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        if(ghostPlanes[i].getCurvePoint()==nullptr) continue;
-        p = Vec(ghostPlanes[i].getCurvePoint()->getX(), ghostPlanes[i].getCurvePoint()->getY(), ghostPlanes[i].getCurvePoint()->getZ());
+        //if(ghostPlanes[i].getCurvePoint()==nullptr) continue;
+        p = Vec(ghostPlanes[i]->getCurvePoint().getX(), ghostPlanes[i]->getCurvePoint().getY(), ghostPlanes[i]->getCurvePoint().getZ());
         polyline.push_back(p);
     }
 
@@ -183,8 +183,8 @@ void Viewer::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Vec> ver
         }
         else {
             int mandPlane = (planes[i]+2) / 2 - 2;
-            normals[i] = ghostPlanes[mandPlane].getMeshVectorFromLocal(normals[i]);
-            verticies[i] = ghostPlanes[mandPlane].getMeshCoordinatesFromLocal(verticies[i]);
+            normals[i] = ghostPlanes[mandPlane]->getMeshVectorFromLocal(normals[i]);
+            verticies[i] = ghostPlanes[mandPlane]->getMeshCoordinatesFromLocal(verticies[i]);
         }
     }
 
@@ -236,6 +236,7 @@ void Viewer::drawMesh(){
 }
 
 void Viewer::initGhostPlanes(){
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
 
     int finalNb = nbGhostPlanes;
@@ -298,13 +299,14 @@ void Viewer::initGhostPlanes(){
 
         addGhostPlanes(finalNb);
 
-        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(ghostPlanes[i].getCurvePoint(), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);
+        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);
 
         // Update the fibula planes and polyline
         std::vector<Vec> angles = updatePolyline();
 
        // Q_EMIT haltMeshUpdate();
 
+         // Send the info to the fibula
         double distance;
         if(finalNb > 0) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
@@ -345,7 +347,9 @@ void Viewer::cutMesh(){
 void Viewer::uncutMesh(){
     mesh.setIsCut(Side::INTERIOR, false, false);
     isGhostPlanes = false;
-    ghostPlanes.clear();        // TODO HANDLE THIS
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
+    ghostPlanes.clear();
+    std::cout << "Ghost plane size : " << ghostPlanes.size() << std::endl;
     update();
 }
 
@@ -526,12 +530,12 @@ void Viewer::addGhostPlanes(int nb){
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
         //std::cout << "adding plane " << std::endl;
-        ghostPlanes.push_back(Plane(40.0, Movable::DYNAMIC));
+        ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC));
         //std::cout << "plane added " << std::endl;
-        //std::cout << "size : " << ghostPlanes.size() << std::endl;
+        //std::cout << "size after plane added : " << ghostPlanes.size() << std::endl;
         // ! HERE IS WHERE THE DESTRUCTOR CRASHES (in set Orientation)
-        ghostPlanes[i].setOrientation(getNewOrientation(ghostLocation[i]));
-        ghostPlanes[i].setPosition(curve->getPoint(ghostLocation[i]));
+        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i]));
+        ghostPlanes[i]->setPosition(curve->getPoint(ghostLocation[i]));
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
     }
@@ -548,11 +552,11 @@ void Viewer::ghostPlaneMoved(){
     double distances[nb+1];     // +1 for the last plane
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        if(i==0) distances[i] = segmentLength(leftPlane->getPosition(), ghostPlanes[i].getCurvePoint()->getPoint());
-        else distances[i] = segmentLength(ghostPlanes[i-1].getCurvePoint()->getPoint(), ghostPlanes[i].getCurvePoint()->getPoint());
+        if(i==0) distances[i] = segmentLength(leftPlane->getPosition(), ghostPlanes[i]->getCurvePoint().getPoint());
+        else distances[i] = segmentLength(ghostPlanes[i-1]->getCurvePoint().getPoint(), ghostPlanes[i]->getCurvePoint().getPoint());
     }
 
-    distances[nb] = segmentLength(rightPlane->getPosition(), ghostPlanes[nb-1].getCurvePoint()->getPoint());
+    distances[nb] = segmentLength(rightPlane->getPosition(), ghostPlanes[nb-1]->getCurvePoint().getPoint());
 
     std::vector<Vec> angles = updatePolyline();
 
@@ -591,8 +595,8 @@ std::vector<Vec> Viewer::getPolylinePlaneAngles(){
     angles.push_back(leftPlane->getPolylineVector(polyline[1]));
 
     for(unsigned int i=1; i<polyline.size()-1; i++){
-        angles.push_back(ghostPlanes[i-1].getPolylineVector(polyline[i-1]));
-        angles.push_back(ghostPlanes[i-1].getPolylineVector(polyline[i+1]));
+        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i-1]));
+        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i+1]));
     }
 
     angles.push_back(rightPlane->getPolylineVector(polyline[polyline.size()-2]));
