@@ -135,6 +135,11 @@ void MainWindow::initDisplayDockWidgets(){
     connect(skullViewer, &Viewer::noGhostPlanesToSend, fibulaViewer, &ViewerFibula::noGhostPlanesToRecieve);
     connect(skullViewer, &Viewer::preparingToCut, fibulaViewer, &ViewerFibula::uncutMesh);
 
+    // Move the planes so tempory mesh cut
+    connect(skullViewer, &Viewer::ghostPlaneMovementStart, fibulaViewer, &ViewerFibula::uncutMesh);
+    connect(skullViewer, &Viewer::ghostPlaneMovementEnd, fibulaViewer, &ViewerFibula::handleMovementEnd);
+
+
     contentsMand->setLayout(contentLayoutMand);
     contentsFibula->setLayout(contentLayoutFibula);
 

@@ -320,3 +320,11 @@ void ViewerFibula::uncutMesh(){
     rightPlane->setOrientation(getNewOrientation(curveIndexR));
     update();
 }
+
+void ViewerFibula::handleMovementStart(){
+
+}
+
+void ViewerFibula::handleMovementEnd(){
+
+}

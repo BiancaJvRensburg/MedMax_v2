@@ -50,6 +50,9 @@ Q_SIGNALS:
     void noGhostPlanesToSend();     // tells the fibula not to wait for ghost planes before cutting
     void preparingToCut();          // tells the fibula to reset its planes
 
+    void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
+    void ghostPlaneMovementEnd();
+
 protected:
     void draw();
     std::vector<Vec> updatePolyline();   // returns the new angles between the polyline and the planes

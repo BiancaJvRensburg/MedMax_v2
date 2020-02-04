@@ -468,6 +468,8 @@ void Viewer::handlePlaneMoveStart(){
     mesh.setIsCut(Side::INTERIOR, false, false);
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
+
+    Q_EMIT ghostPlaneMovementStart();
 }
 
 void Viewer::handlePlaneMoveEnd(){
@@ -479,6 +481,8 @@ void Viewer::handlePlaneMoveEnd(){
     mesh.setIsCut(Side::INTERIOR, true, true);
     isGhostPlanes = true;
     initGhostPlanes();
+
+    Q_EMIT ghostPlaneMovementEnd();
 }
 
 void Viewer::openOFF(QString filename) {

@@ -25,6 +25,9 @@ public Q_SLOTS:
 
     void noGhostPlanesToRecieve();
 
+    void handleMovementStart();
+    void handleMovementEnd();
+
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
 Q_SIGNALS:
