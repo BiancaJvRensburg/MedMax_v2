@@ -372,8 +372,6 @@ void Viewer::moveLeftPlane(int position){
         curveIndexL = curve->indexForLength(curveIndexR, -constraint);
     }
 
-    if(isGhostPlanes) initGhostPlanes();        // TODO change this
-
     leftPlane->setPosition(curve->getPoint(curveIndexL));
     leftPlane->setOrientation(getNewOrientation(curveIndexL));
 
@@ -390,8 +388,10 @@ void Viewer::moveLeftPlane(int position){
         distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
     }
 
+    if(isGhostPlanes) handlePlaneMove();
+
     update();
-    Q_EMIT leftPosChanged(distance, angles);
+    //Q_EMIT leftPosChanged(distance, angles);
     Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
 }
 
@@ -437,8 +437,6 @@ void Viewer::moveRightPlane(int position){
     else if(curveIndexR == curve->indexForLength(curveIndexL, constraint)) return;
     else curveIndexR = curve->indexForLength(curveIndexL, constraint);
 
-    if(isGhostPlanes) initGhostPlanes();        // TODO to change
-
     rightPlane->setPosition(curve->getPoint(curveIndexR));
     rightPlane->setOrientation(getNewOrientation(curveIndexR));
 
@@ -454,9 +452,26 @@ void Viewer::moveRightPlane(int position){
         distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
 
+    if(isGhostPlanes) handlePlaneMove();
+
     update();
-    Q_EMIT rightPosChanged(distance, angles);
+    // Q_EMIT rightPosChanged(distance, angles);
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
+}
+
+void Viewer::handlePlaneMove(){
+    // Uncut the mesh but keep the ghostPlane marker as true
+    mesh.setIsCut(Side::INTERIOR, false, false);
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
+    ghostPlanes.clear();
+
+    // Recut
+    Q_EMIT preparingToCut();
+    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    Q_EMIT okToCut();
+    mesh.setIsCut(Side::INTERIOR, true, true);
+    isGhostPlanes = true;
+    initGhostPlanes();
 }
 
 void Viewer::openOFF(QString filename) {

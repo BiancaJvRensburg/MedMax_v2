@@ -65,6 +65,7 @@ protected:
     void initGhostPlanes();
     Quaternion getNewOrientation(int index);
     Quaternion updateOrientation(int index);
+    void handlePlaneMove();
 
     double angle(Vec a, Vec b);
     double segmentLength(const Vec a, const Vec b);
