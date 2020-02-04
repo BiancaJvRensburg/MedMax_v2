@@ -210,7 +210,7 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles){
 
 // When we want to move all the planes (except the static left) by a distance (the left plane is moved in the jaw)
 void ViewerFibula::moveGhostPlaneDistance(double distance, std::vector<Vec> angles){
-    int offset = 0;
+    /*int offset = 0;
     if(ghostPlanes.size()==0) movePlaneDistance(distance, angles);
     else offset = curve->indexForLength(curveIndexL, distance) - ghostLocation[0];
 
@@ -241,7 +241,8 @@ void ViewerFibula::moveGhostPlaneDistance(double distance, std::vector<Vec> angl
     setPlaneOrientations(angles);
 
     mesh.updatePlaneIntersections(rightPlane);
-    update();
+    update();*/
+    movePlaneDistance(distance, angles);
 }
 
 // One of the ghost planes is moved in the jaw

@@ -391,7 +391,7 @@ void Viewer::moveLeftPlane(int position){
     if(isGhostPlanes) handlePlaneMove();
 
     update();
-    //Q_EMIT leftPosChanged(distance, angles);
+    Q_EMIT leftPosChanged(distance, angles);
     Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
 }
 
@@ -455,7 +455,7 @@ void Viewer::moveRightPlane(int position){
     if(isGhostPlanes) handlePlaneMove();
 
     update();
-    // Q_EMIT rightPosChanged(distance, angles);
+    Q_EMIT rightPosChanged(distance, angles);
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
 
