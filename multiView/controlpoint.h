@@ -15,9 +15,9 @@ class ControlPoint : public QObject
 public:
     ControlPoint(Vec p);
     ControlPoint(double x, double y, double z);
-    ~ControlPoint(){
+    /*~ControlPoint(){
         delete mf;
-    }
+    }*/
 
     const Vec& getPoint(){ return p; }
     double getX(){ return p.x; }
@@ -29,7 +29,7 @@ public:
         p.z = z;
     }
     void setPoint(Vec p){ this->p = p; }
-    Frame* getFrame(){  return mf; }
+    Frame& getFrame(){  return mf; }
 
     void moveControlPoint(Vec newPos);
 
@@ -43,7 +43,7 @@ Q_SIGNALS:
     void cntrlPointTranslated();
 
 protected:
-    Frame* mf;
+    Frame mf;
     Vec p;
 };
 

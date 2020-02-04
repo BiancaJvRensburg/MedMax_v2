@@ -9,9 +9,9 @@ class CurvePoint : public ControlPoint
 
 public:
     CurvePoint(Vec p);
-    ~CurvePoint(){
+    /*~CurvePoint(){
         disconnect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
-    }
+    }*/
 
     void setPosition(Vec p){ this->p.x = p.x;
                                 this->p.y = p.y;
