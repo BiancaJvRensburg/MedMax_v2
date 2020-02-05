@@ -374,7 +374,8 @@ void Viewer::moveLeftPlane(int position){
     }
 
     leftPlane->setPosition(curve->getPoint(curveIndexL));
-    leftPlane->setOrientation(getNewOrientation(curveIndexL));
+    //leftPlane->setOrientation(getNewOrientation(curveIndexL));
+    matchPlaneToFrenet(leftPlane, curveIndexL);
 
     mesh.updatePlaneIntersections(leftPlane);
 
@@ -442,7 +443,8 @@ void Viewer::moveRightPlane(int position){
     else curveIndexR = curve->indexForLength(curveIndexL, constraint);
 
     rightPlane->setPosition(curve->getPoint(curveIndexR));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    //rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    matchPlaneToFrenet(rightPlane, curveIndexR);
 
     mesh.updatePlaneIntersections(rightPlane);
 
@@ -545,8 +547,10 @@ void Viewer::initPlanes(Movable status){
     leftPlane->setPosition(curve->getPoint(curveIndexL));
     rightPlane->setPosition(curve->getPoint(curveIndexR));
 
-    leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    /*leftPlane->setOrientation(getNewOrientation(curveIndexL));
+    rightPlane->setOrientation(getNewOrientation(curveIndexR));*/
+    matchPlaneToFrenet(leftPlane, curveIndexL);
+    matchPlaneToFrenet(rightPlane, curveIndexL);
 
     mesh.addPlane(leftPlane);
     mesh.addPlane(rightPlane);
@@ -601,8 +605,10 @@ void Viewer::updatePlanes(){
     leftPlane->setPosition(curve->getPoint(curveIndexL));
     rightPlane->setPosition(curve->getPoint(curveIndexR));
 
-    leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    /*leftPlane->setOrientation(getNewOrientation(curveIndexL));
+    rightPlane->setOrientation(getNewOrientation(curveIndexR));*/
+    matchPlaneToFrenet(leftPlane, curveIndexL);
+    matchPlaneToFrenet(rightPlane, curveIndexR);
 
     mesh.updatePlaneIntersections();
 
@@ -644,6 +650,12 @@ double Viewer::angle(Vec a, Vec b){
 
 double Viewer::segmentLength(const Vec a, const Vec b){
     return sqrt( pow((b.x - a.x), 2) + pow((b.y - a.y), 2) + pow((b.z - a.z), 2));
+}
+
+void Viewer::matchPlaneToFrenet(Plane *p, int index){
+    Vec x, y, z;
+    curve->getFrame(index,z,x,y);
+    p->setFrameFromBasis(x,y,z);
 }
 
 

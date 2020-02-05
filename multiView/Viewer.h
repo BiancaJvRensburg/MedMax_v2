@@ -68,6 +68,7 @@ protected:
     void initGhostPlanes();
     Quaternion getNewOrientation(int index);
     Quaternion updateOrientation(int index);
+    void matchPlaneToFrenet(Plane* p, int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
 
