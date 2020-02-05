@@ -566,7 +566,8 @@ void Viewer::addGhostPlanes(int nb){
         //std::cout << "plane added " << std::endl;
         //std::cout << "size after plane added : " << ghostPlanes.size() << std::endl;
         // ! HERE IS WHERE THE DESTRUCTOR CRASHES (in set Orientation)
-        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i]));
+        //ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i]));
+        matchPlaneToFrenet(ghostPlanes[i], ghostLocation[i]);
         ghostPlanes[i]->setPosition(curve->getPoint(ghostLocation[i]));
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
