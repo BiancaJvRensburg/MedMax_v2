@@ -14,15 +14,12 @@ class Plane
 {
 public:
     Plane(double s, Movable status);
-    /*~Plane(){
-        //std::cout << "destroying plane " << this << std::endl;
-        // delete cp;
-    }*/
 
     void setSize(double s){ size = s; }
     void setPosition(Vec pos);
     void setOrientation(Quaternion q){ cp.getFrame().setOrientation(q); }
     Quaternion fromRotatedBasis(Vec x, Vec y, Vec z);
+    void setFrameFromBasis(Vec x, Vec y, Vec z);
 
     Vec getPolylineVector(Vec v){ return cp.getFrame().localCoordinatesOf(v); }  // Return the vector v in the coordinates of this plane (could be done w/ another function)
 

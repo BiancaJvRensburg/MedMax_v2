@@ -22,6 +22,9 @@ public:
     void generateCatmull(long& nbU);
 
     Vec tangent(int index);
+    Vec normal(int index);
+    Vec binormal(int index);
+    void getFrame(int index, Vec& t, Vec& n, Vec& b);
 
     void draw();
     void drawControl();
@@ -60,7 +63,7 @@ private:
 
     // Catmull rom
     void catmullrom();  // calculate the spline and the first derivative
-    void calculateCatmullPoints(Vec& c, Vec& cp, double t);
+    void calculateCatmullPoints(Vec& c, Vec& cp, Vec& cpp, double t);
 
     //bool isControlPoint(int index);
 
@@ -71,6 +74,7 @@ private:
 
     // Frenet frame
     Vec* dt;
+    Vec* d2t;
 
     //void getModVec(int j, int r, double t, int kI, double offset, double* newPoints);
 

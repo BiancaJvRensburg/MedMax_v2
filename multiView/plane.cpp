@@ -84,6 +84,11 @@ Quaternion Plane::fromRotatedBasis(Vec x, Vec y, Vec z){
    return q;
 }
 
+// Actually set the orientation from the basis x,y,z
+void Plane::setFrameFromBasis(Vec x, Vec y, Vec z){
+    cp.getFrame().setOrientation(fromRotatedBasis(x,y,z));
+}
+
 // MESH INTERSECTION
 
 /*

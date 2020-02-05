@@ -46,6 +46,7 @@ void Curve::generateBSpline(long& nbU, int degree){
     this->knotVector = generateUniformKnotVector(0);
     curve = splineDerivative(0);
     dt =  splineDerivative(1);
+    d2t = splineDerivative(2);
 }
 
 void Curve::generateCatmull(long& n){
@@ -147,7 +148,7 @@ std::vector<double> Curve::generateCatmullKnotVector(double alpha){
 }
 
 // Catmull rom
-void Curve::calculateCatmullPoints(Vec& c, Vec& cp, double t){
+void Curve::calculateCatmullPoints(Vec& c, Vec& cp, Vec& cpp, double t){
     Vec p[4] = {TabControlPoint[knotIndex-1]->getPoint(), TabControlPoint[knotIndex]->getPoint(), TabControlPoint[knotIndex+1]->getPoint(), TabControlPoint[knotIndex+2]->getPoint()};
 
     double t0 = knotVector[knotIndex-1];
@@ -169,8 +170,12 @@ void Curve::calculateCatmullPoints(Vec& c, Vec& cp, double t){
     Vec b1p = 1.0/(t2-t0)*(a2-a1) + (t2-t)/(t2-t0)*a1p + (t-t0)/(t2-t0)*a2p;
     Vec b2p = 1.0/(t3-t1)*(a3-a2) + (t3-t)/(t3-t1)*a2p + (t-t1)/(t3-t1)*a3p;
 
+    Vec b1pp = 1.0/(t2-t0)*(a2p-a1p);
+    Vec b2pp = 1.0/(t3-t1)*(a3p-a2p);
+
     c = (t2-t)/(t2-t1)*b1 + (t-t1)/(t2-t1)*b2;
     cp = 1.0/(t2-t1)*(b2-b1) + (t2-t)/(t2-t1)*b1p + (t-t1)/(t2-t1)*b2p;
+    cpp = 1.0/(t2-t1)*(b2p-b1p) + (t2-t)/(t2-t1)*b1pp + (t-t1)/(t2-t1)*b2pp;
 }
 
 void Curve::catmullrom(){
@@ -179,6 +184,7 @@ void Curve::catmullrom(){
 
     curve = new Vec[static_cast<unsigned long long>(nbU)];
     dt = new Vec[static_cast<unsigned long long>(nbU)];
+    d2t = new Vec[static_cast<unsigned long long>(nbU)];
    // controlPointIndicies = new bool[static_cast<unsigned long long>(*nbU)];
 
     //for(int i=0; i<*nbU; i++) controlPointIndicies[i] = false;
@@ -191,8 +197,9 @@ void Curve::catmullrom(){
             if((j-1)*uPerSeg+it >= nbU) return;
             curve[(j-1)*uPerSeg+it] = Vec();
             dt[(j-1)*uPerSeg+it] = Vec();
+            d2t[(j-1)*uPerSeg+it] = Vec();
 
-            calculateCatmullPoints(curve[(j-1)*uPerSeg+it], dt[(j-1)*uPerSeg+it], i);
+            calculateCatmullPoints(curve[(j-1)*uPerSeg+it], dt[(j-1)*uPerSeg+it], d2t[(j-1)*uPerSeg+it], i);
             it++;
         }
     }
@@ -276,8 +283,27 @@ Vec Curve::tangent(int index){
     return t;
 }
 
+Vec Curve::normal(int index){
+    return cross(binormal(index), tangent(index));
+}
+
+Vec Curve::binormal(int index){
+    Vec b = cross(Vec(dt[index].x, dt[index].y, dt[index].z), Vec(d2t[index].x, d2t[index].y, d2t[index].z));
+    b.normalize();
+
+    return b;
+}
+
+void Curve::getFrame(int index, Vec &t, Vec &n, Vec &b){
+    t = tangent(index);
+    b = binormal(index);
+    n = cross(b, t);
+}
+
 void Curve::drawTangent(int index){
-    Vec t = tangent(index);
+    Vec t,n,b;
+
+    getFrame(index,t,n,b);
 
     glColor3f(0.0, 1.0, 1.0);
     glLineWidth(3);
@@ -285,6 +311,18 @@ void Curve::drawTangent(int index){
     glBegin(GL_LINES);
       glVertex3f(static_cast<float>(curve[index].x), static_cast<float>(curve[index].y), static_cast<float>(curve[index].z));
       glVertex3f(static_cast<float>(curve[index].x + t.x*10), static_cast<float>(curve[index].y + t.y*10), static_cast<float>(curve[index].z + t.z*10));
+    glEnd();
+
+    glColor3f(1.0, 0.0, 1.0);
+    glBegin(GL_LINES);
+      glVertex3f(static_cast<float>(curve[index].x), static_cast<float>(curve[index].y), static_cast<float>(curve[index].z));
+      glVertex3f(static_cast<float>(curve[index].x + n.x*10), static_cast<float>(curve[index].y + n.y*10), static_cast<float>(curve[index].z + n.z*10));
+    glEnd();
+
+     glColor3f(1.0, 1.0, 0.0);
+     glBegin(GL_LINES);
+      glVertex3f(static_cast<float>(curve[index].x), static_cast<float>(curve[index].y), static_cast<float>(curve[index].z));
+      glVertex3f(static_cast<float>(curve[index].x + b.x*10), static_cast<float>(curve[index].y + b.y*10), static_cast<float>(curve[index].z + b.z*10));
     glEnd();
 
     glLineWidth(1);
