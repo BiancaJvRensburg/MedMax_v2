@@ -149,6 +149,11 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles){
     rightPlane->setOrientation(s.normalized());
 }
 
+void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z){
+    p1->setFrameFromBasis(a,b,c);
+    p2->setFrameFromBasis(x,y,z);
+}
+
 // Don't wait for ghost planes, go ahead and cut
 void ViewerFibula::noGhostPlanesToRecieve(){
     isPlanesRecieved = true;
@@ -217,7 +222,8 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
     // update the ghost planes
     for(unsigned int i=0; i<static_cast<unsigned int>(2*nb); i++){
         ghostPlanes[i]->setPosition(curve->getCurve()[ghostLocation[i] + indexOffset]);
-        ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
+        // ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i] + indexOffset));
+        // matchPlaneToFrenet(ghostPlanes[i], ghostLocation[i]+indexOffset);
     }
 
     // If we're too far along the fibula, take it all back
@@ -230,7 +236,8 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
 
     // update the right plane
     rightPlane->setPosition(curve->getCurve()[curveIndexR + indexOffset]);
-    rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));
+    //rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));
+    // matchPlaneToFrenet(rightPlane, curveIndexR+indexOffset);
 
     angleVectors.clear();
     angleVectors = angles;
@@ -258,6 +265,7 @@ void ViewerFibula::reinitialisePlanes(unsigned int nbToInit){
     for(unsigned int j=0; j<nbToInit-1; j++){
         ghostPlanes[j]->setPosition(curve->getCurve()[ghostLocation[j] + indexOffset]);
         ghostPlanes[j]->setOrientation(getNewOrientation(ghostLocation[j] + indexOffset));
+        // matchPlaneToFrenet(ghostPlanes[j], ghostLocation[j]+indexOffset);
     }
 }
 
@@ -316,9 +324,34 @@ void ViewerFibula::uncutMesh(){
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();        // NOTE To eventually be changed
     // Reset their orientations
-    leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    //leftPlane->setOrientation(getNewOrientation(curveIndexL));
+    //rightPlane->setOrientation(getNewOrientation(curveIndexR));
+    //matchPlaneToFrenet(leftPlane, curveIndexL);
+    //matchPlaneToFrenet(rightPlane, curveIndexR);
     update();
+}
+
+void ViewerFibula::recieveFrameOrientation(std::vector<Vec> orientations){
+    if(leftPlane==nullptr || rightPlane==nullptr) return;
+    Vec x, y, z;
+
+    x = orientations[0];
+    y = orientations[1];
+    z = orientations[2];
+    leftPlane->setFrameFromBasis(x,y,z);
+
+    x = orientations[3];
+    y = orientations[4];
+    z = orientations[5];
+    rightPlane->setFrameFromBasis(x, y, z);
+
+    for(int i=0; i<ghostPlanes.size(); i++){
+        int j = i + 2;
+        x = orientations[j*3];
+        y = orientations[j*3+1];
+        z = orientations[j*3+2];
+        ghostPlanes[i]->setFrameFromBasis(x, y, z);
+    }
 }
 
 void ViewerFibula::handleMovementStart(){

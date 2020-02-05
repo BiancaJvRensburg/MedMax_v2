@@ -30,6 +30,8 @@ public Q_SLOTS:
 
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
+    void recieveFrameOrientation(std::vector<Vec>);
+
 Q_SIGNALS:
     void setPlaneSliderValue(int);
     void sendToManible(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);
@@ -40,6 +42,7 @@ private:
     void reinitialisePlanes(unsigned int nbToInit);      // Reinitialises the position and orientation of the planes
     void initSignals();
     void createPolyline();
+    void matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z);
 
     bool isCutSignal;
     bool isPlanesRecieved;
