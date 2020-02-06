@@ -35,10 +35,10 @@ public Q_SLOTS:
     void toUpdate();
 
 Q_SIGNALS:
-    void leftPosChanged(double, std::vector<Vec>);
-    void rightPosChanged(double, std::vector<Vec>);
-    void ghostPlanesAdded(int, double[], std::vector<Vec>);
-    void ghostPlanesTranslated(int, double[], std::vector<Vec>);
+    void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
+    void rightPosChanged(double, std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesAdded(int, double[], std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesTranslated(int, double[], std::vector<Vec>, std::vector<Vec>);
     void okToCut();
     // set the slider to the value
     void setLRSliderValue(int);   // Left rotation

@@ -74,7 +74,7 @@ void ViewerFibula::movePlanes(int position){
         }
     }
 
-    setPlaneOrientations(angleVectors);
+    setPlaneOrientations(angleVectors, mandiblePolyline);
     mesh.setTransfer(false);
     mesh.updatePlaneIntersections();
 
@@ -135,7 +135,7 @@ void ViewerFibula::findGhostLocations(int nb, double distance[]){
 }
 
 // Re-orientate the planes to correspond to the same angles as the jaw
-void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles){
+void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec> mandPolyline){
     if(angles.size()==0) return;
     std::cout << "Set plane orientations called " << std::endl;
     angleVectors.clear();
@@ -158,9 +158,36 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles){
     s = Quaternion(normal, angles[angles.size()-1]);
     rightPlane->setOrientation(s.normalized());
 
-    /*Vec axis = Vec(1,1,1);
-    leftPlane->rotatePlane(axis, M_PI);
-    rightPlane->rotatePlane(axis, M_PI);*/
+
+    // Match the polylines
+
+    if(mandPolyline.size()==0) return;
+
+    std::vector<Vec> fibulaPolyline = getPolyline();
+
+    if(ghostPlanes.size()==0){
+        // Project the mand and the fib on the left plane
+        Vec mandPoint = leftPlane->getLocalProjection(mandPolyline[1]);
+        Vec fibPoint = leftPlane->getLocalProjection(fibulaPolyline[1]);
+        // normalise them so they have the same length
+        mandPoint.normalize();
+        fibPoint.normalize();
+        // Get the angle between the two
+        double alpha = angle(mandPoint, fibPoint);
+        std::cout << "Angle : " << alpha << std::endl;
+        // Rotate BOTH planes
+        alpha += M_PI;
+        std::cout << " ROTATING" << std::endl;
+        Vec axis = Vec(0,0,1);
+        //double r = 0.25;
+        //alpha = (M_PI*2.0)*r + M_PI;
+        leftPlane->rotatePlane(axis, alpha);
+        rightPlane->rotatePlane(axis, alpha);
+    }
+
+    else{
+
+    }
 }
 
 void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z){
@@ -175,7 +202,7 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 }
 
 // Add ghost planes that correspond to the ghost planes in the jaw
-void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> angles){
+void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> angles, std::vector<Vec> mandPolyline){
     // if no ghost planes were actually recieved
     if(nb==0){
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
@@ -193,7 +220,9 @@ void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Ve
     addGhostPlanes(2*nb);
 
     // Once everything is initialised, adjust the rotation
-    setPlaneOrientations(angles);
+    setPlaneOrientations(angles, mandPolyline);
+    mandPolyline.clear();
+    mandiblePolyline = mandPolyline;
 
     // If its cut and the number of planes has changed
     if(mesh.getIsCut() && nb!=oldNb){
@@ -206,10 +235,10 @@ void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Ve
 }
 
 // When we want to move the right plane (the right plane is moved in the jaw)
-void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles){
+void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles, std::vector<Vec> mandPolyline){
     int newIndex;
 
-    if(isGhostPlanes) return;
+    //if(isGhostPlanes) return;
 
     std::cout << "move plane distance fibula called " << std::endl;
 
@@ -225,14 +254,16 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles){
     angleVectors.clear();
     angleVectors = angles;
 
-    setPlaneOrientations(angles);
+    setPlaneOrientations(angles, mandPolyline);
+    mandiblePolyline.clear();
+    mandiblePolyline = mandPolyline;
 
     mesh.updatePlaneIntersections(rightPlane);
     update();
 }
 
 // One of the ghost planes is moved in the jaw
-void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec> angles){
+void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec> angles, std::vector<Vec> mandPolyline){
     if(nb==0) return;
 
     findGhostLocations(nb, distances);
@@ -260,7 +291,9 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
     angleVectors.clear();
     angleVectors = angles;
 
-    setPlaneOrientations(angles);
+    setPlaneOrientations(angles, mandPolyline);
+    mandiblePolyline.clear();
+    mandiblePolyline = mandPolyline;
 
     mesh.updatePlaneIntersections(rightPlane);
 
@@ -405,6 +438,10 @@ void ViewerFibula::recieveFrameOrientation(std::vector<Vec> orientations, std::v
         //alpha = (M_PI*2.0)*r + M_PI;
         leftPlane->rotatePlane(axis, alpha);
         rightPlane->rotatePlane(axis, alpha);
+    }
+
+    else{
+
     }
 
     // Polyline orientation

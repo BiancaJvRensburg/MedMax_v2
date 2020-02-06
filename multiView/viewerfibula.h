@@ -17,9 +17,9 @@ public:
 public Q_SLOTS:
     void movePlanes(int);
     void planesMoved();
-    void movePlaneDistance(double, std::vector<Vec>);
-    void ghostPlanesRecieved(int, double[], std::vector<Vec>);
-    void middlePlaneMoved(int, double[], std::vector<Vec>);
+    void movePlaneDistance(double, std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesRecieved(int, double[], std::vector<Vec>, std::vector<Vec>);
+    void middlePlaneMoved(int, double[], std::vector<Vec>, std::vector<Vec>);
 
     void initCurve();
     void cutMesh();
@@ -40,7 +40,7 @@ Q_SIGNALS:
 
 private:
     void findGhostLocations(int nb, double distance[]); // finds the location of the ghost planes + the right plane
-    void setPlaneOrientations(std::vector<Vec> angles);
+    void setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec> mandPolyline);
     void reinitialisePlanes(unsigned int nbToInit);      // Reinitialises the position and orientation of the planes
     void initSignals();
     void createPolyline();
@@ -52,6 +52,7 @@ private:
     int indexOffset;
     int maxOffset;
     std::vector<Vec> angleVectors;  // the last set of orientation vectors we recieved (kept for when we want to slide the planes along the fibula)
+    std::vector<Vec> mandiblePolyline;      // the last mandible polyline we recieved
 };
 
 #endif // VIEWERFIBULA_H

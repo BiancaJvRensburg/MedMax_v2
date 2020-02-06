@@ -311,17 +311,18 @@ void Viewer::initGhostPlanes(){
         double distance;
         if(finalNb > 0) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
-        Q_EMIT leftPosChanged(distance, angles);
+        std::vector<Vec> poly = updatePolyline();
+        Q_EMIT leftPosChanged(distance, angles, poly);
         if(finalNb > 0) distance = curve->discreteLength(curveIndexR, ghostLocation[finalNb-1]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
-        Q_EMIT rightPosChanged(distance, angles);
+        Q_EMIT rightPosChanged(distance, angles, poly);
 
        // Q_EMIT continueMeshUpdate();
 
     }
     else{
         std::vector<Vec> angles = updatePolyline();
-        Q_EMIT ghostPlanesAdded(0,0,angles);
+        Q_EMIT ghostPlanesAdded(0,0,angles, angles);
     }
 }
 
@@ -397,7 +398,7 @@ void Viewer::moveLeftPlane(int position){
         distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
     }
 
-    Q_EMIT leftPosChanged(distance, angles);
+    Q_EMIT leftPosChanged(distance, angles, updatePolyline());
     Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
 }
 
@@ -465,7 +466,7 @@ void Viewer::moveRightPlane(int position){
 
     update();
 
-    Q_EMIT rightPosChanged(distance, angles);
+    Q_EMIT rightPosChanged(distance, angles, updatePolyline());
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
 
@@ -580,7 +581,7 @@ void Viewer::addGhostPlanes(int nb){
 
     std::vector<Vec> angles = updatePolyline();
 
-    Q_EMIT ghostPlanesAdded(nb, distances, angles);
+    Q_EMIT ghostPlanesAdded(nb, distances, angles, updatePolyline());
 }
 
 void Viewer::ghostPlaneMoved(){
@@ -596,7 +597,7 @@ void Viewer::ghostPlaneMoved(){
 
     std::vector<Vec> angles = updatePolyline();
 
-    Q_EMIT ghostPlanesTranslated(nb, distances, angles);
+    Q_EMIT ghostPlanesTranslated(nb, distances, angles, updatePolyline());
 }
 
 void Viewer::updateCamera(const Vec3Df & center, float radius){
