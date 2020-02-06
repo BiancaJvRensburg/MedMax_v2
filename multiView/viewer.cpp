@@ -49,7 +49,7 @@ void Viewer::draw() {
     curve->draw();
 
      // curve->drawControl(); // We want to visualise this at all times
-     curve->drawTangent(curveIndexL);
+    // curve->drawTangent(curveIndexL);
 
     glPopMatrix();
 }
@@ -59,10 +59,10 @@ std::vector<Vec> Viewer::updatePolyline(){
 
     // NOTE if this is in comments, the planes always line up on the two sides
     // if its not cut / are no ghost planes
-    if(!isGhostPlanes || !isGhostActive){
+    /*if(!isGhostPlanes || !isGhostActive){
         std::vector<Vec> angles;
         return angles;   // return an empty vector
-    }
+    }*/
 
     polyline.clear();
 
@@ -326,6 +326,8 @@ void Viewer::initGhostPlanes(){
 }
 
 void Viewer::cutMesh(){
+     Q_EMIT sendFrameOrientations(getPlaneFrames(), updatePolyline());
+
     // Get the number of ghost planes from the total number of pieces dialog
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
@@ -342,6 +344,7 @@ void Viewer::cutMesh(){
     mesh.setIsCut(Side::INTERIOR, true, true);
     isGhostPlanes = true;
     initGhostPlanes();
+
     update();
 }
 
@@ -658,7 +661,7 @@ void Viewer::matchPlaneToFrenet(Plane *p, int index){
     curve->getFrame(index,z,x,y);
     p->setFrameFromBasis(x,y,z);
 
-    Q_EMIT sendFrameOrientations(getPlaneFrames());
+    Q_EMIT sendFrameOrientations(getPlaneFrames(), updatePolyline());
 }
 
 std::vector<Vec> Viewer::getPlaneFrames(){

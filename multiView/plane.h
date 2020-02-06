@@ -25,6 +25,7 @@ public:
 
     void rotatePlaneXY(double percentage);   // rotate around the z axis    // NOTE could be useless in the near future
     void rotatePlane(Vec axis, double angle);
+    void setPlaneRotation(Vec axis, double angle);
     void constrainZRotation(){ cp.getFrame().setConstraint(&constraint); }
     void freeZRotation(){ cp.getFrame().setConstraint(&constraintFree); }
     void draw();
@@ -36,6 +37,7 @@ public:
     Vec getNormal(){ return normal; }
     //const Frame& getFrame(){ return *cp->getFrame(); }
     Vec getProjection(Vec p);
+    Vec getLocalProjection(Vec p);      // for vectors already in local coordinates
     const Vec& getPosition(){ return cp.getPoint(); }
     CurvePoint& getCurvePoint(){ return cp; }
 
@@ -49,6 +51,7 @@ public:
 private:
     void initBasePlane();
     void rotate(Quaternion q) { cp.getFrame().rotate(q); }
+    void setRotation(Quaternion q) { cp.getFrame().setRotation(q); }
 
     AxisPlaneConstraint constraint;
     AxisPlaneConstraint constraintFree;

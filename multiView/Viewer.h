@@ -53,7 +53,7 @@ Q_SIGNALS:
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
     void ghostPlaneMovementEnd();
 
-    void sendFrameOrientations(std::vector<Vec>);
+    void sendFrameOrientations(std::vector<Vec>, std::vector<Vec>);
 
 protected:
     void draw();
@@ -76,7 +76,7 @@ protected:
 
     double angle(Vec a, Vec b);
     double segmentLength(const Vec a, const Vec b);
-    std::vector<Vec> getPolylinePlaneAngles();
+    std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
     std::vector<Vec> getPlaneFrames();
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);
@@ -88,7 +88,7 @@ protected:
     Curve *curve;
     std::vector<Plane*> ghostPlanes;
     std::vector<int> ghostLocation;
-    std::vector<Vec> polyline;
+    std::vector<Vec> polyline;  // just a list of vertex coordinates
     int nbGhostPlanes;
     int currentNbGhostPlanes;
     bool isGhostPlanes;

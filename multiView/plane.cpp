@@ -53,6 +53,10 @@ void Plane::rotatePlane(Vec axis, double theta){
     rotate(Quaternion(cos(theta/2.0)*axis.x, cos(theta/2.0)*axis.y, cos(theta/2.0)*axis.z, sin(theta/2.0)));
 }
 
+void Plane::setPlaneRotation(Vec axis, double theta){
+    setRotation(Quaternion(cos(theta/2.0)*axis.x, cos(theta/2.0)*axis.y, cos(theta/2.0)*axis.z, sin(theta/2.0)));
+}
+
 void Plane::rotatePlaneXY(double percentage){
     // Get the percentage to rotate it by
     double r = (percentage - rotationPercentage);
@@ -60,7 +64,7 @@ void Plane::rotatePlaneXY(double percentage){
 
     // Get the theta from the percentage
     double theta = (M_PI*2.0)*r + M_PI;
-    Vec axis = Vec(1,0,0);
+    Vec axis = Vec(0,0,1);
 
     rotatePlane(axis, theta);
 }
@@ -138,11 +142,15 @@ double Plane::getSign(Vec v){
 }
 
 Vec Plane::getProjection(Vec p){
-    Vec localP = cp.getFrame().localCoordinatesOf(p);
+    Vec localP = cp.getFrame().localCoordinatesOf(p);       // convert into local coordinates
 
     double alpha = (localP * normal);
 
     Vec newP = localP - normal *alpha;
 
-    return cp.getFrame().localInverseCoordinatesOf(newP);
+    return cp.getFrame().localInverseCoordinatesOf(newP);   // convert back into original coordinate system
+}
+
+Vec Plane::getLocalProjection(Vec localP){
+    return localP - normal * (localP * normal);             // don't convert between coordinate systems
 }

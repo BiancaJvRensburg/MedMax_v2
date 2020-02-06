@@ -11,6 +11,8 @@ public:
     ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMax, int fibulaOffsetMax);
     void addGhostPlanes(int nb);
     void handleCut();
+    std::vector<Vec> getPolyline();
+
 
 public Q_SLOTS:
     void movePlanes(int);
@@ -30,7 +32,7 @@ public Q_SLOTS:
 
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
-    void recieveFrameOrientation(std::vector<Vec>);
+    void recieveFrameOrientation(std::vector<Vec>, std::vector<Vec>);
 
 Q_SIGNALS:
     void setPlaneSliderValue(int);
