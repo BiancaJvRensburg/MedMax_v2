@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
         this->setObjectName("window");
     this->resize(929, 891);
 
-    sliderMax = 100;
+    sliderMax = 1000;
     fibulaOffsetMax = 100;
 
     // The qglviewer
@@ -129,17 +129,12 @@ void MainWindow::initDisplayDockWidgets(){
 
     connect(fibulaViewer, &ViewerFibula::sendToManible, skullViewer, &Viewer::recieveFromFibulaMesh);
 
-    /*connect(skullViewer, &Viewer::haltMeshUpdate, fibulaViewer, &ViewerFibula::toHaltMeshUpdate);
-    connect(skullViewer, &Viewer::continueMeshUpdate, fibulaViewer, &ViewerFibula::toContinueMeshUpdate);*/
-
     connect(skullViewer, &Viewer::noGhostPlanesToSend, fibulaViewer, &ViewerFibula::noGhostPlanesToRecieve);
     connect(skullViewer, &Viewer::preparingToCut, fibulaViewer, &ViewerFibula::uncutMesh);
 
     // Move the planes so tempory mesh cut
     connect(skullViewer, &Viewer::ghostPlaneMovementStart, fibulaViewer, &ViewerFibula::uncutMesh);
     connect(skullViewer, &Viewer::ghostPlaneMovementEnd, fibulaViewer, &ViewerFibula::handleMovementEnd);
-
-    connect(skullViewer, &Viewer::sendFrameOrientations, fibulaViewer, &ViewerFibula::recieveFrameOrientation);
 
     contentsMand->setLayout(contentLayoutMand);
     contentsFibula->setLayout(contentLayoutFibula);

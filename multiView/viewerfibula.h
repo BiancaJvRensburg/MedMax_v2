@@ -32,8 +32,6 @@ public Q_SLOTS:
 
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
-    void recieveFrameOrientation(std::vector<Vec>, std::vector<Vec>);
-
 Q_SIGNALS:
     void setPlaneSliderValue(int);
     void sendToManible(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);

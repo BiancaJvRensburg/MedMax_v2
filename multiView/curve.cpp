@@ -207,7 +207,7 @@ void Curve::catmullrom(){
 
 // Length as the crow flies
 double Curve::discreteLength(int indexS, int indexE){
-    return sqrt( pow((curve[indexE].x - curve[indexS].x), 2) + pow((curve[indexE].y - curve[indexS].y), 2) + pow((curve[indexE].z - curve[indexS].z), 2));
+    return sqrt( pow((curve[indexE].x - curve[indexS].x), 2.0) + pow((curve[indexE].y - curve[indexS].y), 2.0) + pow((curve[indexE].z - curve[indexS].z), 2.0));
 }
 
 // Length of the chord
@@ -233,6 +233,8 @@ int Curve::indexForLength(int indexS, double length){
         while(indexS+i > 0 && discreteLength(indexS, indexS+i) < abs(length)) i--;
     }
 
+    double d = discreteLength(indexS, indexS+i) - length;
+    std::cout << "Difference : " << d << ",  mand length : " << length << ",  fib length : " << discreteLength(indexS, indexS+i) << ",  One lower : " << discreteLength(indexS, indexS+i-1) << std::endl;
     return indexS+i;
 }
 

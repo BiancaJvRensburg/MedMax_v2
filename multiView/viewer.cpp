@@ -244,9 +244,11 @@ void Viewer::initGhostPlanes(){
 
     int maxIndicies[nbGhostPlanes];
 
+    std::cout << "Searching " << std::endl;
     const int startI = curve->indexForLength(curveIndexL, constraint);
     const int endI = curve->indexForLength(curveIndexR, -constraint);
     const int searchArea = endI - startI;
+    std::cout << "Done searching " << std::endl;
 
     // if there's enough space for a plane
     if(searchArea > 0){
@@ -327,8 +329,6 @@ void Viewer::initGhostPlanes(){
 }
 
 void Viewer::cutMesh(){
-     Q_EMIT sendFrameOrientations(getPlaneFrames(), updatePolyline());
-
     // Get the number of ghost planes from the total number of pieces dialog
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
@@ -364,7 +364,7 @@ void Viewer::moveLeftPlane(int position){
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     int index = static_cast<int>(percentage * static_cast<double>(nbU) );
-
+    std::cout << "Moving plane " << std::endl;
     if( (curve->indexForLength(curveIndexR, -constraint) > index)){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
 
@@ -436,7 +436,7 @@ void Viewer::moveRightPlane(int position){
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     int index = nbU - 1 - static_cast<int>(percentage * static_cast<double>(nbU) );
-
+    std::cout << "Moving right plane " << std::endl;
     if( index > curve->indexForLength(curveIndexL, constraint)){        // its within the correct boundaries
         curveIndexR = index;
 
@@ -535,7 +535,7 @@ void Viewer::initCurve(){
 
     connect(curve, &Curve::curveReinitialised, this, &Viewer::updatePlanes);
 
-    nbU = 200;
+    nbU = 100;
     curve->generateCatmull(nbU);
 
    initPlanes(Movable::STATIC);
@@ -661,8 +661,6 @@ void Viewer::matchPlaneToFrenet(Plane *p, int index){
     Vec x, y, z;
     curve->getFrame(index,z,x,y);
     p->setFrameFromBasis(x,y,z);
-
-    Q_EMIT sendFrameOrientations(getPlaneFrames(), updatePolyline());
 }
 
 std::vector<Vec> Viewer::getPlaneFrames(){
