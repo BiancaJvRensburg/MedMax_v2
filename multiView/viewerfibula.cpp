@@ -167,8 +167,8 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec
 
     if(ghostPlanes.size()==0){
         // Project the mand and the fib on the left plane
-        Vec mandPoint = leftPlane->getLocalProjection(mandPolyline[1]);
-        Vec fibPoint = leftPlane->getLocalProjection(fibulaPolyline[1]);
+        Vec mandPoint = rightPlane->getLocalProjection(mandPolyline[1]);
+        Vec fibPoint = rightPlane->getLocalProjection(fibulaPolyline[1]);
         // normalise them so they have the same length
         mandPoint.normalize();
         fibPoint.normalize();
@@ -186,7 +186,40 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec
     }
 
     else{
+        Vec axis = Vec(0,0,1);
 
+        // Left
+        Vec mandPoint = leftPlane->getLocalProjection(mandPolyline[0]);
+        Vec fibPoint = leftPlane->getLocalProjection(fibulaPolyline[0]);
+        mandPoint.normalize();
+        fibPoint.normalize();
+        double alpha = angle(mandPoint, fibPoint) + M_PI;
+
+        leftPlane->rotatePlane(axis, alpha);
+        ghostPlanes[0]->rotatePlane(axis, alpha);
+
+        // Ghost
+        for(int i=1; i<ghostPlanes.size()-2; i+=2){
+            mandPoint = ghostPlanes[i]->getLocalProjection(mandPolyline[i+1]);
+            fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
+            mandPoint.normalize();
+            fibPoint.normalize();
+            alpha = angle(mandPoint, fibPoint) + M_PI;
+
+            ghostPlanes[i]->rotatePlane(axis, alpha);
+            ghostPlanes[i+1]->rotatePlane(axis, alpha);
+        }
+
+        // Right
+        int lastIndex = mandPolyline.size()-1;
+        mandPoint = rightPlane->getLocalProjection(mandPolyline[lastIndex]);
+        fibPoint = rightPlane->getLocalProjection(fibulaPolyline[lastIndex]);
+        mandPoint.normalize();
+        fibPoint.normalize();
+        alpha = angle(mandPoint, fibPoint) + M_PI;
+
+        rightPlane->rotatePlane(axis, alpha);
+        ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
     }
 }
 
@@ -413,7 +446,7 @@ void ViewerFibula::recieveFrameOrientation(std::vector<Vec> orientations, std::v
         ghostPlanes[i]->setFrameFromBasis(x, y, z);
     }*/
 
-    std::cout << "Mand polyline length : " << mandPolyline.size() << std::endl;
+    /*std::cout << "Mand polyline length : " << mandPolyline.size() << std::endl;
 
     // TODO : for now this is just between the two end planes (right plane is the director)
     if(mandPolyline.size()==0) return;
@@ -442,7 +475,7 @@ void ViewerFibula::recieveFrameOrientation(std::vector<Vec> orientations, std::v
 
     else{
 
-    }
+    }*/
 
     // Polyline orientation
     /*if(mandPolyline.size()==0) return;
