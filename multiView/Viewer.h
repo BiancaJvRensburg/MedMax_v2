@@ -71,6 +71,8 @@ protected:
     void matchPlaneToFrenet(Plane* p, int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
+    Vec convertZToPlane(Plane *base, Plane *p);        // get the z axis of p in relation to base
+    std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
 
     double angle(Vec a, Vec b);
     double segmentLength(const Vec a, const Vec b);

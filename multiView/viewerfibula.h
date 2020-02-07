@@ -38,7 +38,7 @@ Q_SIGNALS:
 
 private:
     void findGhostLocations(int nb, double distance[]); // finds the location of the ghost planes + the right plane
-    void setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec> mandPolyline);
+    void setPlaneOrientations(std::vector<Vec> mandPolyline, std::vector<Vec> axes);
     void reinitialisePlanes(unsigned int nbToInit);      // Reinitialises the position and orientation of the planes
     void initSignals();
     void createPolyline();
@@ -49,8 +49,8 @@ private:
 
     int indexOffset;
     int maxOffset;
-    std::vector<Vec> angleVectors;  // the last set of orientation vectors we recieved (kept for when we want to slide the planes along the fibula)
     std::vector<Vec> mandiblePolyline;      // the last mandible polyline we recieved
+    std::vector<Vec> mandibleAxes;          // the last mandible axes we recieved
 };
 
 #endif // VIEWERFIBULA_H

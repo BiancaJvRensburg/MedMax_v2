@@ -234,7 +234,7 @@ int Curve::indexForLength(int indexS, double length){
     }
 
     double d = discreteLength(indexS, indexS+i) - length;
-    std::cout << "Difference : " << d << ",  mand length : " << length << ",  fib length : " << discreteLength(indexS, indexS+i) << ",  One lower : " << discreteLength(indexS, indexS+i-1) << std::endl;
+    //std::cout << "Difference : " << d << ",  mand length : " << length << ",  fib length : " << discreteLength(indexS, indexS+i) << ",  One lower : " << discreteLength(indexS, indexS+i-1) << std::endl;
     return indexS+i;
 }
 

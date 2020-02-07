@@ -54,7 +54,7 @@ void ViewerFibula::createPolyline(){
 // Move all planes by the same offset (right plane INCLUDED) - when the slider is dragged
 void ViewerFibula::movePlanes(int position){
 
-    std::cout << "Move planes called" << std::endl;
+    //std::cout << "Move planes called" << std::endl;
 
     int offset = static_cast<int>(static_cast<double>(position)/ static_cast<double>(maxOffset) * static_cast<double>(nbU));
 
@@ -74,7 +74,7 @@ void ViewerFibula::movePlanes(int position){
         }
     }
 
-    setPlaneOrientations(angleVectors, mandiblePolyline);
+    setPlaneOrientations(mandiblePolyline, mandibleAxes);
     mesh.setTransfer(false);
     mesh.updatePlaneIntersections();
 
@@ -91,7 +91,7 @@ void ViewerFibula::planesMoved(){
 // Add the ghost planes (this should only be called once)
 void ViewerFibula::addGhostPlanes(int nb){
 
-    std::cout << "add ghost planes fibula called " << std::endl;
+    //std::cout << "add ghost planes fibula called " << std::endl;
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
@@ -109,7 +109,7 @@ void ViewerFibula::addGhostPlanes(int nb){
         }
         ghostPlanes[i]->setPosition(curve->getCurve()[index + indexOffset]);
         ghostPlanes[i]->setOrientation(getNewOrientation(index + indexOffset));       // here
-        std::cout << "Add ghost planes fibula called " << std::endl;
+        //std::cout << "Add ghost planes fibula called " << std::endl;
     }
 
     // std::cout << "Nb ghost planes fibula : " << ghostPlanes.size() << std::endl;
@@ -120,8 +120,8 @@ void ViewerFibula::addGhostPlanes(int nb){
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(int nb, double distance[]){
     ghostLocation.clear();
-    std::cout << "finding ghost locations " << std::endl;
-    std::cout << "*******************************";
+    //std::cout << "finding ghost locations " << std::endl;
+    //std::cout << "*******************************";
     int index = curve->indexForLength(curveIndexL, distance[0]);
     ghostLocation.push_back(index);
     int nextIndex = curve->indexForLength(index, 30.0);        // 30 is a tempory security margin
@@ -139,27 +139,24 @@ void ViewerFibula::findGhostLocations(int nb, double distance[]){
 }
 
 // Re-orientate the planes to correspond to the same angles as the jaw
-void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec> mandPolyline){
-    if(angles.size()==0) return;
-    //std::cout << "Set plane orientations called " << std::endl;
-    angleVectors.clear();
-    angleVectors = angles;
+void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vector<Vec> axes){
+    if(mandPolyline.size()==0) return;
 
     // Orientate the left plane
     Vec normal = leftPlane->getNormal();
-    Quaternion s = Quaternion(-normal, angles[0]);  // -normal so it doesnt do a 180 flip
+    Quaternion s = Quaternion(-normal, mandPolyline[0]);  // -normal so it doesnt do a 180 flip
     leftPlane->setOrientation(s.normalized());
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         normal = ghostPlanes[i]->getNormal();
-        s = Quaternion(normal, angles[i]);
+        s = Quaternion(normal, mandPolyline[i]);
         ghostPlanes[i]->setOrientation(s.normalized());
     }
 
     // Orientate the right plane
     normal = rightPlane->getNormal();
-    s = Quaternion(normal, angles[angles.size()-1]);
+    s = Quaternion(normal, mandPolyline[mandPolyline.size()-1]);
     rightPlane->setOrientation(s.normalized());
 
 
@@ -203,7 +200,7 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec
         ghostPlanes[0]->rotatePlane(axis, alpha);
 
         // Ghost
-        for(int i=1; i<ghostPlanes.size()-2; i+=2){
+        for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
             mandPoint = ghostPlanes[i]->getLocalProjection(mandPolyline[i+1]);
             fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
             mandPoint.normalize();
@@ -215,7 +212,7 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> angles, std::vector<Vec
         }
 
         // Right
-        int lastIndex = mandPolyline.size()-1;
+        unsigned int lastIndex = mandPolyline.size()-1;
         mandPoint = rightPlane->getLocalProjection(mandPolyline[lastIndex]);
         fibPoint = rightPlane->getLocalProjection(fibulaPolyline[lastIndex]);
         mandPoint.normalize();
@@ -239,7 +236,7 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 }
 
 // Add ghost planes that correspond to the ghost planes in the jaw
-void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> angles, std::vector<Vec> mandPolyline){
+void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     // if no ghost planes were actually recieved
     if(nb==0){
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
@@ -257,9 +254,11 @@ void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Ve
     addGhostPlanes(2*nb);
 
     // Once everything is initialised, adjust the rotation
-    setPlaneOrientations(angles, mandPolyline);
-    mandPolyline.clear();
+    setPlaneOrientations(mandPolyline, axes);
+    mandiblePolyline.clear();
     mandiblePolyline = mandPolyline;
+    mandibleAxes.clear();
+    mandibleAxes = axes;
 
     // If its cut and the number of planes has changed
     if(mesh.getIsCut() && nb!=oldNb){
@@ -272,13 +271,13 @@ void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Ve
 }
 
 // When we want to move the right plane (the right plane is moved in the jaw)
-void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles, std::vector<Vec> mandPolyline){
+void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     int newIndex;
 
     //if(isGhostPlanes) return;
 
-    std::cout << "move plane distance fibula called " << std::endl;
-    std::cout << "*******************************";
+    //std::cout << "move plane distance fibula called " << std::endl;
+    //std::cout << "*******************************";
     if(ghostPlanes.size()==0) newIndex = curve->indexForLength(curveIndexL, distance);
     else newIndex = curve->indexForLength(ghostLocation[ghostPlanes.size()-1], distance);
 
@@ -288,19 +287,18 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> angles, s
     rightPlane->setPosition(curve->getCurve()[curveIndexR + indexOffset]);
     //rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));   // initial orientation
 
-    angleVectors.clear();
-    angleVectors = angles;
-
-    setPlaneOrientations(angles, mandPolyline);
+    setPlaneOrientations(mandPolyline, axes);
     mandiblePolyline.clear();
     mandiblePolyline = mandPolyline;
+    mandibleAxes.clear();
+    mandibleAxes = axes;
 
     mesh.updatePlaneIntersections(rightPlane);
     update();
 }
 
 // One of the ghost planes is moved in the jaw
-void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec> angles, std::vector<Vec> mandPolyline){
+void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(nb==0) return;
 
     findGhostLocations(nb, distances);
@@ -325,12 +323,11 @@ void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec>
     //rightPlane->setOrientation(getNewOrientation(curveIndexR + indexOffset));
     // matchPlaneToFrenet(rightPlane, curveIndexR+indexOffset);
 
-    angleVectors.clear();
-    angleVectors = angles;
-
-    setPlaneOrientations(angles, mandPolyline);
+    setPlaneOrientations(mandPolyline, axes);
     mandiblePolyline.clear();
     mandiblePolyline = mandPolyline;
+    mandibleAxes.clear();
+    mandibleAxes = axes;
 
     mesh.updatePlaneIntersections(rightPlane);
 
@@ -373,7 +370,7 @@ void ViewerFibula::initCurve(){
 
     curve = new Curve(nbCP, control);
 
-    nbU = 1600;
+    nbU = 800;
 
     int nbSeg = nbCP-3;
     nbU -= nbU%nbSeg;

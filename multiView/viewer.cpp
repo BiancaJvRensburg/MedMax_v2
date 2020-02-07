@@ -244,11 +244,11 @@ void Viewer::initGhostPlanes(){
 
     int maxIndicies[nbGhostPlanes];
 
-    std::cout << "Searching " << std::endl;
+    //std::cout << "Searching " << std::endl;
     const int startI = curve->indexForLength(curveIndexL, constraint);
     const int endI = curve->indexForLength(curveIndexR, -constraint);
     const int searchArea = endI - startI;
-    std::cout << "Done searching " << std::endl;
+    //std::cout << "Done searching " << std::endl;
 
     // if there's enough space for a plane
     if(searchArea > 0){
@@ -304,27 +304,24 @@ void Viewer::initGhostPlanes(){
 
         for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);
 
-        // Update the fibula planes and polyline
-        std::vector<Vec> angles = updatePolyline();
-
-       // Q_EMIT haltMeshUpdate();
-
          // Send the info to the fibula
         double distance;
         if(finalNb > 0) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
         std::vector<Vec> poly = updatePolyline();
-        Q_EMIT leftPosChanged(distance, angles, poly);
+        std::vector<Vec> axes = getReferenceAxes();
+        Q_EMIT leftPosChanged(distance, poly, axes);
         if(finalNb > 0) distance = curve->discreteLength(curveIndexR, ghostLocation[finalNb-1]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
-        Q_EMIT rightPosChanged(distance, angles, poly);
+        Q_EMIT rightPosChanged(distance, poly, axes);
 
        // Q_EMIT continueMeshUpdate();
 
     }
     else{
-        std::vector<Vec> angles = updatePolyline();
-        Q_EMIT ghostPlanesAdded(0,0,angles, angles);
+        std::vector<Vec> poly = updatePolyline();
+        std::vector<Vec> axes = getReferenceAxes();
+        Q_EMIT ghostPlanesAdded(0,0, poly, axes);
     }
 }
 
@@ -364,7 +361,7 @@ void Viewer::moveLeftPlane(int position){
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     int index = static_cast<int>(percentage * static_cast<double>(nbU) );
-    std::cout << "Moving plane " << std::endl;
+    //std::cout << "Moving plane " << std::endl;
     if( (curve->indexForLength(curveIndexR, -constraint) > index)){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
 
@@ -387,9 +384,6 @@ void Viewer::moveLeftPlane(int position){
 
     double distance;
 
-    // Get the info and send it to the fibula
-    std::vector<Vec> angles = updatePolyline();
-
     update();
 
     if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
@@ -398,7 +392,10 @@ void Viewer::moveLeftPlane(int position){
         distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
     }
 
-    Q_EMIT leftPosChanged(distance, angles, updatePolyline());
+    std::vector<Vec> poly = updatePolyline();
+    std::vector<Vec> axes = getReferenceAxes();
+
+    Q_EMIT leftPosChanged(distance, poly, axes);
     Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
 }
 
@@ -436,7 +433,7 @@ void Viewer::moveRightPlane(int position){
 
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     int index = nbU - 1 - static_cast<int>(percentage * static_cast<double>(nbU) );
-    std::cout << "Moving right plane " << std::endl;
+    //std::cout << "Moving right plane " << std::endl;
     if( index > curve->indexForLength(curveIndexL, constraint)){        // its within the correct boundaries
         curveIndexR = index;
 
@@ -456,8 +453,6 @@ void Viewer::moveRightPlane(int position){
 
     double distance;
 
-    std::vector<Vec> angles = updatePolyline();
-
     if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
     else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
     else{
@@ -466,7 +461,10 @@ void Viewer::moveRightPlane(int position){
 
     update();
 
-    Q_EMIT rightPosChanged(distance, angles, updatePolyline());
+    std::vector<Vec> poly = updatePolyline();
+    std::vector<Vec> axes = getReferenceAxes();
+
+    Q_EMIT rightPosChanged(distance, poly, axes);
     Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
 
@@ -579,9 +577,10 @@ void Viewer::addGhostPlanes(int nb){
 
     distances[nb] = curve->discreteLength(ghostLocation[static_cast<unsigned int>(nb-1)], curveIndexR);
 
-    std::vector<Vec> angles = updatePolyline();
+    std::vector<Vec> poly = updatePolyline();
+    std::vector<Vec> axes = getReferenceAxes();
 
-    Q_EMIT ghostPlanesAdded(nb, distances, angles, updatePolyline());
+    Q_EMIT ghostPlanesAdded(nb, distances, poly, axes);
 }
 
 void Viewer::ghostPlaneMoved(){
@@ -595,9 +594,9 @@ void Viewer::ghostPlaneMoved(){
 
     distances[nb] = segmentLength(rightPlane->getPosition(), ghostPlanes[nb-1]->getCurvePoint().getPoint());
 
-    std::vector<Vec> angles = updatePolyline();
-
-    Q_EMIT ghostPlanesTranslated(nb, distances, angles, updatePolyline());
+    std::vector<Vec> poly = updatePolyline();
+    std::vector<Vec> axes = getReferenceAxes();
+    Q_EMIT ghostPlanesTranslated(nb, distances, poly, axes);
 }
 
 void Viewer::updateCamera(const Vec3Df & center, float radius){
@@ -696,3 +695,27 @@ std::vector<Vec> Viewer::getPlaneFrames(){
     return frames;
 }
 
+Vec Viewer::convertZToPlane(Plane *base, Plane *p){
+    Vec  a = p->getMeshVectorFromLocal(Vec(0,0,1));  // get the z vector of p in the world space
+    return base->getLocalCoordinates(a);    // get it in terms of base
+}
+
+
+std::vector<Vec> Viewer::getReferenceAxes(){
+    std::vector<Vec> v;
+
+    if(ghostPlanes.size()==0){
+        v.push_back(convertZToPlane(rightPlane, leftPlane));
+    }
+    else{
+        v.push_back(convertZToPlane(leftPlane, ghostPlanes[0]));
+
+        for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
+            v.push_back(convertZToPlane(ghostPlanes[i], ghostPlanes[i+1]));
+        }
+
+        unsigned int lastIndex = ghostPlanes.size()-1;
+        v.push_back(convertZToPlane(rightPlane, ghostPlanes[lastIndex]));
+    }
+    return v;
+}
