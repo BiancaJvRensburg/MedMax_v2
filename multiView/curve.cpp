@@ -233,7 +233,7 @@ int Curve::indexForLength(int indexS, double length){
         while(indexS+i > 0 && discreteLength(indexS, indexS+i) < abs(length)) i--;
     }
 
-    double d = discreteLength(indexS, indexS+i) - length;
+    //double d = discreteLength(indexS, indexS+i) - length;
     //std::cout << "Difference : " << d << ",  mand length : " << length << ",  fib length : " << discreteLength(indexS, indexS+i) << ",  One lower : " << discreteLength(indexS, indexS+i-1) << std::endl;
     return indexS+i;
 }

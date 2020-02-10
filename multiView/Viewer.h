@@ -33,6 +33,7 @@ public Q_SLOTS:
     void onRightSliderReleased();
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);
     void toUpdate();
+    void getAxes();
 
 Q_SIGNALS:
     void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
@@ -53,7 +54,7 @@ Q_SIGNALS:
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
     void ghostPlaneMovementEnd();
 
-    void tempTest(std::vector<Vec>);
+    void tempTest(std::vector<Vec>, std::vector<Vec>);
 
 protected:
     void draw();
@@ -73,7 +74,7 @@ protected:
     void matchPlaneToFrenet(Plane* p, int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
-    Vec convertZToPlane(Plane *base, Plane *p);        // get the z axis of p in relation to base
+    Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
 
     double angle(Vec a, Vec b);

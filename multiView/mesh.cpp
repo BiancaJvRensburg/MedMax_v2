@@ -560,7 +560,7 @@ void Mesh::draw()
 
     glBegin (GL_TRIANGLES);
 
-    if(!isCut){
+    /*if(!isCut){
         for(unsigned int i = 0 ; i < triangles.size(); i++){
             glTriangle(i);
         }
@@ -568,12 +568,12 @@ void Mesh::draw()
     else{
         for(unsigned int i = 0 ; i < trianglesCut.size(); i++){
             glTriangleSmooth(trianglesCut[i]);
-        }
+        }*/
 
         for(unsigned int i=0; i<fibInMandTriangles.size(); i++){
             glTriangleFibInMand(i);
         }
-    }
+    //}
 
     glEnd();
 

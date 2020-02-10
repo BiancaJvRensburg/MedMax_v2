@@ -17,7 +17,7 @@ void ViewerFibula::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Ve
 
     Q_EMIT sendToManible(planes, verticies, triangles, polylineInPlanes, colours, normals, nbColours);
 
-    polyline.clear();       // to stop it from being drawn
+    //polyline.clear();       // to stop it from being drawn
 }
 
 std::vector<Vec> ViewerFibula::getPolyline(){
@@ -142,9 +142,11 @@ void ViewerFibula::findGhostLocations(int nb, double distance[]){
 void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(mandPolyline.size()==0) return;
 
+    // This step has to be done for at least the director in order to give it a base from which to rotate
+
     // Orientate the left plane
-    Vec normal = leftPlane->getNormal();
-    Quaternion s = Quaternion(-normal, mandPolyline[0]);  // -normal so it doesnt do a 180 flip
+    Vec normal = leftPlane->getNormal();        // The normal defines the polyline, so move our polyline to the mandible polyline
+    Quaternion s = Quaternion(-normal, mandPolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
     leftPlane->setOrientation(s.normalized());
 
     // Orientate the ghost planes
@@ -159,30 +161,70 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vect
     s = Quaternion(normal, mandPolyline[mandPolyline.size()-1]);
     rightPlane->setOrientation(s.normalized());
 
+    Q_EMIT requestAxes();
+}
 
+void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<Vec> mandPolyline){
     // Match the polylines
 
-    if(mandPolyline.size()==0) return;
-
-    std::vector<Vec> fibulaPolyline = getPolyline();
-
     if(ghostPlanes.size()==0){
+        // Rotate the end plane to match the mandibule
+
+        /*Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);
+        //x = leftPlane->getLocalVector(x);
+        x.normalize();
+
+        //std::cout << "x : " << x.x << " " << x.y << " " << x.z << std::endl;
+
+        Vec y = rightPlane->getMeshVectorFromLocal(axes[1]);
+        //y = leftPlane->getLocalVector(y);
+        y.normalize();
+
+        //std::cout << "y : " << y.x << " " << y.y << " " << y.z << std::endl;
+
+        Vec z = rightPlane->getMeshVectorFromLocal(axes[2]);
+        //z = leftPlane->getLocalVector(z);
+        z.normalize();
+
+        //std::cout << "z : " << z.x << " " << z.y << " " << z.z << std::endl;
+
+        leftPlane->setFrameFromBasis(x,y,z);*/
+
+        Vec zPlaneAxis = Vec(0,0,1);
+        std::vector<Vec> fibulaPolyline = getPolyline();
+        zPlaneAxis = leftPlane->getMeshVectorFromLocal(zPlaneAxis);     // convert to world coordinates
+        zPlaneAxis.normalize();
+
+        Vec rotationAxis = leftPlane->getLocalVector(fibulaPolyline[0]);   // get the position in the fibula space (leave it in world coordinates)
+        rotationAxis.normalize();
+        //std::cout << "Rotation axis : " << rotationAxis.x << " " << rotationAxis.y << " " << rotationAxis.z << std::endl;
+
+        Vec zPlaneGoal = axes[0];       // our objective
+        zPlaneGoal = rightPlane->getMeshVectorFromLocal(zPlaneGoal);        // convert to world coordinates
+        zPlaneGoal.normalize();
+
+        // Project onto a theoretical plane defined by the polyline
+        Vec projZ = zPlaneAxis - rotationAxis * (zPlaneAxis * rotationAxis);
+        Vec projGoal = zPlaneGoal - rotationAxis * (zPlaneGoal * rotationAxis);
+        projZ.normalize();
+        projGoal.normalize();
+
+        double theta = angle(projZ, projGoal);      // get the angle between the two points projected on the plane
+        theta += M_PI;
+
+        leftPlane->rotatePlane(rotationAxis, theta);
+
         // Project the mand and the fib on the left plane
+
+        fibulaPolyline = getPolyline();
         Vec mandPoint = rightPlane->getLocalProjection(mandPolyline[1]);
         Vec fibPoint = rightPlane->getLocalProjection(fibulaPolyline[1]);
-        // normalise them so they have the same length
-        mandPoint.normalize();
+        mandPoint.normalize();  // normalise them so they have the same length
         fibPoint.normalize();
-        // Get the angle between the two
-        double alpha = angle(mandPoint, fibPoint);
-        //std::cout << "Angle : " << alpha << std::endl;
-        // Rotate BOTH planes
-        alpha += M_PI;
-        //std::cout << " ROTATING" << std::endl;
+
+        double alpha = angle(mandPoint, fibPoint)+ M_PI;    // Get the angle between the two
         Vec axis = Vec(0,0,1);
-        //double r = 0.25;
-        //alpha = (M_PI*2.0)*r + M_PI;
-        leftPlane->rotatePlane(axis, alpha);
+        //leftPlane->rotatePlane(axis, alpha);
         rightPlane->rotatePlane(axis, alpha);
 
 
@@ -190,6 +232,7 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vect
 
     else{
         Vec axis = Vec(0,0,1);
+        std::vector<Vec> fibulaPolyline = getPolyline();
 
         // Left
         Vec mandPoint = leftPlane->getLocalProjection(mandPolyline[0]);
@@ -224,85 +267,6 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vect
         rightPlane->rotatePlane(axis, alpha);
         ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
     }
-}
-
-void ViewerFibula::recieveTest(std::vector<Vec> axes){
-    if(ghostPlanes.size()!=0) return;
-
-    Vec rotationAxis = Vec(0,0,1);
-
-    Vec xPlaneAxis = Vec(1,0,0);
-
-    Vec xPlaneGoal = axes[0];       // our objective
-    xPlaneGoal = rightPlane->getMeshVectorFromLocal(xPlaneGoal);        // convert to world coordinates
-    xPlaneGoal = leftPlane->getLocalVector(xPlaneGoal);         // convert to left plane coordinates
-    xPlaneGoal.normalize();
-
-    double theta = angle(xPlaneAxis, xPlaneGoal) + M_PI;
-
-    leftPlane->rotatePlane(rotationAxis, theta);
-
-    /*Vec zPlaneAxis = Vec(0,0,1);
-    zPlaneAxis = leftPlane->getMeshVectorFromLocal(zPlaneAxis);     // convert to world coordinates
-
-    Vec rotationAxis = leftPlane->getPosition() - rightPlane->getPosition();   // get the position in the fibula space (leave it in world coordinates)
-    rotationAxis.normalize();
-
-    Vec zPlaneGoal = axes[0];       // our objective
-    zPlaneGoal = rightPlane->getMeshVectorFromLocal(zPlaneGoal);        // convert to world coordinates
-    zPlaneGoal.normalize();
-
-    // Project onto a theoretical plane defined by the polyline
-    Vec projZ = zPlaneAxis - rotationAxis * (zPlaneAxis * rotationAxis);
-    Vec projGoal = zPlaneGoal - rotationAxis * (zPlaneGoal * rotationAxis);
-    projZ.normalize();
-    projGoal.normalize();
-    double theta = angle(projZ, projGoal);      // get the angle between the two points projected on the plane
-
-    //rotationAxis = leftPlane->getLocalVector(rotationAxis);         // get it in terms of the left plane (so left is at 0,0,0)
-    //rotationAxis.normalize();
-
-    std::cout << "Angle : " << (theta) * 180.0 / M_PI << std::endl;
-    std::cout << "Polyline : " << rotationAxis.x << " " << rotationAxis.y  << " " << rotationAxis.z << std::endl;
-
-    theta += M_PI;
-
-    leftPlane->rotatePlane(rotationAxis, theta);*/
-
-
-
-    /*Vec axis = Vec(0,0,1);
-
-    if(ghostPlanes.size()!=0) return;
-    // Rotate the plane on the polyline axis to match z
-    Vec matchAxis = axes[0];
-    matchAxis.normalize();
-    Vec worldDirectionZ = rightPlane->getMeshVectorFromLocal(matchAxis);    // convert from right plane to the world
-    worldDirectionZ.normalize();
-    Vec fibDirectionZ = leftPlane->getLocalVector(worldDirectionZ);    // convert from world to left fibPlane
-    fibDirectionZ.normalize();
-    std::cout << "Where the z axis should be : " << fibDirectionZ.x << " " << fibDirectionZ.y  << " " << fibDirectionZ.z << std::endl;
-    // get the angle to rotate the z axis
-    Vec rotationAxe = rightPlane->getPosition();
-    rotationAxe.normalize();
-
-    // NEED TO CONVERT THEM TO WORLD COORDINATES
-    axis = leftPlane->getMeshVectorFromLocal(axis);
-    fibDirectionZ = leftPlane->getMeshVectorFromLocal(fibDirectionZ);
-    axis.normalize();
-    fibDirectionZ.normalize();
-
-    Vec projAxis = axis - rotationAxe * (axis * rotationAxe);       // projection of the z axis of the plane projected onto a plane defined by the normal of the polyline
-    Vec projMatch = fibDirectionZ - rotationAxe * (fibDirectionZ * rotationAxe);
-    projAxis.normalize();
-    projMatch.normalize();
-    double theta = angle(projAxis, projMatch);
-    std::cout << "Angle : " << (theta) * 180.0 / M_PI << std::endl;
-    //std::cout << "Polyline : " << rotationAxe.x << " " << rotationAxe.y  << " " << rotationAxe.z << std::endl;
-    // rotate around its OWN polyline
-   // theta = M_PI / 2.0;
-    theta += M_PI;
-    leftPlane->rotatePlane(rotationAxe, theta);*/
 }
 
 void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z){
@@ -451,7 +415,7 @@ void ViewerFibula::initCurve(){
 
     curve = new Curve(nbCP, control);
 
-    nbU = 800;
+    nbU = 1500;
 
     int nbSeg = nbCP-3;
     nbU -= nbU%nbSeg;

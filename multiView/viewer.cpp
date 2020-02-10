@@ -326,7 +326,7 @@ void Viewer::initGhostPlanes(){
 }
 
 void Viewer::cutMesh(){
-    Q_EMIT tempTest(getReferenceAxes());
+   // Q_EMIT tempTest(getReferenceAxes());
     // Get the number of ghost planes from the total number of pieces dialog
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
@@ -696,27 +696,33 @@ std::vector<Vec> Viewer::getPlaneFrames(){
     return frames;
 }
 
-Vec Viewer::convertZToPlane(Plane *base, Plane *p){
-    Vec  a = p->getMeshVectorFromLocal(Vec(1,0,0));  // get the z vector of p in the world space
-    return base->getLocalCoordinates(a);    // get it in terms of base
+Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
+    Vec  a = p->getMeshVectorFromLocal(axis);  // get the z vector of p in the world space
+    return (base->getLocalVector(a) - p->getPosition());    // get it in terms of base
 }
 
+void Viewer::getAxes(){
+    Q_EMIT tempTest(getReferenceAxes(), updatePolyline());
+}
 
 std::vector<Vec> Viewer::getReferenceAxes(){
     std::vector<Vec> v;
+    Vec axis = Vec(0,0,1);
 
     if(ghostPlanes.size()==0){
-        v.push_back(convertZToPlane(rightPlane, leftPlane));
+        //v.push_back(convertToPlane(rightPlane, leftPlane, Vec(1,0,0)));
+        //v.push_back(convertToPlane(rightPlane, leftPlane, Vec(0,1,0)));
+        v.push_back(convertToPlane(rightPlane, leftPlane, axis));
     }
     else{
-        v.push_back(convertZToPlane(leftPlane, ghostPlanes[0]));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axis));
 
         for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
-            v.push_back(convertZToPlane(ghostPlanes[i], ghostPlanes[i+1]));
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axis));
         }
 
         unsigned int lastIndex = ghostPlanes.size()-1;
-        v.push_back(convertZToPlane(rightPlane, ghostPlanes[lastIndex]));
+        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axis));
     }
     return v;
 }

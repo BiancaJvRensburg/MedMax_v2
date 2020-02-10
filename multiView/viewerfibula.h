@@ -30,13 +30,14 @@ public Q_SLOTS:
     void handleMovementStart();
     void handleMovementEnd();
 
-    void recieveTest(std::vector<Vec>);
+    void recieveTest(std::vector<Vec>, std::vector<Vec>);
 
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
 Q_SIGNALS:
     void setPlaneSliderValue(int);
     void sendToManible(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);
+    void requestAxes();
 
 private:
     void findGhostLocations(int nb, double distance[]); // finds the location of the ghost planes + the right plane
