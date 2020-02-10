@@ -698,11 +698,13 @@ std::vector<Vec> Viewer::getPlaneFrames(){
 
 Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
     Vec  a = p->getMeshVectorFromLocal(axis);  // get the z vector of p in the world space
-    return (base->getLocalVector(a) - p->getPosition());    // get it in terms of base
+    Vec b = p->getPosition() - a;
+    return base->getLocalVector(b);    // get it in terms of base
 }
 
 void Viewer::getAxes(){
     Q_EMIT tempTest(getReferenceAxes(), updatePolyline());
+    //std::cout << "Angle mandible : " << angle(leftPlane->getMeshVectorFromLocal(Vec(0,0,1)), rightPlane->getMeshVectorFromLocal(Vec(0,0,1))) << std::endl;
 }
 
 std::vector<Vec> Viewer::getReferenceAxes(){
