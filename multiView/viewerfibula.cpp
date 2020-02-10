@@ -184,6 +184,8 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vect
         //alpha = (M_PI*2.0)*r + M_PI;
         leftPlane->rotatePlane(axis, alpha);
         rightPlane->rotatePlane(axis, alpha);
+
+
     }
 
     else{
@@ -222,6 +224,85 @@ void ViewerFibula::setPlaneOrientations(std::vector<Vec> mandPolyline, std::vect
         rightPlane->rotatePlane(axis, alpha);
         ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
     }
+}
+
+void ViewerFibula::recieveTest(std::vector<Vec> axes){
+    if(ghostPlanes.size()!=0) return;
+
+    Vec rotationAxis = Vec(0,0,1);
+
+    Vec xPlaneAxis = Vec(1,0,0);
+
+    Vec xPlaneGoal = axes[0];       // our objective
+    xPlaneGoal = rightPlane->getMeshVectorFromLocal(xPlaneGoal);        // convert to world coordinates
+    xPlaneGoal = leftPlane->getLocalVector(xPlaneGoal);         // convert to left plane coordinates
+    xPlaneGoal.normalize();
+
+    double theta = angle(xPlaneAxis, xPlaneGoal) + M_PI;
+
+    leftPlane->rotatePlane(rotationAxis, theta);
+
+    /*Vec zPlaneAxis = Vec(0,0,1);
+    zPlaneAxis = leftPlane->getMeshVectorFromLocal(zPlaneAxis);     // convert to world coordinates
+
+    Vec rotationAxis = leftPlane->getPosition() - rightPlane->getPosition();   // get the position in the fibula space (leave it in world coordinates)
+    rotationAxis.normalize();
+
+    Vec zPlaneGoal = axes[0];       // our objective
+    zPlaneGoal = rightPlane->getMeshVectorFromLocal(zPlaneGoal);        // convert to world coordinates
+    zPlaneGoal.normalize();
+
+    // Project onto a theoretical plane defined by the polyline
+    Vec projZ = zPlaneAxis - rotationAxis * (zPlaneAxis * rotationAxis);
+    Vec projGoal = zPlaneGoal - rotationAxis * (zPlaneGoal * rotationAxis);
+    projZ.normalize();
+    projGoal.normalize();
+    double theta = angle(projZ, projGoal);      // get the angle between the two points projected on the plane
+
+    //rotationAxis = leftPlane->getLocalVector(rotationAxis);         // get it in terms of the left plane (so left is at 0,0,0)
+    //rotationAxis.normalize();
+
+    std::cout << "Angle : " << (theta) * 180.0 / M_PI << std::endl;
+    std::cout << "Polyline : " << rotationAxis.x << " " << rotationAxis.y  << " " << rotationAxis.z << std::endl;
+
+    theta += M_PI;
+
+    leftPlane->rotatePlane(rotationAxis, theta);*/
+
+
+
+    /*Vec axis = Vec(0,0,1);
+
+    if(ghostPlanes.size()!=0) return;
+    // Rotate the plane on the polyline axis to match z
+    Vec matchAxis = axes[0];
+    matchAxis.normalize();
+    Vec worldDirectionZ = rightPlane->getMeshVectorFromLocal(matchAxis);    // convert from right plane to the world
+    worldDirectionZ.normalize();
+    Vec fibDirectionZ = leftPlane->getLocalVector(worldDirectionZ);    // convert from world to left fibPlane
+    fibDirectionZ.normalize();
+    std::cout << "Where the z axis should be : " << fibDirectionZ.x << " " << fibDirectionZ.y  << " " << fibDirectionZ.z << std::endl;
+    // get the angle to rotate the z axis
+    Vec rotationAxe = rightPlane->getPosition();
+    rotationAxe.normalize();
+
+    // NEED TO CONVERT THEM TO WORLD COORDINATES
+    axis = leftPlane->getMeshVectorFromLocal(axis);
+    fibDirectionZ = leftPlane->getMeshVectorFromLocal(fibDirectionZ);
+    axis.normalize();
+    fibDirectionZ.normalize();
+
+    Vec projAxis = axis - rotationAxe * (axis * rotationAxe);       // projection of the z axis of the plane projected onto a plane defined by the normal of the polyline
+    Vec projMatch = fibDirectionZ - rotationAxe * (fibDirectionZ * rotationAxe);
+    projAxis.normalize();
+    projMatch.normalize();
+    double theta = angle(projAxis, projMatch);
+    std::cout << "Angle : " << (theta) * 180.0 / M_PI << std::endl;
+    //std::cout << "Polyline : " << rotationAxe.x << " " << rotationAxe.y  << " " << rotationAxe.z << std::endl;
+    // rotate around its OWN polyline
+   // theta = M_PI / 2.0;
+    theta += M_PI;
+    leftPlane->rotatePlane(rotationAxe, theta);*/
 }
 
 void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z){

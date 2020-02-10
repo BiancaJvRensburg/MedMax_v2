@@ -53,6 +53,8 @@ Q_SIGNALS:
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
     void ghostPlaneMovementEnd();
 
+    void tempTest(std::vector<Vec>);
+
 protected:
     void draw();
     std::vector<Vec> updatePolyline();   // returns the new angles between the polyline and the planes

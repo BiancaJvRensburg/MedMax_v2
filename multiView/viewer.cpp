@@ -326,6 +326,7 @@ void Viewer::initGhostPlanes(){
 }
 
 void Viewer::cutMesh(){
+    Q_EMIT tempTest(getReferenceAxes());
     // Get the number of ghost planes from the total number of pieces dialog
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
@@ -696,7 +697,7 @@ std::vector<Vec> Viewer::getPlaneFrames(){
 }
 
 Vec Viewer::convertZToPlane(Plane *base, Plane *p){
-    Vec  a = p->getMeshVectorFromLocal(Vec(0,0,1));  // get the z vector of p in the world space
+    Vec  a = p->getMeshVectorFromLocal(Vec(1,0,0));  // get the z vector of p in the world space
     return base->getLocalCoordinates(a);    // get it in terms of base
 }
 
