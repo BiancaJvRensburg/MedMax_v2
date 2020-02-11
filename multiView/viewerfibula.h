@@ -18,8 +18,8 @@ public Q_SLOTS:
     void movePlanes(int);
     void planesMoved();
     void movePlaneDistance(double, std::vector<Vec>, std::vector<Vec>);
-    void ghostPlanesRecieved(int, double[], std::vector<Vec>, std::vector<Vec>);
-    void middlePlaneMoved(int, double[], std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesRecieved(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
+    void middlePlaneMoved(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
 
     void initCurve();
     void cutMesh();

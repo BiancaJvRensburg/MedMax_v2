@@ -1,12 +1,10 @@
 #include "viewer.h"
 #include "Triangle.h"
 #include "Vec3D.h"
-//#include "controlpoint.h"
 #include <QGLViewer/manipulatedFrame.h>
 
-Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(parent) {
-    // Change the camera.
-    Camera *c = camera();
+Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(parent) { 
+    Camera *c = camera();       // switch the cameras
     setCamera(cam);
     delete c;
 
@@ -23,33 +21,26 @@ void Viewer::draw() {
 
     glPushMatrix();
     glMultMatrixd(manipulatedFrame()->matrix());
-    //drawAxis(20.0);
 
     glColor3f(1.,1.,1.);
     mesh.draw();
-    if(isDrawMesh) mesh.drawCut();
+    if(isDrawMesh) mesh.drawCut();      // draw the cut versions
 
     if(isGhostPlanes && isGhostActive) drawPolyline();
 
-    //glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-
+    // draw the planes
     glColor3f(1.0, 0, 0);
     leftPlane->draw();
 
     glColor3f(0, 1.0, 0);
     rightPlane->draw();
 
-    for(unsigned int i=0; i<ghostPlanes.size(); i++){
+    for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
         glColor3f(0,0,1.0);
         ghostPlanes[i]->draw();
     }
 
-    //glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-
     curve->draw();
-
-     // curve->drawControl(); // We want to visualise this at all times
-    // curve->drawTangent(curveIndexL);
 
     glPopMatrix();
 }
@@ -64,13 +55,12 @@ std::vector<Vec> Viewer::updatePolyline(){
         return angles;   // return an empty vector
     }*/
 
-    polyline.clear();
+    polyline.clear();       // The vector of the points of the polyline (the locations of the planes)
 
     Vec p = leftPlane->getPosition();
     polyline.push_back(p);
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        //if(ghostPlanes[i].getCurvePoint()==nullptr) continue;
         p = Vec(ghostPlanes[i]->getCurvePoint().getX(), ghostPlanes[i]->getCurvePoint().getY(), ghostPlanes[i]->getCurvePoint().getZ());
         polyline.push_back(p);
     }
@@ -81,6 +71,24 @@ std::vector<Vec> Viewer::updatePolyline(){
     return getPolylinePlaneAngles();
 }
 
+// Get each polyline in the coordinates of its plane
+std::vector<Vec> Viewer::getPolylinePlaneAngles(){
+    std::vector<Vec> angles;        // There are always 2 intersections for each polyline segment
+
+    if(polyline.size()==0) return angles;
+
+    angles.push_back(leftPlane->getPolylineVector(polyline[1]));
+
+    for(unsigned int i=1; i<polyline.size()-1; i++){
+        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i-1]));
+        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i+1]));
+    }
+
+    angles.push_back(rightPlane->getPolylineVector(polyline[polyline.size()-2]));
+
+    return angles;
+}
+
 void Viewer::drawPolyline(){
     glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
@@ -89,12 +97,9 @@ void Viewer::drawPolyline(){
 
     glBegin(GL_LINE_STRIP);
 
-        for(unsigned int i=0; i<polyline.size(); i++){
-            // Looks at the previous
-            // if the distance is greater than the constraint : blue
-            if(i==0 || segmentLength(polyline[i], polyline[i-1]) > constraint) glColor3f(0.0, 0.0, 1.0);
-            // if it violates the constraint, then red
-            else glColor3f(1.0, 0.0, 0.0);
+        for(unsigned int i=0; i<polyline.size(); i++){      // Looks at the previous
+            if(i==0 || segmentLength(polyline[i], polyline[i-1]) > constraint) glColor3f(0.0, 0.0, 1.0);        // if the distance is greater than the constraint : blue
+            else glColor3f(1.0, 0.0, 0.0);      // if it violates the constraint, then red
             glVertex3f(static_cast<float>(polyline[i].x), static_cast<float>(polyline[i].y), static_cast<float>(polyline[i].z));
         }
 
@@ -113,23 +118,16 @@ void Viewer::toUpdate(){
 
 void Viewer::init() {
   setMouseTracking(true);
-
   restoreStateFromFile();
 
   viewerFrame = new ManipulatedFrame();
-
   setManipulatedFrame(viewerFrame);
-
   setAxisIsDrawn(false);
 
   initCurve();
 
-  // Set up gl settings
   glEnable(GL_LIGHTING);
-
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-  //glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-
   glLineWidth (1.0f);
 
   initSignals();
@@ -148,44 +146,20 @@ void Viewer::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Vec> ver
      * n : ghostPlane[n-2]
     */
 
-    // Rotate the planes to match the fibula (just the extremities for now)
-   /* Vec mandPolylineSegment;
-    Vec axis = Vec(0,0,1);
-    Quaternion s;
-    double anglePoly;
-
-    updatePolyline();
-
-    bool isRotated[planes.size()];
-    for(int i=0; i<planes.size(); i++) isRotated[i]=false;*/
-
     // For each vertex and normal, convert it from the corresponding plane's coordinates to the mesh coordinates
     for(unsigned int i=0; i<verticies.size(); i++){
         if(planes[i]==0){
-            //Rotate the plane if it isn't already
-            /*if(!isRotated[planes[i]]){
-                leftPlane->constrainZRotation();
-                leftPlane->setOrientation(Quaternion(fibulaPolyline[0], polyline[1]));
-                isRotated[planes[i]] = true;
-                leftPlane->freeZRotation();
-            }*/
             normals[i] = leftPlane->getMeshVectorFromLocal(normals[i]);
             verticies[i] = leftPlane->getMeshCoordinatesFromLocal(verticies[i]);
         }
         else if(planes[i]==1){
-            /*if(!isRotated[planes[i]]){
-                rightPlane->constrainZRotation();
-                rightPlane->setOrientation(Quaternion(fibulaPolyline[fibulaPolyline.size()-2], polyline[polyline.size()-2]));
-                isRotated[planes[i]] = true;
-                rightPlane->freeZRotation();
-            }*/
             normals[i] = rightPlane->getMeshVectorFromLocal(normals[i]);
             verticies[i] = rightPlane->getMeshCoordinatesFromLocal(verticies[i]);
         }
         else {
             int mandPlane = (planes[i]+2) / 2 - 2;
-            normals[i] = ghostPlanes[mandPlane]->getMeshVectorFromLocal(normals[i]);
-            verticies[i] = ghostPlanes[mandPlane]->getMeshCoordinatesFromLocal(verticies[i]);
+            normals[i] = ghostPlanes[static_cast<unsigned int>(mandPlane)]->getMeshVectorFromLocal(normals[i]);
+            verticies[i] = ghostPlanes[static_cast<unsigned int>(mandPlane)]->getMeshCoordinatesFromLocal(verticies[i]);
         }
     }
 
@@ -195,14 +169,13 @@ void Viewer::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Vec> ver
 QString Viewer::helpString() const {
   QString text("<h2>H e l p  B o x</h2>");
   text += "This is the help text";
-
   return text;
 }
 
-void swap(int* a, int* b){
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+void swap(int& a, int& b){
+    int temp = a;
+    a = b;
+    b = temp;
 }
 
 int Viewer::partition(int sorted[], int start, int end){
@@ -215,10 +188,10 @@ int Viewer::partition(int sorted[], int start, int end){
 
         if(tangentAngleA >= tangentAngleP){
             index++;
-            swap(&sorted[index], &sorted[i]);
+            swap(sorted[index], sorted[i]);
         }
     }
-    swap(&sorted[index+1], &sorted[end]);
+    swap(sorted[index+1], sorted[end]);
     return index+1;
 }
 
@@ -231,36 +204,29 @@ void Viewer::quicksort(int sorted[], int start, int end){
 }
 
 void Viewer::drawMesh(){
-    if(isDrawMesh) isDrawMesh = false;
+    if(isDrawMesh) isDrawMesh = false;      // change states
     else isDrawMesh = true;
     update();
 }
 
 void Viewer::initGhostPlanes(){
-    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];     // get rid of any previous ghost planes
     ghostPlanes.clear();
 
-    int finalNb = nbGhostPlanes;
-
+    int finalNb = nbGhostPlanes;        // the number we can actually fit in
     int maxIndicies[nbGhostPlanes];
 
-    //std::cout << "Searching " << std::endl;
-    const int startI = curve->indexForLength(curveIndexL, constraint);
-    const int endI = curve->indexForLength(curveIndexR, -constraint);
-    const int searchArea = endI - startI;
-    //std::cout << "Done searching " << std::endl;
+    const int startI = static_cast<const int>(curve->indexForLength(curveIndexL, constraint));
+    const int endI = static_cast<const int>(curve->indexForLength(curveIndexR, -constraint));
+    const int searchArea = endI - startI;       // the space that's left between the left and right planes after the constraint is taken into account
 
-    // if there's enough space for a plane
-    if(searchArea > 0){
 
+    if(searchArea > 0){         // if there's enough space for a plane
         int sorted[searchArea];
 
-        for(int i=0; i<searchArea; i++){
-            sorted[i] = startI+i;
-        }
+        for(int i=0; i<searchArea; i++) sorted[i] = startI+i;       // the possible indexes for the plane
 
-        // Sort the indicies according to their tangent angles
-        quicksort(sorted, 0, searchArea-1);
+        quicksort(sorted, 0, searchArea-1);      // Sort the indicies according to their tangent angles
 
         maxIndicies[0] = sorted[0];
         int sortedIndex = 1;
@@ -271,7 +237,7 @@ void Viewer::initGhostPlanes(){
             do{
                 tooClose = false;
                 for(int j=i-1; j>=0; j--){
-                    if(sortedIndex < searchArea && curve->discreteLength(maxIndicies[j],sorted[sortedIndex])<constraint){
+                    if(sortedIndex < searchArea && curve->discreteLength(static_cast<unsigned int>(maxIndicies[static_cast<unsigned int>(j)]),static_cast<unsigned int>(sorted[static_cast<unsigned int>(sortedIndex)]))<constraint){
                         tooClose = true;
                         break;
                     }
@@ -279,7 +245,7 @@ void Viewer::initGhostPlanes(){
                 if(tooClose) sortedIndex++;
             }while(tooClose);
 
-            if(sortedIndex >= searchArea){
+            if(sortedIndex >= searchArea){      // if we leave the search area, stop
                 finalNb = i;
                 break;
             }
@@ -290,33 +256,32 @@ void Viewer::initGhostPlanes(){
         // sort the planes
         for(int i=0; i<finalNb; i++){
             for(int j=i+1; j<finalNb; j++){
-                if(maxIndicies[i] > maxIndicies[j]) swap(&maxIndicies[i], &maxIndicies[j]);
+                if(maxIndicies[i] > maxIndicies[j]) swap(maxIndicies[i], maxIndicies[j]);
             }
         }
 
         ghostLocation.clear();
-        for(int i=0; i<finalNb; i++) ghostLocation.push_back(maxIndicies[i]);
+        for(int i=0; i<finalNb; i++) ghostLocation.push_back(maxIndicies[i]);       // get the location for each ghost plane
 
         // the number of ghost planes we can currently fit
         currentNbGhostPlanes = finalNb;
 
         addGhostPlanes(finalNb);
 
-        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);
+        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);        // connnect the ghost planes
 
          // Send the info to the fibula
-        double distance;
-        if(finalNb > 0) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
-        else distance = curve->discreteLength(curveIndexL, curveIndexR);
         std::vector<Vec> poly = updatePolyline();
         std::vector<Vec> axes = getReferenceAxes();
+        double distance;        // the distance we moved
+
+        if(finalNb > 0) distance = curve->discreteLength(curveIndexL, static_cast<unsigned int>(ghostLocation[0]));
+        else distance = curve->discreteLength(curveIndexL, curveIndexR);
         Q_EMIT leftPosChanged(distance, poly, axes);
+
         if(finalNb > 0) distance = curve->discreteLength(curveIndexR, ghostLocation[finalNb-1]);
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
         Q_EMIT rightPosChanged(distance, poly, axes);
-
-       // Q_EMIT continueMeshUpdate();
-
     }
     else{
         std::vector<Vec> poly = updatePolyline();
@@ -327,7 +292,6 @@ void Viewer::initGhostPlanes(){
 
 void Viewer::cutMesh(){
    // Q_EMIT tempTest(getReferenceAxes());
-    // Get the number of ghost planes from the total number of pieces dialog
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
     if(isNumberRecieved) nbGhostPlanes = nbPieces-1;
@@ -337,10 +301,9 @@ void Viewer::cutMesh(){
 
     if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
 
-    // The dialog wasn't cancelled so the fibula can be cut
-    Q_EMIT okToCut();
+    Q_EMIT okToCut();       // The dialog wasn't cancelled so the fibula can be cut
 
-    mesh.setIsCut(Side::INTERIOR, true, true);
+    mesh.setIsCut(Side::INTERIOR, true, true);      // cut the mandible mesh and initialise the ghost planes
     isGhostPlanes = true;
     initGhostPlanes();
 
@@ -352,52 +315,67 @@ void Viewer::uncutMesh(){
     isGhostPlanes = false;
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
-    //std::cout << "Ghost plane size : " << ghostPlanes.size() << std::endl;
     update();
 }
 
 // Slide the left plane
 void Viewer::moveLeftPlane(int position){
-    //bool isPassed = false;
-
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
-    int index = static_cast<int>(percentage * static_cast<double>(nbU) );
-    //std::cout << "Moving plane " << std::endl;
-    if( (curve->indexForLength(curveIndexR, -constraint) > index)){  // Only move if we're going backwards or we haven't met the other plane
+    unsigned int index = static_cast<unsigned int>(percentage * static_cast<double>(nbU) );
+
+    if(curve->indexForLength(curveIndexR, -constraint) > index){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
-
-        if(curveIndexL >= nbU) curveIndexL = nbU-1;
-        else if(curveIndexL < 0) curveIndexL = 0;   // shouldn't ever happen
+        if(curveIndexL >= nbU) curveIndexL = nbU-1;     // shouldn't ever happen
     }
-    else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ) return;
-    else{
-        // isPassed = true;
-        curveIndexL = curve->indexForLength(curveIndexR, -constraint);
+    else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ) return;       // already in the correct position
+    else curveIndexL = curve->indexForLength(curveIndexR, -constraint);     // get the new position
+
+    movePlane(leftPlane, true, curveIndexL);
+}
+
+void Viewer::moveRightPlane(int position){
+    double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
+    unsigned int index = nbU - 1 - static_cast<unsigned int>(percentage * static_cast<double>(nbU) );
+
+    if( index > curve->indexForLength(curveIndexL, constraint)){        // its within the correct boundaries
+        curveIndexR = index;
+        if(curveIndexR >= nbU) curveIndexR = nbU-1; // shouldn't ever happen
     }
+    else if(curveIndexR == curve->indexForLength(curveIndexL, constraint)) return;
+    else curveIndexR = curve->indexForLength(curveIndexL, constraint);
 
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
-    //leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    matchPlaneToFrenet(leftPlane, curveIndexL);
+    movePlane(rightPlane, false, curveIndexR);
+}
 
-    mesh.updatePlaneIntersections(leftPlane);
+void Viewer::movePlane(Plane *p, bool isLeft, unsigned int curveIndex){
+    repositionPlane(p, curveIndex);
 
+    mesh.updatePlaneIntersections(p);       // update the mesh
+    update();
+
+    // Communication with the fibula
     if(isGhostPlanes && isGhostActive) handlePlaneMoveStart();
 
     double distance;
 
-    update();
-
-    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
+    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);       // get the distance of the mandible curve
     else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
     else{
-        distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
+        if(isLeft) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
+        else distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
 
     std::vector<Vec> poly = updatePolyline();
     std::vector<Vec> axes = getReferenceAxes();
 
-    Q_EMIT leftPosChanged(distance, poly, axes);
-    Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
+    if(isLeft){
+        Q_EMIT leftPosChanged(distance, poly, axes);
+        Q_EMIT setLRSliderValue(0);     // Reset the rotation slider
+    }
+    else{
+        Q_EMIT rightPosChanged(distance, poly, axes);
+        Q_EMIT setRRSliderValue(0);
+    }
 }
 
 void Viewer::onLeftSliderReleased(){
@@ -414,65 +392,27 @@ void Viewer::onRightSliderReleased(){
     Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
-void Viewer::rotateLeftPlane(int position){
-    double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
 
-    leftPlane->rotatePlaneXY(percentage);
-    mesh.updatePlaneIntersections(leftPlane);
-    update();
+// Linked to the sliders
+void Viewer::rotateLeftPlane(int position){
+    rotatePlane(leftPlane, position);
 }
 
 void Viewer::rotateRightPlane(int position){
-    double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
-
-    rightPlane->rotatePlaneXY(percentage);
-    mesh.updatePlaneIntersections(rightPlane);
-    update();
+    rotatePlane(rightPlane, position);
 }
 
-void Viewer::moveRightPlane(int position){
-
+void Viewer::rotatePlane(Plane *p, int position){
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
-    int index = nbU - 1 - static_cast<int>(percentage * static_cast<double>(nbU) );
-    //std::cout << "Moving right plane " << std::endl;
-    if( index > curve->indexForLength(curveIndexL, constraint)){        // its within the correct boundaries
-        curveIndexR = index;
 
-        if(curveIndexR >= nbU) curveIndexR = nbU-1; // shouldn't ever happen either, outside of testing
-        else if(curveIndexR < 0) curveIndexR = 0;   // shouldn't ever happen
-    }
-    else if(curveIndexR == curve->indexForLength(curveIndexL, constraint)) return;
-    else curveIndexR = curve->indexForLength(curveIndexL, constraint);
-
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
-    //rightPlane->setOrientation(getNewOrientation(curveIndexR));
-    matchPlaneToFrenet(rightPlane, curveIndexR);
-
-    mesh.updatePlaneIntersections(rightPlane);
-
-    if(isGhostPlanes && isGhostActive) handlePlaneMoveStart();
-
-    double distance;
-
-    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);
-    else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
-    else{
-        distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
-    }
-
+    p->rotatePlaneXY(percentage);
+    mesh.updatePlaneIntersections(p);
     update();
-
-    std::vector<Vec> poly = updatePolyline();
-    std::vector<Vec> axes = getReferenceAxes();
-
-    Q_EMIT rightPosChanged(distance, poly, axes);
-    Q_EMIT setRRSliderValue(0); // Reset the rotation slider
 }
 
 void Viewer::handlePlaneMoveStart(){
     isGhostActive = false;      // disable drawing the polyline
-    // Uncut the mesh but keep the ghostPlane marker as true
-    mesh.setIsCut(Side::INTERIOR, false, false);
+    mesh.setIsCut(Side::INTERIOR, false, false);        // Uncut the mesh but keep the ghostPlane marker as true
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
 
@@ -481,10 +421,12 @@ void Viewer::handlePlaneMoveStart(){
 
 void Viewer::handlePlaneMoveEnd(){
     isGhostActive = true;       // enable the polyline
+
     // Recut
     Q_EMIT preparingToCut();
     if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
     Q_EMIT okToCut();
+
     mesh.setIsCut(Side::INTERIOR, true, true);
     isGhostPlanes = true;
     initGhostPlanes();
@@ -547,31 +489,25 @@ void Viewer::initPlanes(Movable status){
     leftPlane = new Plane(40.0, status);
     rightPlane = new Plane(40.0, status);
 
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
-
-    /*leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));*/
-    matchPlaneToFrenet(leftPlane, curveIndexL);
-    matchPlaneToFrenet(rightPlane, curveIndexL);
+    repositionPlane(leftPlane, curveIndexL);
+    repositionPlane(rightPlane, curveIndexR);
 
     mesh.addPlane(leftPlane);
     mesh.addPlane(rightPlane);
 }
 
-void Viewer::addGhostPlanes(int nb){
+void Viewer::repositionPlane(Plane *p, unsigned int index){
+    p->setPosition(curve->getPoint(index));
+    matchPlaneToFrenet(p, index);
+}
+
+void Viewer::addGhostPlanes(unsigned int nb){
     if(nb==0) return;
     double distances[nb+1];     // +1 for the last plane
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        //std::cout << "adding plane " << std::endl;
         ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC));
-        //std::cout << "plane added " << std::endl;
-        //std::cout << "size after plane added : " << ghostPlanes.size() << std::endl;
-        // ! HERE IS WHERE THE DESTRUCTOR CRASHES (in set Orientation)
-        //ghostPlanes[i]->setOrientation(getNewOrientation(ghostLocation[i]));
-        matchPlaneToFrenet(ghostPlanes[i], ghostLocation[i]);
-        ghostPlanes[i]->setPosition(curve->getPoint(ghostLocation[i]));
+        repositionPlane(ghostPlanes[i], ghostLocation[i]);
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
     }
@@ -585,10 +521,10 @@ void Viewer::addGhostPlanes(int nb){
 }
 
 void Viewer::ghostPlaneMoved(){
-    int nb = ghostPlanes.size();
+    unsigned int nb = static_cast<unsigned int>(ghostPlanes.size());
     double distances[nb+1];     // +1 for the last plane
 
-    for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
+    for(unsigned int i=0; i<nb; i++){
         if(i==0) distances[i] = segmentLength(leftPlane->getPosition(), ghostPlanes[i]->getCurvePoint().getPoint());
         else distances[i] = segmentLength(ghostPlanes[i-1]->getCurvePoint().getPoint(), ghostPlanes[i]->getCurvePoint().getPoint());
     }
@@ -606,48 +542,23 @@ void Viewer::updateCamera(const Vec3Df & center, float radius){
     camera()->showEntireScene();
 }
 
-void Viewer::updatePlanes(){
-    leftPlane->setPosition(curve->getPoint(curveIndexL));
-    rightPlane->setPosition(curve->getPoint(curveIndexR));
-
-    /*leftPlane->setOrientation(getNewOrientation(curveIndexL));
-    rightPlane->setOrientation(getNewOrientation(curveIndexR));*/
-    matchPlaneToFrenet(leftPlane, curveIndexL);
-    matchPlaneToFrenet(rightPlane, curveIndexR);
+void Viewer::updatePlanes(){  
+    repositionPlane(leftPlane, curveIndexL);
+    repositionPlane(rightPlane, curveIndexR);
 
     mesh.updatePlaneIntersections();
 
     update();
 }
 
-Quaternion Viewer::getNewOrientation(int index){
+Quaternion Viewer::getNewOrientation(unsigned int index){
     Quaternion s = Quaternion(Vec(0,0,1.0), curve->tangent(index));
     return s.normalized();
 }
 
-std::vector<Vec> Viewer::getPolylinePlaneAngles(){
-    // There are always 2 intersections for each polyline segment
-    std::vector<Vec> angles;
-
-    if(polyline.size()==0) return angles;
-
-    angles.push_back(leftPlane->getPolylineVector(polyline[1]));
-
-    for(unsigned int i=1; i<polyline.size()-1; i++){
-        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i-1]));
-        angles.push_back(ghostPlanes[i-1]->getPolylineVector(polyline[i+1]));
-    }
-
-    angles.push_back(rightPlane->getPolylineVector(polyline[polyline.size()-2]));
-
-    return angles;
-}
-
 double Viewer::angle(Vec a, Vec b){
-
     double na = a.norm();
     double nb = b.norm();
-
     double ab = a*b;
 
     return acos(ab / (na*nb));
@@ -657,7 +568,7 @@ double Viewer::segmentLength(const Vec a, const Vec b){
     return sqrt( pow((b.x - a.x), 2) + pow((b.y - a.y), 2) + pow((b.z - a.z), 2));
 }
 
-void Viewer::matchPlaneToFrenet(Plane *p, int index){
+void Viewer::matchPlaneToFrenet(Plane *p, unsigned int index){
     Vec x, y, z;
     curve->getFrame(index,z,x,y);
     p->setFrameFromBasis(x,y,z);
@@ -680,7 +591,7 @@ std::vector<Vec> Viewer::getPlaneFrames(){
     frames.push_back(z);
 
     // For each ghost plane, get the orienation of both sides
-    for(int i=0; i<ghostLocation.size(); i++){
+    for(unsigned int i=0; i<ghostLocation.size(); i++){
         curve->getFrame(ghostLocation[i],z,x,y);
         // Left
         frames.push_back(-x);
@@ -704,7 +615,6 @@ Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
 
 void Viewer::getAxes(){
     Q_EMIT tempTest(getReferenceAxes(), updatePolyline());
-    //std::cout << "Angle mandible : " << angle(leftPlane->getMeshVectorFromLocal(Vec(0,0,1)), rightPlane->getMeshVectorFromLocal(Vec(0,0,1))) << std::endl;
 }
 
 std::vector<Vec> Viewer::getReferenceAxes(){
@@ -712,8 +622,6 @@ std::vector<Vec> Viewer::getReferenceAxes(){
     Vec axis = Vec(0,0,1);
 
     if(ghostPlanes.size()==0){
-        //v.push_back(convertToPlane(rightPlane, leftPlane, Vec(1,0,0)));
-        //v.push_back(convertToPlane(rightPlane, leftPlane, Vec(0,1,0)));
         v.push_back(convertToPlane(rightPlane, leftPlane, axis));
     }
     else{
@@ -723,7 +631,7 @@ std::vector<Vec> Viewer::getReferenceAxes(){
             v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axis));
         }
 
-        unsigned int lastIndex = ghostPlanes.size()-1;
+        unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
         v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axis));
     }
     return v;

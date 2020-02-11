@@ -17,17 +17,17 @@ public:
     void generateCatmull(unsigned int& nbU);
 
     Vec* getCurve(){ return curve; }
-    Vec& getPoint(int index){ return curve[index]; }
+    Vec& getPoint(unsigned int index){ return curve[index]; }
     unsigned int& getNbU(){ return nbU; }
 
-    Vec tangent(int index);
-    Vec normal(int index);
-    Vec binormal(int index);
-    void getFrame(int index, Vec& t, Vec& n, Vec& b);
+    Vec tangent(unsigned int index);
+    Vec normal(unsigned int index);
+    Vec binormal(unsigned int index);
+    void getFrame(unsigned int index, Vec& t, Vec& n, Vec& b);
 
     void draw();
     void drawControl();
-    void drawTangent(int index);
+    void drawTangent(unsigned int index);
 
     double discreteLength(unsigned int indexS, unsigned int indexE);      // Returns the discrete length between 2 points (Straight line distance)
     double discreteChordLength(unsigned int indexS, unsigned int indexE); // To use for the initial visualisation

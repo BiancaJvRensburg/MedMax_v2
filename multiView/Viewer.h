@@ -38,8 +38,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
     void rightPosChanged(double, std::vector<Vec>, std::vector<Vec>);
-    void ghostPlanesAdded(int, double[], std::vector<Vec>, std::vector<Vec>);
-    void ghostPlanesTranslated(int, double[], std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesAdded(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
+    void ghostPlanesTranslated(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
     void okToCut();
     // set the slider to the value
     void setLRSliderValue(int);   // Left rotation
@@ -67,11 +67,11 @@ protected:
     virtual void initSignals();
     virtual void initCurve();
     void initPlanes(Movable status);
-    virtual void addGhostPlanes(int nb);
+    virtual void addGhostPlanes(unsigned int nb);
     void initGhostPlanes();
-    Quaternion getNewOrientation(int index);
-    Quaternion updateOrientation(int index);
-    void matchPlaneToFrenet(Plane* p, int index);
+    Quaternion getNewOrientation(unsigned int index);
+    Quaternion updateOrientation(unsigned int index);
+    void matchPlaneToFrenet(Plane* p, unsigned int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
     Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
@@ -84,21 +84,25 @@ protected:
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);
 
+    void rotatePlane(Plane* p, int position);
+    void movePlane(Plane *p, bool isLeft, unsigned int index);
+    void repositionPlane(Plane* p, unsigned int index);
+
     ManipulatedFrame* viewerFrame;
 
     Plane *leftPlane;
     Plane *rightPlane;
     Curve *curve;
     std::vector<Plane*> ghostPlanes;
-    std::vector<int> ghostLocation;
+    std::vector<unsigned int> ghostLocation;
     std::vector<Vec> polyline;  // just a list of vertex coordinates
     int nbGhostPlanes;
     int currentNbGhostPlanes;
     bool isGhostPlanes;
     bool isGhostActive;
 
-    int curveIndexL;
-    int curveIndexR;
+    unsigned int curveIndexL;
+    unsigned int curveIndexR;
     unsigned int nbU;
     int sliderMax;
     bool isDrawMesh;

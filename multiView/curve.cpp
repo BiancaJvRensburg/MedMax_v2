@@ -244,31 +244,31 @@ void Curve::drawControl(){
 }
 
 // Frenet frame
-Vec Curve::tangent(int index){
+Vec Curve::tangent(unsigned int index){
     Vec t = Vec(dt[index].x, dt[index].y, dt[index].z);
     t.normalize();
 
     return t;
 }
 
-Vec Curve::normal(int index){
+Vec Curve::normal(unsigned int index){
     return cross(binormal(index), tangent(index));
 }
 
-Vec Curve::binormal(int index){
+Vec Curve::binormal(unsigned int index){
     Vec b = cross(Vec(dt[index].x, dt[index].y, dt[index].z), Vec(d2t[index].x, d2t[index].y, d2t[index].z));
     b.normalize();
 
     return b;
 }
 
-void Curve::getFrame(int index, Vec &t, Vec &n, Vec &b){
+void Curve::getFrame(unsigned int index, Vec &t, Vec &n, Vec &b){
     t = tangent(index);
     b = binormal(index);
     n = cross(b, t);
 }
 
-void Curve::drawTangent(int index){
+void Curve::drawTangent(unsigned int index){
     Vec t,n,b;
 
     getFrame(index,t,n,b);

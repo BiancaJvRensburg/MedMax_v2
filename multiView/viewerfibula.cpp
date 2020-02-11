@@ -281,7 +281,7 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 }
 
 // Add ghost planes that correspond to the ghost planes in the jaw
-void ViewerFibula::ghostPlanesRecieved(int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
+void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     // if no ghost planes were actually recieved
     if(nb==0){
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
@@ -343,7 +343,7 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyl
 }
 
 // One of the ghost planes is moved in the jaw
-void ViewerFibula::middlePlaneMoved(int nb, double distances[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
+void ViewerFibula::middlePlaneMoved(unsigned int nb, double distances[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(nb==0) return;
 
     findGhostLocations(nb, distances);
