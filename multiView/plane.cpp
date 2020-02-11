@@ -58,12 +58,10 @@ void Plane::setPlaneRotation(Vec axis, double theta){
 }
 
 void Plane::rotatePlaneXY(double percentage){
-    // Get the percentage to rotate it by
-    double r = (percentage - rotationPercentage);
+    double r = (percentage - rotationPercentage);       // Get the percentage to rotate it by
     rotationPercentage = percentage;
 
-    // Get the theta from the percentage
-    double theta = (M_PI*2.0)*r + M_PI;
+    double theta = (M_PI*2.0)*r + M_PI;     // Get the theta from the percentage
     Vec axis = Vec(0,0,1);
 
     rotatePlane(axis, theta);
@@ -72,19 +70,12 @@ void Plane::rotatePlaneXY(double percentage){
 void Plane::setPosition(Vec pos){
     cp.setPosition(pos);
     cp.getFrame().setPosition(cp.getX(), cp.getY(), cp.getZ());
-
-    // Only move it if cp is dynamic
-    if(status==Movable::DYNAMIC){
-        cp.setPosition(pos);
-    }
 }
 
 // Set the base from a basis x,y,z
 Quaternion Plane::fromRotatedBasis(Vec x, Vec y, Vec z){
     Quaternion q = Quaternion();
-
     q.setFromRotatedBasis(x,y,z);
-
    return q;
 }
 
@@ -112,7 +103,6 @@ bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
     if( (tr0.z < 0 && tr1.z < 0 && tr2.z < 0) || (tr0.z > 0 && tr1.z > 0 && tr2.z > 0) ) return false;  // if they all have the same sign
     else{
         for(int i=0; i<3; i++){
-
             Vec l = tr[(i+1)%3] - tr[i];
 
             if(l*normal == 0.0){
@@ -127,7 +117,6 @@ bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
             if(abs(d) > 1.0) continue;
 
             Vec intersection = d*l + tr[i];
-
             if(abs(intersection.x) < size && abs(intersection.y) < size) return true;
         }
     }
@@ -137,17 +126,13 @@ bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
 
 double Plane::getSign(Vec v){
     Vec tr0 = cp.getFrame().localCoordinatesOf(v);
-
     return tr0.z/(abs(tr0.z));
 }
 
 Vec Plane::getProjection(Vec p){
     Vec localP = cp.getFrame().localCoordinatesOf(p);       // convert into local coordinates
-
     double alpha = (localP * normal);
-
     Vec newP = localP - normal *alpha;
-
     return cp.getFrame().localInverseCoordinatesOf(newP);   // convert back into original coordinate system
 }
 

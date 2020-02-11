@@ -319,54 +319,60 @@ void Mesh::createSmoothedTriangles(){
 
     switch (cuttingSide) {
         case Side::INTERIOR:
-        for(unsigned long long i=0; i<planes.size(); i++){
-            for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){       // for each triangle cut
-                for(unsigned int k=0; k<3; k++){    // find which verticies to keep
-                    unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);           
-                    if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])] != -1){   // if we need to change it (here we only change it if it's outside of the cut (fine for mandible))
-                        Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
-                        smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
-                    }
-                    // else don't change the original
-                }
-
-            }
-        }
+            createSmoothedMandible();
         break;
 
         case Side::EXTERIOR:
-            for(unsigned int i=0; i<planes.size(); i++){
-                for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){   // for each triangle cut
-                    int actualFlooding = -1;    //  Conserve the "real" flooding value (will never stay at -1)
+            createSmoothedFibula();
+        break;
+    }
+}
 
-                    for(unsigned int k=0; k<3; k++){    // find which verticies are on the otherside of the cut
-                        unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
+void Mesh::createSmoothedMandible(){
+    for(unsigned long long i=0; i<planes.size(); i++){
+        for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){       // for each triangle cut
+            for(unsigned int k=0; k<3; k++){    // find which verticies to keep
+                unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
+                if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])] != -1){   // if we need to change it (here we only change it if it's outside of the cut (fine for mandible))
+                    Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
+                    smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
+                }
+                // else don't change the original
+            }
 
-                        bool isOutlier = true;
-                        for(unsigned int l=0; l<segmentsConserved.size(); l++){
-                            if(flooding[vertexIndex] == segmentsConserved[l]){
-                                actualFlooding = flooding[vertexIndex];
-                                isOutlier = false;
-                            }
-                        }
+        }
+    }
+}
 
+void Mesh::createSmoothedFibula(){
+    for(unsigned int i=0; i<planes.size(); i++){
+        for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){   // for each triangle cut
+            int actualFlooding = -1;    //  Conserve the "real" flooding value (will never stay at -1)
 
-                        if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])]==-1 || isOutlier){        // if we need to change it
-                            Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
-                            smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
-                        }
-                        // else don't change the original
-                    }
+            for(unsigned int k=0; k<3; k++){    // find which verticies are on the otherside of the cut
+                unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
 
-                    // Set the whole triangle to the correct flooding value
-                    for(unsigned int k=0; k<3; k++){
-                        unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
-                        flooding[vertexIndex] = actualFlooding;
+                bool isOutlier = true;
+                for(unsigned int l=0; l<segmentsConserved.size(); l++){
+                    if(flooding[vertexIndex] == segmentsConserved[l]){
+                        actualFlooding = flooding[vertexIndex];
+                        isOutlier = false;
                     }
                 }
-            }
-            break;
 
+                if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])]==-1 || isOutlier){        // if we need to change it
+                    Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
+                    smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
+                }
+                // else don't change the original
+            }
+
+            // Set the whole triangle to the correct flooding value
+            for(unsigned int k=0; k<3; k++){
+                unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
+                flooding[vertexIndex] = actualFlooding;
+            }
+        }
     }
 }
 

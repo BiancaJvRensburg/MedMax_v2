@@ -80,6 +80,8 @@ protected:
     void mergeFlood();      // to be called after flooding; merges the regions between the planes
 
     void createSmoothedTriangles();
+    void createSmoothedMandible();
+    void createSmoothedFibula();
 
     void getSegmentsToKeep();   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
 
