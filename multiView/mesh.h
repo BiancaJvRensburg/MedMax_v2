@@ -76,14 +76,17 @@ protected:
 
     void planeIntersection(unsigned int index);
 
-    void floodNeighbour(unsigned int index, unsigned int id);     // flood the neighbours of the vertex index with the value id
+    void floodNeighbour(unsigned int index, int id);     // flood the neighbours of the vertex index with the value id
     void mergeFlood();      // to be called after flooding; merges the regions between the planes
 
     void createSmoothedTriangles();
 
-    void getSegmentsToKeep();   // Only for the fibula mesh
+    void getSegmentsToKeep();   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
 
     void cutMesh();
+    void cutMandible(bool* truthTriangles);
+    void cutFibula(bool* truthTriangles);
+    void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours();
 
     std::vector <Vec3Df> vertices;      // starting verticies

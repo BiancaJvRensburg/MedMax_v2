@@ -99,7 +99,7 @@ protected:
 
     int curveIndexL;
     int curveIndexR;
-    long nbU;
+    unsigned int nbU;
     int sliderMax;
     bool isDrawMesh;
 

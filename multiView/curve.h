@@ -11,15 +11,14 @@ class Curve : public QObject
     Q_OBJECT
 
 public:
-    //Curve(){}
-    //Curve(long nbCP);
-    Curve(long nbCP, std::vector<Vec>& cntrlPoints);
+    Curve(unsigned int nbCP, std::vector<Vec>& cntrlPoints);
 
-    void generateBSpline(long& nbU, int degree);
+    void generateBSpline(unsigned int& nbU, unsigned int degree);
+    void generateCatmull(unsigned int& nbU);
+
     Vec* getCurve(){ return curve; }
     Vec& getPoint(int index){ return curve[index]; }
-
-    void generateCatmull(long& nbU);
+    unsigned int& getNbU(){ return nbU; }
 
     Vec tangent(int index);
     Vec normal(int index);
@@ -30,58 +29,43 @@ public:
     void drawControl();
     void drawTangent(int index);
 
-    double discreteLength(int indexS, int indexE);      // Returns the discrete length between 2 points (Straight line distance)
-    double discreteChordLength(int indexS, int indexE); // To use for the initial visualisation
-    int indexForLength(int indexS, double length);   // Returns the end index which will create a segment of a certain length
-    long& getNbU(){ return nbU; }
+    double discreteLength(unsigned int indexS, unsigned int indexE);      // Returns the discrete length between 2 points (Straight line distance)
+    double discreteChordLength(unsigned int indexS, unsigned int indexE); // To use for the initial visualisation
+    unsigned int indexForLength(unsigned int indexS, double length);   // Returns the end index which will create a segment of a certain length
 
 public Q_SLOTS:
     void reintialiseCurve();
-    //void addControlPoint(ControlPoint*);
-    //void moveToPoint(Vec);
 
 Q_SIGNALS:
     void curveReinitialised();
 
 private:
     std::vector<ControlPoint*> TabControlPoint;
-    long nbControlPoint;
+    unsigned int nbControlPoint;
     Vec *curve;
-    long nbU;
-    //bool *controlPointIndicies;
+    unsigned int nbU;
 
-    // BSpline
-    int degree;
+    unsigned int degree;
     std::vector<double> knotVector;
-    int knotIndex;
+    unsigned int knotIndex;
 
     // BSpline
-    std::vector<double> generateUniformKnotVector(int k);
-    Vec deBoor(double u, int i, int r);
-    Vec* splineDerivative(int k);
-    Vec deBoorDerivative(double u, int i, int r, int k);
+    std::vector<double> generateUniformKnotVector(unsigned int k);
+    Vec deBoor(double u, unsigned int i, unsigned int r);
+    Vec* splineDerivative(unsigned int k);
+    Vec deBoorDerivative(double u, unsigned int i, unsigned int r, unsigned int k);
 
     // Catmull rom
     void catmullrom();  // calculate the spline and the first derivative
     void calculateCatmullPoints(Vec& c, Vec& cp, Vec& cpp, double t);
 
-    //bool isControlPoint(int index);
-
     std::vector<double> generateCatmullKnotVector(double alpha);
 
     void initConnections();
-    //void updateConnections(ControlPoint*);
 
     // Frenet frame
     Vec* dt;
     Vec* d2t;
-
-    //void getModVec(int j, int r, double t, int kI, double offset, double* newPoints);
-
-    //int isSpace();  // Is there space for another control point?
-
-    //const int MAX_CNTRL_POINTS = 20;
-
 };
 
 #endif // CURVE_H
