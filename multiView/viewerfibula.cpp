@@ -214,15 +214,11 @@ void ViewerFibula::movePlanes(int position){
 
     mesh.setTransfer(false);
     mesh.updatePlaneIntersections();
-
-    //update();
-
 }
 
 void ViewerFibula::planesMoved(){
     mesh.setTransfer(true);
     mesh.sendToManible();
-    //update();
 }
 
 // Add the ghost planes (this should only be called once)
@@ -237,8 +233,6 @@ void ViewerFibula::addGhostPlanes(int nb){
         int overload = static_cast<int>(ghostLocation[i]) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve
         if(overload > 0) indexOffset -= overload;
     }
-
-    //update();
 }
 
 // Find the locations of the ghost planes from the distances from the planes in the mandible
@@ -314,7 +308,6 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyl
     repositionPlanes(mandPolyline, axes);
 
     mesh.updatePlaneIntersections(rightPlane);
-    //update();
 }
 
 // One of the ghost planes is moved in the jaw
@@ -334,8 +327,6 @@ void ViewerFibula::middlePlaneMoved(unsigned int nb, double distances[], std::ve
     repositionPlanes(mandPolyline, axes);
 
     mesh.updatePlaneIntersections(rightPlane);
-
-    //update();
 }
 
 // Initialise the curve that the planes follow (to eventually be changed to automatically calculate the points)

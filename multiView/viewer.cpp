@@ -627,9 +627,9 @@ std::vector<Vec> Viewer::getReferenceAxes(){
     else{
         v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axis));
 
-        for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
+        /*for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){          // this is wrong
             v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axis));
-        }
+        }*/
 
         unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
         v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axis));
