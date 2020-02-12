@@ -266,6 +266,12 @@ void Curve::getFrame(unsigned int index, Vec &t, Vec &n, Vec &b){
     t = tangent(index);
     b = binormal(index);
     n = cross(b, t);
+
+    /*double xy = t*b;
+    double xz = t*n;
+    double yz = b*n;
+
+    std::cout << "Inner products frame : " <<  xy << " , " << xz << " , " << yz << std::endl;*/
 }
 
 void Curve::drawTangent(unsigned int index){

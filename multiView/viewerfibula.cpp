@@ -158,27 +158,36 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<Vec> mandPolyl
     if(ghostPlanes.size()==0){
         // Rotate the end plane to match the mandibule
 
-        /*Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);
+        Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);        // axes are correctly recieved and must stay in mesh coordinates
         //x = leftPlane->getLocalVector(x);
+        //std::cout << "x s : " << x.x << " " << x.y << " " << x.z << std::endl;
         x.normalize();
 
         //std::cout << "x : " << x.x << " " << x.y << " " << x.z << std::endl;
 
         Vec y = rightPlane->getMeshVectorFromLocal(axes[1]);
         //y = leftPlane->getLocalVector(y);
+        //std::cout << "y s : " << y.x << " " << y.y << " " << y.z << std::endl;
         y.normalize();
 
         //std::cout << "y : " << y.x << " " << y.y << " " << y.z << std::endl;
 
         Vec z = rightPlane->getMeshVectorFromLocal(axes[2]);
+        //std::cout << "z s : " << z.x << " " << z.y << " " << z.z << std::endl;
         //z = leftPlane->getLocalVector(z);
         z.normalize();
 
         //std::cout << "z : " << z.x << " " << z.y << " " << z.z << std::endl;
 
-        leftPlane->setFrameFromBasis(x,y,z);*/
+        /*double xy = x*y;
+        double xz = x*z;
+        double yz = y*z;
 
-        Vec rotationAxis = leftPlane->getLocalVector(rightPlane->getPosition() - leftPlane->getPosition());   // get the position in the fibula space (leave it in world coordinates)
+        std::cout << "Inner products last orientation : " <<  xy << " , " << xz << " , " << yz << std::endl;*/
+
+        leftPlane->setFrameFromBasis(x,y,z);
+
+        /*Vec rotationAxis = leftPlane->getLocalVector(rightPlane->getPosition() - leftPlane->getPosition());   // get the position in the fibula space (leave it in world coordinates)
         rotationAxis.normalize();
 
         Vec zPlaneAxis = Vec(0,0,1);
@@ -196,7 +205,7 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<Vec> mandPolyl
         double theta = angle(projZ, projGoal);      // get the angle between the two points projected on the plane
         theta += M_PI;
 
-        leftPlane->rotatePlane(rotationAxis, theta);
+        leftPlane->rotatePlane(rotationAxis, theta);*/
 
         // std::cout << "Angle fibula : " << angle(leftPlane->getMeshVectorFromLocal(Vec(0,0,1)), rightPlane->getMeshVectorFromLocal(Vec(0,0,1))) << std::endl;
     }
@@ -287,8 +296,10 @@ void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::
 
     // If its cut and the number of planes has changed
     if(mesh.getIsCut() && nb!=oldNb){
-        mesh.deleteGhostPlanes();
+        mesh.deleteGhostPlanes();       // should update the number of planes here?
+        //isPlanesRecieved = true;
         cutMesh();
+        //return;
     }
 
     isPlanesRecieved = true;
@@ -361,6 +372,7 @@ void ViewerFibula::cutMesh(){
 
 void ViewerFibula::handleCut(){
     if(isCutSignal && isPlanesRecieved){
+        // delete ghost planes first?
         for(unsigned int i=0; i<ghostPlanes.size(); i++){
             mesh.addPlane(ghostPlanes[i]);
         }

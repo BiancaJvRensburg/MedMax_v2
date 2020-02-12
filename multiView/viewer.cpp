@@ -382,14 +382,14 @@ void Viewer::onLeftSliderReleased(){
     if(isGhostPlanes) handlePlaneMoveEnd();
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
-    Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
+    // Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 void Viewer::onRightSliderReleased(){
     if(isGhostPlanes) handlePlaneMoveEnd();
     // creates an infinite loop if done when the slider value changes
     // TODO this means moveLeftPlane called twice
-    Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
+    // Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 
@@ -609,8 +609,9 @@ std::vector<Vec> Viewer::getPlaneFrames(){
 
 Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
     Vec  a = p->getMeshVectorFromLocal(axis);  // get the z vector of p in the world space
-    Vec b = p->getPosition() - a;
-    return base->getLocalVector(b);    // get it in terms of base
+    Vec b = base->getLocalVector(a);
+    //std::cout << "In terms of plane ("<< axis.x << "," << axis.y << "," << axis.z << ") : " << b.x << " " << b.y << " " << " " << b.z << std::endl;      // correct
+    return b;    // get it in terms of base
 }
 
 void Viewer::getAxes(){
@@ -621,8 +622,20 @@ std::vector<Vec> Viewer::getReferenceAxes(){
     std::vector<Vec> v;
     Vec axis = Vec(0,0,1);
 
+    // NOTE : this is called twice
+
+    //std::cout<< "Getting axes" << std::endl;
+
     if(ghostPlanes.size()==0){
+        v.push_back(convertToPlane(rightPlane, leftPlane, Vec(1,0,0)));
+        v.push_back(convertToPlane(rightPlane, leftPlane, Vec(0,1,0)));
         v.push_back(convertToPlane(rightPlane, leftPlane, axis));
+
+        /*double xy = v[0]*v[1];
+        double xz = v[0]*v[2];
+        double yz = v[1]*v[2];
+
+        std::cout << "Inner products origin : " <<  xy << " , " << xz << " , " << yz << std::endl;*/
     }
     else{
         v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axis));
@@ -634,5 +647,6 @@ std::vector<Vec> Viewer::getReferenceAxes(){
         unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
         v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axis));
     }
+    //std::cout<< "Sending axes" << std::endl;
     return v;
 }

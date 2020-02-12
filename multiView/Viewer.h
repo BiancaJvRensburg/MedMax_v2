@@ -96,13 +96,15 @@ protected:
 
     const double constraint = 25;
 
+    Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
+
 private:
     void initGhostPlanes();
     Quaternion updateOrientation(unsigned int index);
     void matchPlaneToFrenet(Plane* p, unsigned int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
-    Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
+
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
