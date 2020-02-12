@@ -40,12 +40,13 @@ Q_SIGNALS:
     void requestAxes();
 
 private:
-    void findGhostLocations(int nb, double distance[]); // finds the location of the ghost planes + the right plane
+    void findGhostLocations(unsigned int nb, double distance[]); // finds the location of the ghost planes + the right plane
     void setPlaneOrientations(std::vector<Vec> mandPolyline, std::vector<Vec> axes);
     void reinitialisePlanes(unsigned int nbToInit);      // Reinitialises the position and orientation of the planes
     void initSignals();
     void createPolyline();
     void matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z);
+    void repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes);
 
     bool isCutSignal;
     bool isPlanesRecieved;

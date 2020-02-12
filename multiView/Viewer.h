@@ -41,6 +41,7 @@ Q_SIGNALS:
     void ghostPlanesAdded(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
     void ghostPlanesTranslated(unsigned int, double[], std::vector<Vec>, std::vector<Vec>);
     void okToCut();
+
     // set the slider to the value
     void setLRSliderValue(int);   // Left rotation
     void setRRSliderValue(int);   // Right rotation
@@ -68,25 +69,11 @@ protected:
     virtual void initCurve();
     void initPlanes(Movable status);
     virtual void addGhostPlanes(unsigned int nb);
-    void initGhostPlanes();
-    Quaternion getNewOrientation(unsigned int index);
-    Quaternion updateOrientation(unsigned int index);
-    void matchPlaneToFrenet(Plane* p, unsigned int index);
-    void handlePlaneMoveStart();
-    void handlePlaneMoveEnd();
-    Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
-    std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
 
     double angle(Vec a, Vec b);
     double segmentLength(const Vec a, const Vec b);
-    std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
-    std::vector<Vec> getPlaneFrames();
-    int partition(int sorted[], int start, int end);
-    void quicksort(int sorted[], int start, int end);
 
-    void rotatePlane(Plane* p, int position);
-    void movePlane(Plane *p, bool isLeft, unsigned int index);
-    void repositionPlane(Plane* p, unsigned int index);
+    Quaternion getNewOrientation(unsigned int index);
 
     ManipulatedFrame* viewerFrame;
 
@@ -109,6 +96,23 @@ protected:
 
     const double constraint = 25;
 
+private:
+    void initGhostPlanes();
+    Quaternion updateOrientation(unsigned int index);
+    void matchPlaneToFrenet(Plane* p, unsigned int index);
+    void handlePlaneMoveStart();
+    void handlePlaneMoveEnd();
+    Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
+
+    std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
+    std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
+    std::vector<Vec> getPlaneFrames();
+    int partition(int sorted[], int start, int end);
+    void quicksort(int sorted[], int start, int end);
+
+    void rotatePlane(Plane* p, int position);
+    void movePlane(Plane *p, bool isLeft, unsigned int index);
+    void repositionPlane(Plane* p, unsigned int index);
 };
 
 #endif // VIEWER_H
