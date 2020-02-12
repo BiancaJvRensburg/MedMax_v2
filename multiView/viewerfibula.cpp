@@ -30,6 +30,10 @@ std::vector<Vec> ViewerFibula::getPolyline(){
     v = leftPlane->getPolylineVector(polyline[1]);
     polylineInPlanes.push_back(v);
 
+    for(int i=0; i<polyline.size(); i++) std::cout << "PolyLINE " << i << " : " << polyline[i].x << " " << polyline[i].y << " " << polyline[i].z << std::endl;
+
+    std::cout << "Poly size : " << polyline.size() << std::endl;
+
     for(unsigned int i=0; i<ghostPlanes.size(); i++){       // +1 offset for the left plane
         if(i%2==0) v = ghostPlanes[i]->getPolylineVector(polyline[i]);     // even: look behind
         else v = ghostPlanes[i]->getPolylineVector(polyline[i+2]);       // odd : look forward
@@ -39,6 +43,9 @@ std::vector<Vec> ViewerFibula::getPolyline(){
     v = rightPlane->getPolylineVector(polyline[polyline.size()-2]);
     polylineInPlanes.push_back(v);
 
+    for(int i=0; i<polylineInPlanes.size(); i++) std::cout << "Poly " << i << " : " << polylineInPlanes[i].x << " " << polylineInPlanes[i].y << " " << polylineInPlanes[i].z << std::endl;
+
+
     return polylineInPlanes;
 }
 
@@ -46,14 +53,22 @@ void ViewerFibula::createPolyline(){
     polyline.clear();
 
     polyline.push_back(leftPlane->getPosition());
-    for(unsigned int i=0; i<ghostPlanes.size(); i++) polyline.push_back(ghostPlanes[i]->getPosition());
+    for(unsigned int i=0; i<ghostPlanes.size(); i++){
+        std::cout << "Ghost plane position " << i << " : " << ghostPlanes[i]->getPosition().x << " " << ghostPlanes[i]->getPosition().y << " " << ghostPlanes[i]->getPosition().z <<std::endl;
+        polyline.push_back(ghostPlanes[i]->getPosition());
+    }
+
     polyline.push_back(rightPlane->getPosition());
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
+    std::cout << "1" << std::endl;
     resetMandibleInfo(polyline, axes);
+    std::cout << "2" << std::endl;
     setPlanePositions();
+    std::cout << "3" << std::endl;
     setPlaneOrientations();
+    std::cout << "4" << std::endl;
     update();
 }
 
@@ -67,6 +82,7 @@ void ViewerFibula::resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec>
 void ViewerFibula::setPlanePositions(){
     leftPlane->setPosition(curve->getPoint( static_cast<unsigned int>(static_cast<int>(curveIndexL) + indexOffset)));
     rightPlane->setPosition(curve->getPoint(static_cast<unsigned int>(static_cast<int>(curveIndexR) + indexOffset)));
+    std::cout << "GHOST LOCATION NB : " << ghostLocation.size() << std::endl;
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         ghostPlanes[i]->setPosition(curve->getPoint(static_cast<unsigned int>(static_cast<int>(ghostLocation[i]) + indexOffset)));
     }
@@ -125,10 +141,18 @@ void ViewerFibula::setPlaneOrientations(){
         leftPlane->rotatePlane(axis, alpha);
         ghostPlanes[0]->rotatePlane(axis, alpha);
 
+        std::cout << "Ghost plane nb : " << ghostPlanes.size() << std::endl;
+        std::cout << "Fib polyline size : " << fibulaPolyline.size() << std::endl;
+
+        for(int i=0; i<fibulaPolyline.size(); i++) std::cout << i << " : " << fibulaPolyline[i].x << " " << fibulaPolyline[i].y << " " << fibulaPolyline[i].z << std::endl;
+
         // Ghost
         for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
+            std::cout << "Ghost " << i << std::endl;
             mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
             fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
+            std::cout << "Mand point : " << mandPoint.x << " " << mandPoint.y << " " << mandPoint.z << std::endl;
+            std::cout << "Fib point : " << fibPoint.x << " " << fibPoint.y << " " << fibPoint.z << std::endl;
             mandPoint.normalize();
             fibPoint.normalize();
             alpha = angle(mandPoint, fibPoint) + M_PI;
@@ -189,6 +213,7 @@ void ViewerFibula::planesMoved(){
 
 // Add the ghost planes (this should only be called once)
 void ViewerFibula::addGhostPlanes(int nb){
+    std::cout << "add ghost planes " << nb <<std::endl;
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];     // remove any ghost planes
     ghostPlanes.clear();
 
@@ -203,7 +228,9 @@ void ViewerFibula::addGhostPlanes(int nb){
 
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
+    std::cout << "find ghost locations " << nb <<std::endl;
     ghostLocation.clear();
+    std::cout << "Size of ghost location : " << ghostLocation.size() << std::endl;
 
     unsigned int index = curve->indexForLength(curveIndexL, distance[0]);
     ghostLocation.push_back(index);
@@ -215,10 +242,15 @@ void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
         ghostLocation.push_back(index);
         unsigned int nbU = curve->getNbU();
         nextIndex = curve->indexForLength(index, 30.0);
-        ghostLocation.push_back(nextIndex);
+        //ghostLocation.push_back(nextIndex);
+        std::cout << "INdex : " << index << "Next Index : " << nextIndex << std::endl;
         if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
-        else ghostLocation.push_back(nbU-1);
+        else {
+            std::cout << "theres a problem here" << std::endl;
+            ghostLocation.push_back(nbU-1);
+        }
     }
+    std::cout << "AND NOW : " << ghostLocation.size() << std::endl;
     curveIndexR = curve->indexForLength(ghostLocation[2*static_cast<unsigned int>(nb)-1], distance[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
 }
 
@@ -243,6 +275,8 @@ void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::
         return;
     }
 
+    std::cout << "ghostPlanes recieved " << nb <<std::endl;
+
     unsigned int oldNb = static_cast<unsigned int>(ghostPlanes.size() / 2);
 
     findGhostLocations(nb, distance);
@@ -259,8 +293,12 @@ void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::
         //return;
     }
 
+    std::cout << "Nb ghost planes " << ghostPlanes.size() <<std::endl;
+
     isPlanesRecieved = true;
     handleCut();
+
+    std::cout << "Nb in the end " << ghostPlanes.size() <<std::endl;
 }
 
 // When we want to move the right plane (the right plane is moved in the jaw)
