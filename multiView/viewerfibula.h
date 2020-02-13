@@ -30,7 +30,7 @@ public Q_SLOTS:
     void handleMovementStart();
     void handleMovementEnd();
 
-    void recieveTest(std::vector<Vec>, std::vector<Vec>);
+    void recieveTest(std::vector<Vec>, std::vector<double>);
 
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 

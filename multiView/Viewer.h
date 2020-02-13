@@ -55,7 +55,7 @@ Q_SIGNALS:
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
     void ghostPlaneMovementEnd();
 
-    void tempTest(std::vector<Vec>, std::vector<Vec>);
+    void tempTest(std::vector<Vec>, std::vector<double>);
 
 protected:
     void draw();
@@ -74,6 +74,7 @@ protected:
     double segmentLength(const Vec a, const Vec b);
 
     Quaternion getNewOrientation(unsigned int index);
+    Vec getCustomProjection(Vec a, Vec normal);        // project a onto a plane defined by the normal
 
     ManipulatedFrame* viewerFrame;
 
@@ -104,10 +105,12 @@ private:
     void matchPlaneToFrenet(Plane* p, unsigned int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
+    void updateMeshPolyline();
 
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
+    std::vector<double> getGhostToPolyAngles();
     std::vector<Vec> getPlaneFrames();
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);

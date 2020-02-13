@@ -156,18 +156,74 @@ void ViewerFibula::setPlaneOrientations(){
 }
 
 // Rotate the end plane to match the mandibule
-void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<Vec> mandPolyline){
+void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles){
     if(ghostPlanes.size()==0){
         Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);        // axes must stay in mesh coordinates
         x.normalize();
-
         Vec y = rightPlane->getMeshVectorFromLocal(axes[1]);
         y.normalize();
-
         Vec z = rightPlane->getMeshVectorFromLocal(axes[2]);
         z.normalize();
-
         leftPlane->setFrameFromBasis(x,y,z);
+    }
+    else{
+        Vec x = leftPlane->getMeshVectorFromLocal(axes[0]);        // axes must stay in mesh coordinates
+        x.normalize();
+        Vec y = leftPlane->getMeshVectorFromLocal(axes[1]);
+        y.normalize();
+        Vec z = leftPlane->getMeshVectorFromLocal(axes[2]);
+        z.normalize();
+        ghostPlanes[0]->setFrameFromBasis(x,y,z);
+
+        Vec x2 = leftPlane->getMeshVectorFromLocal(axes[3]);        // axes must stay in mesh coordinates
+        x2.normalize();
+        Vec y2 = leftPlane->getMeshVectorFromLocal(axes[4]);
+        y2.normalize();
+        Vec z2 = leftPlane->getMeshVectorFromLocal(axes[5]);
+        z2.normalize();
+        ghostPlanes[1]->setFrameFromBasis(x2,y2,z2);
+
+        std::vector<Vec> poly = getPolyline();
+        Vec axisX = Vec(1,0,0);
+        Vec axisZ = Vec(0,0,1);
+        Vec rotationAxis = cross(axisX, poly[2]);
+
+        Vec a = getCustomProjection(poly[2], axisX);
+        a.normalize();
+        Vec b = getCustomProjection(axisZ, axisX);
+        double alpha = angle(a,b);
+
+        double theta = - alpha + angles[0] + M_PI;
+        ghostPlanes[1]->rotatePlane(rotationAxis, theta);
+
+        for(unsigned int i=2; i<ghostPlanes.size()-1; i+=2){
+            x = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i]);        // axes must stay in mesh coordinates
+            x.normalize();
+            y = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+1]);
+            y.normalize();
+            z = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+2]);
+            z.normalize();
+            ghostPlanes[i]->setFrameFromBasis(x,y,z);
+
+            x2 = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+3]);        // axes must stay in mesh coordinates
+            x2.normalize();
+            y2 = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+4]);
+            y2.normalize();
+            z2 = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+5]);
+            z2.normalize();
+            ghostPlanes[i+1]->setFrameFromBasis(x2,y2,z2);
+        }
+
+        unsigned int lastIndex = ghostPlanes.size()-1;
+        unsigned int lastAxe = axes.size()-3;
+
+        x = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe]);        // axes must stay in mesh coordinates
+        x.normalize();
+        y = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe+1]);
+        y.normalize();
+        z = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe+2]);
+        z.normalize();
+        rightPlane->setFrameFromBasis(x,y,z);
     }
 }
 
@@ -210,14 +266,14 @@ void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
 
     unsigned int index = curve->indexForLength(curveIndexL, distance[0]);
     ghostLocation.push_back(index);
-    unsigned int nextIndex = curve->indexForLength(index, 30.0);        // 30 is a tempory security margin
+    unsigned int nextIndex = curve->indexForLength(index, 40.0);        // 30 is a tempory security margin
     ghostLocation.push_back(nextIndex);     // the mirror plane
 
     for(unsigned int i=1; i<static_cast<unsigned int>(nb); i++){
         index = curve->indexForLength(ghostLocation[2*i-1], distance[i]);
         ghostLocation.push_back(index);
         unsigned int nbU = curve->getNbU();
-        nextIndex = curve->indexForLength(index, 30.0);
+        nextIndex = curve->indexForLength(index, 40.0);
         if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
         else ghostLocation.push_back(nbU-1);
 

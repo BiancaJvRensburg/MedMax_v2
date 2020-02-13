@@ -55,6 +55,12 @@ std::vector<Vec> Viewer::updatePolyline(){
         return angles;   // return an empty vector
     }*/
 
+    updateMeshPolyline();
+
+    return getPolylinePlaneAngles();
+}
+
+void Viewer::updateMeshPolyline(){
     polyline.clear();       // The vector of the points of the polyline (the locations of the planes)
 
     Vec p = leftPlane->getPosition();
@@ -67,8 +73,6 @@ std::vector<Vec> Viewer::updatePolyline(){
 
     p = rightPlane->getPosition();
     polyline.push_back(p);
-
-    return getPolylinePlaneAngles();
 }
 
 // Get each polyline in the coordinates of its plane
@@ -291,7 +295,6 @@ void Viewer::initGhostPlanes(){
 }
 
 void Viewer::cutMesh(){
-   // Q_EMIT tempTest(getReferenceAxes());
     bool isNumberRecieved;
     int nbPieces = QInputDialog::getInt(this, "Cut mesh", "Number of pieces", 0, 1, 10, 1, &isNumberRecieved, Qt::WindowFlags());
     if(isNumberRecieved) nbGhostPlanes = nbPieces-1;
@@ -614,27 +617,63 @@ Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
 }
 
 void Viewer::getAxes(){
-    Q_EMIT tempTest(getReferenceAxes(), updatePolyline());
+    Q_EMIT tempTest(getReferenceAxes(), getGhostToPolyAngles());
+}
+
+Vec Viewer::getCustomProjection(Vec a, Vec normal){
+    return a - normal * (a * normal);
+}
+
+std::vector<double> Viewer::getGhostToPolyAngles(){
+    std::vector<double> polyAngles;
+    Vec axisX = Vec(1,0,0);
+    Vec axisZ = Vec(0,0,1);
+    std::vector<Vec> poly = updatePolyline();
+
+    for(unsigned int i=0; i<ghostPlanes.size(); i++){
+        Vec a = getCustomProjection(poly[i*2+2], axisX);
+        a.normalize();
+        Vec b = getCustomProjection(axisZ, axisX);
+        double alpha = angle(a,b);
+        polyAngles.push_back(alpha);
+    }
+    return polyAngles;
 }
 
 std::vector<Vec> Viewer::getReferenceAxes(){
     std::vector<Vec> v;
-    Vec axis = Vec(0,0,1);
+    Vec axisX = Vec(1,0,0);
+    Vec axisY = Vec(0,1,0);
+    Vec axisZ = Vec(0,0,1);
 
     if(ghostPlanes.size()==0){
-        v.push_back(convertToPlane(rightPlane, leftPlane, Vec(1,0,0)));
-        v.push_back(convertToPlane(rightPlane, leftPlane, Vec(0,1,0)));
-        v.push_back(convertToPlane(rightPlane, leftPlane, axis));
+        v.push_back(convertToPlane(rightPlane, leftPlane, axisX));
+        v.push_back(convertToPlane(rightPlane, leftPlane, axisY));
+        v.push_back(convertToPlane(rightPlane, leftPlane, axisZ));
     }
     else{
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axis));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisX));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisY));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisZ));
 
-        /*for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){          // this is wrong
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axis));
-        }*/
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisX));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisY));
+        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisZ));
+
+        for(unsigned int i=0; i<ghostPlanes.size()-1; i++){
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisX));
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisY));
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisZ));
+
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisX));
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisY));
+            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisZ));
+        }
 
         unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axis));
+        v.push_back(convertToPlane(ghostPlanes[lastIndex], rightPlane, axisX));
+        v.push_back(convertToPlane(ghostPlanes[lastIndex], rightPlane, axisY));
+        v.push_back(convertToPlane(ghostPlanes[lastIndex], rightPlane, axisZ));
     }
     return v;
 }
