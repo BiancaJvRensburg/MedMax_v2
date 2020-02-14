@@ -55,7 +55,7 @@ Q_SIGNALS:
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
     void ghostPlaneMovementEnd();
 
-    void tempTest(std::vector<Vec>, std::vector<double>);
+    void sendAxes(std::vector<Vec>);
 
 protected:
     void draw();
@@ -98,9 +98,6 @@ protected:
     const double constraint = 25;
 
     Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
-    Vec convertToPlaneFromFrame(Plane *base, Frame& f, Vec axis);
-    Vec convertToFrame(Frame& base, Frame& f, Vec axis);
-    Vec convertToFrameFromPlane(Frame& base, Plane* p, Vec axis);
 
 private:
     void initGhostPlanes();
@@ -113,7 +110,6 @@ private:
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
-    std::vector<double> getGhostToPolyAngles();
     std::vector<Vec> getPlaneFrames();
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);
@@ -121,6 +117,8 @@ private:
     void rotatePlane(Plane* p, int position);
     void movePlane(Plane *p, bool isLeft, unsigned int index);
     void repositionPlane(Plane* p, unsigned int index);
+    void addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
+    void addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
 };
 
 #endif // VIEWER_H

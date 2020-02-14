@@ -616,78 +616,53 @@ Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){
     return b;    // get it in terms of base
 }
 
-Vec Viewer::convertToPlaneFromFrame(Plane *base, Frame &f, Vec axis){
-    Vec  a = f.localInverseTransformOf(axis);
-    Vec b = base->getLocalVector(a);
-    return b;
-}
-
-Vec Viewer::convertToFrame(Frame &base, Frame &f, Vec axis){
-    Vec  a = f.localInverseTransformOf(axis);
-    Vec b = base.localTransformOf(a);
-    return b;
-}
-
-Vec Viewer::convertToFrameFromPlane(Frame &base, Plane *p, Vec axis){
-    Vec  a = p->getMeshVectorFromLocal(axis);
-    Vec b = base.localTransformOf(a);
-    return b;
-}
-
 void Viewer::rotateFrame(Frame &f, Vec axis, double theta){
     f.rotate(Quaternion(cos(theta/2.0)*axis.x, cos(theta/2.0)*axis.y, cos(theta/2.0)*axis.z, sin(theta/2.0)));
 }
 
 void Viewer::getAxes(){
-    Q_EMIT tempTest(getReferenceAxes(), getGhostToPolyAngles());
+    Q_EMIT sendAxes(getReferenceAxes());
 }
 
 Vec Viewer::getCustomProjection(Vec a, Vec normal){
     return a - normal * (a * normal);
 }
 
-std::vector<double> Viewer::getGhostToPolyAngles(){
-    std::vector<double> polyAngles;
-    Vec axisX = Vec(1,0,0);
-    Vec axisZ = Vec(0,0,1);
-    std::vector<Vec> poly = updatePolyline();
-
-    for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        Vec a = getCustomProjection(poly[i*2+2], axisX);
-        a.normalize();
-        Vec b = getCustomProjection(axisZ, axisX);
-        double alpha = angle(a,b);
-        polyAngles.push_back(alpha);
-    }
-    return polyAngles;
-}
-
-std::vector<Vec> Viewer::getReferenceAxes(){
-    std::vector<Vec> v;
+void Viewer::addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p){
     Vec axisX = Vec(1,0,0);
     Vec axisY = Vec(0,1,0);
     Vec axisZ = Vec(0,0,1);
 
+    axes.push_back(convertToPlane(base, p, axisX));
+    axes.push_back(convertToPlane(base, p, axisY));
+    axes.push_back(convertToPlane(base, p, axisZ));
+}
+
+void Viewer::addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p){
+    Vec axisX = Vec(1,0,0);
+    Vec axisY = Vec(0,1,0);
+    Vec axisZ = Vec(0,0,1);
+
+    axes.push_back(convertToPlane(base, p, axisX));
+    axes.push_back(convertToPlane(base, p, -axisY));
+    axes.push_back(convertToPlane(base, p, -axisZ));
+}
+
+std::vector<Vec> Viewer::getReferenceAxes(){
+    std::vector<Vec> v;
+
     if(ghostPlanes.size()==0){
-        v.push_back(convertToPlane(rightPlane, leftPlane, axisX));
-        v.push_back(convertToPlane(rightPlane, leftPlane, axisY));
-        v.push_back(convertToPlane(rightPlane, leftPlane, axisZ));
+        addFrameChangeToAxes(v, rightPlane, leftPlane);
     }
     else{
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisX));
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisY));
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisZ));
+        addInverseFrameChangeToAxes(v, leftPlane, ghostPlanes[0]);
 
        for(unsigned int i=0; i<ghostPlanes.size()-1; i++){      // don't include the last ghost plane, the right plane will set it
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisX));
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisY));
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisZ));
+            addInverseFrameChangeToAxes(v, ghostPlanes[i], ghostPlanes[i+1]);
         }
 
         unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisX));
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisY));
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisZ));
+        addFrameChangeToAxes(v, rightPlane, ghostPlanes[lastIndex]);
     }
     return v;
 }

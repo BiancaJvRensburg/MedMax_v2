@@ -49,6 +49,8 @@ public:
 
     Frame getFrameCopy();
 
+    void setOrientationFromOtherReference(std::vector<Vec> &frame, unsigned int startIndex, Plane* reference);
+
     Movable status;
 
 private:

@@ -141,11 +141,16 @@ Vec Plane::getLocalProjection(Vec localP){
 }
 
 Frame Plane::getFrameCopy(){
-    /*Frame f = Frame();
-    f.setReferenceFrame(cp.getReferenceFrame());
-    Vec position = cp.getPoint();
-    Quaternion orientation =
-
-    return f;*/
     return Frame(cp.getFrame());
+}
+
+void Plane::setOrientationFromOtherReference(std::vector<Vec> &frame, unsigned int startIndex, Plane *reference){
+    Vec x = reference->getMeshVectorFromLocal(frame[startIndex]);
+    x.normalize();
+    Vec y = reference->getMeshVectorFromLocal(frame[startIndex+1]);
+    y.normalize();
+    Vec z = reference->getMeshVectorFromLocal(frame[startIndex+2]);
+    z.normalize();
+
+    setFrameFromBasis(x,y,z);
 }

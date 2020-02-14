@@ -157,48 +157,23 @@ void ViewerFibula::swivelToPolyline(){
 }
 
 // Rotate the end plane to match the mandibule
-void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles){
+void ViewerFibula::recieveAxes(std::vector<Vec> axes){
 
     if(ghostPlanes.size()==0){
-        Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);
-        x.normalize();
-        Vec y = rightPlane->getMeshVectorFromLocal(axes[1]);
-        y.normalize();
-        Vec z = rightPlane->getMeshVectorFromLocal(axes[2]);
-        z.normalize();
-        leftPlane->setFrameFromBasis(x,y,z);
+        leftPlane->setOrientationFromOtherReference(axes, 0, rightPlane);
     }
     else{
-        Vec x = leftPlane->getMeshVectorFromLocal(axes[0]);
-        x.normalize();
-        Vec y = leftPlane->getMeshVectorFromLocal(axes[1]);
-        y.normalize();
-        Vec z = leftPlane->getMeshVectorFromLocal(axes[2]);
-        z.normalize();
-        ghostPlanes[0]->setFrameFromBasis(x,y,z);
+        ghostPlanes[0]->setOrientationFromOtherReference(axes, 0, leftPlane);
 
         unsigned int axesIndex = 3;
         for(unsigned int i=2; i<ghostPlanes.size()-1; i+=2){
-            x = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[axesIndex]);
-            x.normalize();
-            y = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[axesIndex+1]);
-            y.normalize();
-            z = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[axesIndex+2]);
-            z.normalize();
-            ghostPlanes[i]->setFrameFromBasis(x,y,z);
+            ghostPlanes[i]->setOrientationFromOtherReference(axes, axesIndex, ghostPlanes[i-1]);
             axesIndex+=3;
         }
 
-        unsigned int lastIndex = ghostPlanes.size()-1;
-        unsigned int lastAxe = axes.size()-3;
-
-        x = rightPlane->getMeshVectorFromLocal(axes[lastAxe]);
-        x.normalize();
-        y = rightPlane->getMeshVectorFromLocal(axes[lastAxe+1]);
-        y.normalize();
-        z = rightPlane->getMeshVectorFromLocal(axes[lastAxe+2]);
-        z.normalize();
-        ghostPlanes[lastIndex]->setFrameFromBasis(x,y,z);
+        unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size()-1);
+        unsigned int lastAxe = static_cast<unsigned int>(axes.size()-3);
+        ghostPlanes[lastIndex]->setOrientationFromOtherReference(axes, lastAxe, rightPlane);
     }
 }
 
