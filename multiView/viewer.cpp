@@ -50,10 +50,10 @@ std::vector<Vec> Viewer::updatePolyline(){
 
     // NOTE if this is in comments, the planes always line up on the two sides
     // if its not cut / are no ghost planes
-    /*if(!isGhostPlanes || !isGhostActive){
+    if(!isGhostPlanes){
         std::vector<Vec> angles;
         return angles;   // return an empty vector
-    }*/
+    }
 
     updateMeshPolyline();
 

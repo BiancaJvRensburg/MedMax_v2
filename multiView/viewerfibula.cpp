@@ -6,7 +6,6 @@ ViewerFibula::ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMa
     maxOffset = fibulaOffset;
     isPlanesRecieved = false;
     isCutSignal = false;
-    isGhostActive = false;
 }
 
 void ViewerFibula::initSignals(){
@@ -55,11 +54,11 @@ void ViewerFibula::createPolyline(){
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
-    if(isGhostActive){
+    if(polyline.size()!=0){
         resetMandibleInfo(polyline, axes);
         setPlanePositions();
         setPlaneOrientations();
-    }
+   }
     else{
         repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
         repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
@@ -253,8 +252,6 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 
 // Add ghost planes that correspond to the ghost planes in the jaw
 void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
-    isGhostActive = true;
-
     if(nb==0){      // if no ghost planes were actually recieved
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
         ghostPlanes.clear();
@@ -271,7 +268,7 @@ void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::
     handleCut();
 }
 
-// When we want to move the right plane (the right plane is moved in the jaw)
+// When we want to move the right plane
 void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     unsigned int newIndex;
 
@@ -351,7 +348,6 @@ void ViewerFibula::handleCut(){
 }
 
 void ViewerFibula::uncutMesh(){
-    isGhostActive = false;
     isPlanesRecieved = false;
     mesh.setIsCut(Side::EXTERIOR, false, false);
     isGhostPlanes = false;
