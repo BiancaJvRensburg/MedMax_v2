@@ -139,3 +139,13 @@ Vec Plane::getProjection(Vec p){
 Vec Plane::getLocalProjection(Vec localP){
     return localP - normal * (localP * normal);             // don't convert between coordinate systems
 }
+
+Frame Plane::getFrameCopy(){
+    /*Frame f = Frame();
+    f.setReferenceFrame(cp.getReferenceFrame());
+    Vec position = cp.getPoint();
+    Quaternion orientation =
+
+    return f;*/
+    return Frame(cp.getFrame());
+}

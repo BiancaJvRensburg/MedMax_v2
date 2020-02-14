@@ -98,6 +98,9 @@ protected:
     const double constraint = 25;
 
     Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
+    Vec convertToPlaneFromFrame(Plane *base, Frame& f, Vec axis);
+    Vec convertToFrame(Frame& base, Frame& f, Vec axis);
+    Vec convertToFrameFromPlane(Frame& base, Plane* p, Vec axis);
 
 private:
     void initGhostPlanes();
@@ -106,7 +109,7 @@ private:
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
     void updateMeshPolyline();
-
+    void rotateFrame(Frame& f, Vec axis, double angle);
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane

@@ -48,6 +48,7 @@ private:
     void setPlaneOrientations();
     void setPlanePositions();
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
+    void swivelToPolyline();
 
     bool isCutSignal;
     bool isPlanesRecieved;

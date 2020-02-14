@@ -97,10 +97,15 @@ void ViewerFibula::setPlaneOrientations(){
     s = Quaternion(normal, mandiblePolyline[mandiblePolyline.size()-1]);
     rightPlane->setOrientation(s.normalized());
 
+    swivelToPolyline();
+
+    Q_EMIT requestAxes();       // this cancels the effect of the swivel WARNING : a fatal bug here
+}
+
+void ViewerFibula::swivelToPolyline(){
     if(ghostPlanes.size()==0){
         // Project the mand and the fib on the left plane
         std::vector<Vec> fibulaPolyline = getPolyline();
-        fibulaPolyline = getPolyline();
         Vec mandPoint = rightPlane->getLocalProjection(mandiblePolyline[1]);
         Vec fibPoint = rightPlane->getLocalProjection(fibulaPolyline[1]);
         mandPoint.normalize();  // normalise them so they have the same length
@@ -108,10 +113,8 @@ void ViewerFibula::setPlaneOrientations(){
 
         double alpha = angle(mandPoint, fibPoint)+ M_PI;    // Get the angle between the two
         Vec axis = Vec(0,0,1);
-        //leftPlane->rotatePlane(axis, alpha);
+        leftPlane->rotatePlane(axis, alpha);
         rightPlane->rotatePlane(axis, alpha);
-
-
     }
 
     else{
@@ -151,12 +154,11 @@ void ViewerFibula::setPlaneOrientations(){
         rightPlane->rotatePlane(axis, alpha);
         ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
     }
-
-    Q_EMIT requestAxes();
 }
 
 // Rotate the end plane to match the mandibule
 void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles){
+
     if(ghostPlanes.size()==0){
         Vec x = rightPlane->getMeshVectorFromLocal(axes[0]);        // axes must stay in mesh coordinates
         x.normalize();
@@ -167,7 +169,8 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles
         leftPlane->setFrameFromBasis(x,y,z);
     }
     else{
-        Vec x = leftPlane->getMeshVectorFromLocal(axes[0]);        // axes must stay in mesh coordinates
+        // FATAL BUG SOMEWHERE HERE
+        Vec x = leftPlane->getMeshVectorFromLocal(axes[0]);
         x.normalize();
         Vec y = leftPlane->getMeshVectorFromLocal(axes[1]);
         y.normalize();
@@ -175,15 +178,23 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles
         z.normalize();
         ghostPlanes[0]->setFrameFromBasis(x,y,z);
 
-        Vec x2 = leftPlane->getMeshVectorFromLocal(axes[3]);        // axes must stay in mesh coordinates
+        /*Vec x2 = leftPlane->getMeshVectorFromLocal(axes[3]);        // this sort of worked but it shouldn't
         x2.normalize();
         Vec y2 = leftPlane->getMeshVectorFromLocal(axes[4]);
         y2.normalize();
         Vec z2 = leftPlane->getMeshVectorFromLocal(axes[5]);
         z2.normalize();
-        ghostPlanes[1]->setFrameFromBasis(x2,y2,z2);
+        ghostPlanes[1]->setFrameFromBasis(x2,y2,z2);*/
 
-        std::vector<Vec> poly = getPolyline();
+        /*Vec x2 = ghostPlanes[0]->getMeshVectorFromLocal(axes[3]);        // axes must stay in mesh coordinates
+        x2.normalize();
+        Vec y2 = ghostPlanes[0]->getMeshVectorFromLocal(axes[4]);
+        y2.normalize();
+        Vec z2 = ghostPlanes[0]->getMeshVectorFromLocal(axes[5]);
+        z2.normalize();
+        ghostPlanes[1]->setFrameFromBasis(x2,y2,z2);*/
+
+        /*std::vector<Vec> poly = getPolyline();
         Vec axisX = Vec(1,0,0);
         Vec axisZ = Vec(0,0,1);
         Vec rotationAxis = cross(axisX, poly[2]);
@@ -194,9 +205,9 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles
         double alpha = angle(a,b);
 
         double theta = - alpha + angles[0] + M_PI;
-        ghostPlanes[1]->rotatePlane(rotationAxis, theta);
+        ghostPlanes[1]->rotatePlane(rotationAxis, theta);*/
 
-        for(unsigned int i=2; i<ghostPlanes.size()-1; i+=2){
+        /*for(unsigned int i=2; i<ghostPlanes.size()-1; i+=2){
             x = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i]);        // axes must stay in mesh coordinates
             x.normalize();
             y = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+1]);
@@ -212,18 +223,26 @@ void ViewerFibula::recieveTest(std::vector<Vec> axes, std::vector<double> angles
             z2 = ghostPlanes[i-1]->getMeshVectorFromLocal(axes[3*i+5]);
             z2.normalize();
             ghostPlanes[i+1]->setFrameFromBasis(x2,y2,z2);
-        }
+        }*/
 
-        unsigned int lastIndex = ghostPlanes.size()-1;
+        unsigned int lastIndex = 1; //ghostPlanes.size()-1;
         unsigned int lastAxe = axes.size()-3;
 
-        x = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe]);        // axes must stay in mesh coordinates
+        /*x = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe]);        // axes must stay in mesh coordinates
         x.normalize();
         y = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe+1]);
         y.normalize();
         z = ghostPlanes[lastIndex]->getMeshVectorFromLocal(axes[lastAxe+2]);
         z.normalize();
-        rightPlane->setFrameFromBasis(x,y,z);
+        rightPlane->setFrameFromBasis(x,y,z);*/
+
+        x = rightPlane->getMeshVectorFromLocal(axes[lastAxe]);        // axes must stay in mesh coordinates
+        x.normalize();
+        y = rightPlane->getMeshVectorFromLocal(axes[lastAxe+1]);
+        y.normalize();
+        z = rightPlane->getMeshVectorFromLocal(axes[lastAxe+2]);
+        z.normalize();
+        ghostPlanes[lastIndex]->setFrameFromBasis(x,y,z);
     }
 }
 

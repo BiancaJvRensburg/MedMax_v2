@@ -29,6 +29,7 @@ public:
     void constrainZRotation(){ cp.getFrame().setConstraint(&constraint); }
     void freeZRotation(){ cp.getFrame().setConstraint(&constraintFree); }
     void draw();
+    const Frame* getReferenceFrame(){ return cp.getReferenceFrame(); }
 
     // Mesh calculations
     bool isIntersection(Vec v0, Vec v1, Vec v2);
@@ -45,6 +46,8 @@ public:
     Vec getMeshCoordinatesFromLocal(Vec v){ return cp.getFrame().localInverseCoordinatesOf(v); }
     Vec getLocalVector(Vec v) { return cp.getFrame().localTransformOf(v); }    // same as get polyline
     Vec getMeshVectorFromLocal(Vec v){ return cp.getFrame().localInverseTransformOf(v); }
+
+    Frame getFrameCopy();
 
     Movable status;
 
