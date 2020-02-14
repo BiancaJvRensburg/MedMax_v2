@@ -11,7 +11,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->nbU = 0;
     this->sliderMax = sliderMax;
     this->isDrawMesh = false;
-    this->nbGhostPlanes = 3;
+    this->nbGhostPlanes = 0;
     this->isGhostPlanes = false;
     this->isGhostActive = true;
 }
