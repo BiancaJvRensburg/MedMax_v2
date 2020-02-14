@@ -391,15 +391,11 @@ void Viewer::movePlane(Plane *p, bool isLeft, unsigned int curveIndex){
 
 void Viewer::onLeftSliderReleased(){
     if(isGhostPlanes) handlePlaneMoveEnd();
-    // creates an infinite loop if done when the slider value changes
-    // TODO this means moveLeftPlane called twice
     // Q_EMIT setLMSliderValue( static_cast<int>( (static_cast<double>(curveIndexL)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
 void Viewer::onRightSliderReleased(){
     if(isGhostPlanes) handlePlaneMoveEnd();
-    // creates an infinite loop if done when the slider value changes
-    // TODO this means moveLeftPlane called twice
     // Q_EMIT setRMSliderValue( static_cast<int>( sliderMax - (static_cast<double>(curveIndexR)/static_cast<double>(nbU)) * static_cast<double>(sliderMax) ) );
 }
 
@@ -435,14 +431,12 @@ void Viewer::handlePlaneMoveEnd(){
 
     // Recut
     Q_EMIT preparingToCut();
-    if(!isSpaceForGhosts()) Q_EMIT noGhostPlanesToSend();
+    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
     Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);
     isGhostPlanes = true;
     initGhostPlanes();
-
-    Q_EMIT ghostPlaneMovementEnd();
 }
 
 void Viewer::openOFF(QString filename) {
@@ -583,39 +577,6 @@ void Viewer::matchPlaneToFrenet(Plane *p, unsigned int index){
     Vec x, y, z;
     curve->getFrame(index,z,x,y);
     p->setFrameFromBasis(x,y,z);
-}
-
-std::vector<Vec> Viewer::getPlaneFrames(){
-    std::vector<Vec> frames;
-    Vec x, y, z;
-
-    // Left
-    curve->getFrame(curveIndexL,z,x,y);
-    frames.push_back(x);
-    frames.push_back(y);
-    frames.push_back(z);
-
-    // Right
-    curve->getFrame(curveIndexR,z,x,y);
-    frames.push_back(x);
-    frames.push_back(y);
-    frames.push_back(z);
-
-    // For each ghost plane, get the orienation of both sides
-    for(unsigned int i=0; i<ghostLocation.size(); i++){
-        curve->getFrame(ghostLocation[i],z,x,y);
-        // Left
-        frames.push_back(-x);
-        frames.push_back(y);
-        frames.push_back(-z);
-
-        // Right
-        frames.push_back(x);
-        frames.push_back(y);
-        frames.push_back(z);
-    }
-
-    return frames;
 }
 
 Vec Viewer::convertToPlane(Plane *base, Plane *p, Vec axis){

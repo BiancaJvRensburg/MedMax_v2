@@ -53,7 +53,6 @@ Q_SIGNALS:
     void preparingToCut();          // tells the fibula to reset its planes
 
     void ghostPlaneMovementStart();      // tells the fibula to "uncut" the mesh while we move the planes
-    void ghostPlaneMovementEnd();
 
     void sendAxes(std::vector<Vec>);
 
@@ -110,7 +109,6 @@ private:
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
-    std::vector<Vec> getPlaneFrames();
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);
 

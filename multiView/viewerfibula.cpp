@@ -248,26 +248,15 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(nb==0){      // if no ghost planes were actually recieved
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
-        ghostPlanes.clear();        // TODO look at this (call noGhostPlanesToRecieve?)
+        ghostPlanes.clear();
         mesh.deleteGhostPlanes();
         return;
     }
 
-    unsigned int oldNb = static_cast<unsigned int>(ghostPlanes.size() / 2);
-
     findGhostLocations(nb, distance);
-
     addGhostPlanes(2* static_cast<int>(nb));    // 2*nb ghost planes : there are 2 angles for each plane in the manible, so twice the number of ghost planes
 
     repositionPlanes(mandPolyline, axes);
-
-    // If its cut and the number of planes has changed
-    if(mesh.getIsCut() && nb!=oldNb){
-        mesh.deleteGhostPlanes();       // should update the number of planes here?
-        //isPlanesRecieved = true;
-        cutMesh();
-        //return;
-    }
 
     isPlanesRecieved = true;
     handleCut();
@@ -359,13 +348,4 @@ void ViewerFibula::uncutMesh(){
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
     update();
-}
-
-
-void ViewerFibula::handleMovementStart(){
-
-}
-
-void ViewerFibula::handleMovementEnd(){
-
 }
