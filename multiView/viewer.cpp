@@ -213,6 +213,14 @@ void Viewer::drawMesh(){
     update();
 }
 
+bool Viewer::isSpaceForGhosts(){
+    int startI = static_cast<int>(curve->indexForLength(curveIndexL, constraint));
+    int endI = static_cast<int>(curve->indexForLength(curveIndexR, -constraint));
+    int searchArea = endI - startI;
+    if(searchArea>0) return true;
+    return false;
+}
+
 void Viewer::initGhostPlanes(){
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];     // get rid of any previous ghost planes
     ghostPlanes.clear();
@@ -427,7 +435,7 @@ void Viewer::handlePlaneMoveEnd(){
 
     // Recut
     Q_EMIT preparingToCut();
-    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    if(!isSpaceForGhosts()) Q_EMIT noGhostPlanesToSend();
     Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);

@@ -119,6 +119,8 @@ private:
     void repositionPlane(Plane* p, unsigned int index);
     void addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
     void addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
+
+    bool isSpaceForGhosts();
 };
 
 #endif // VIEWER_H
