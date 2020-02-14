@@ -678,60 +678,16 @@ std::vector<Vec> Viewer::getReferenceAxes(){
         v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisY));
         v.push_back(convertToPlane(leftPlane, ghostPlanes[0], -axisZ));
 
-       /* v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisX));
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisY));
-        v.push_back(convertToPlane(leftPlane, ghostPlanes[0], axisZ));*/
-
-        /*Frame f = ghostPlanes[0]->getFrameCopy();
-        Vec from = f.localTransformOf(polyline[2]);
-        Vec to = leftPlane->getMeshVectorFromLocal(polyline[0]);
-        from.normalize();
-        to.normalize();
-        Quaternion rotation = Quaternion(to, from);
-        f.rotate(rotation);
-
-        Frame ref = ghostPlanes[0]->getFrameCopy();
-        rotateFrame(ref, axisX, M_PI*2.0);*/
-
-        // Two inversed bases of the ghost plane
-        /*Frame f = ghostPlanes[0]->getFrameCopy();
-        rotateFrame(f, axisX, M_PI*2.0);
-        Frame ref = ghostPlanes[0]->getFrameCopy();
-        rotateFrame(f, axisX, M_PI*2.0);
-
-        std::vector<Vec> poly = updatePolyline();
-        Vec p2 = poly[2];
-        Vec p2prime = ghostPlanes[0]->getMeshVectorFromLocal(poly[2]);  // get it in world coordinates
-       // p2prime = f.localTransformOf(p2prime);       // get the world vector in terms of the frame
-        p2 = f.localInverseTransformOf(p2);                // get the world coordinates of p2 from the point of view of the frame
-        Quaternion rotation = Quaternion(p2prime, p2);
-        f.rotate(rotation);
-
-        // get the position of the mirror
-        v.push_back(convertToFrame(ref, f, axisX));      // get the rotated f in terms of the base
-        v.push_back(convertToFrame(ref, f, axisY));
-        v.push_back(convertToFrame(ref, f, axisZ));*/
-
-        /*for(unsigned int i=0; i<ghostPlanes.size()-1; i++){
+       for(unsigned int i=0; i<ghostPlanes.size()-1; i++){      // don't include the last ghost plane, the right plane will set it
             v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisX));
             v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisY));
             v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], -axisZ));
-
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisX));
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisY));
-            v.push_back(convertToPlane(ghostPlanes[i], ghostPlanes[i+1], axisZ));
-        }*/
+        }
 
         unsigned int lastIndex = static_cast<unsigned int>(ghostPlanes.size())-1;
-        /*v.push_back(convertToPlane(ghostPlanes[0], rightPlane, axisX));
-        v.push_back(convertToPlane(ghostPlanes[0], rightPlane, axisY));
-        v.push_back(convertToPlane(ghostPlanes[0], rightPlane, axisZ));*/
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[0], axisX));
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[0], axisY));
-        v.push_back(convertToPlane(rightPlane, ghostPlanes[0], axisZ));
-        /*v.push_back(convertToFrameFromPlane(f, rightPlane, axisX));
-        v.push_back(convertToFrameFromPlane(f, rightPlane, axisY));
-        v.push_back(convertToFrameFromPlane(f, rightPlane, axisZ));*/
+        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisX));
+        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisY));
+        v.push_back(convertToPlane(rightPlane, ghostPlanes[lastIndex], axisZ));
     }
     return v;
 }
