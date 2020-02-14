@@ -54,9 +54,15 @@ void ViewerFibula::createPolyline(){
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
-    resetMandibleInfo(polyline, axes);
-    setPlanePositions();
-    setPlaneOrientations();
+    if(mesh.getIsCut()){
+        resetMandibleInfo(polyline, axes);
+        setPlanePositions();
+        setPlaneOrientations();
+    }
+    else{
+        repositionPlane(leftPlane, curveIndexL+indexOffset);
+        repositionPlane(rightPlane, curveIndexR+indexOffset);
+    }
     update();
 }
 
@@ -79,7 +85,6 @@ void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
 
     // This step has to be done for at least the director in order to give it a base from which to rotate
-
     // Orientate the left plane
     Vec normal = leftPlane->getNormal();        // The normal defines the polyline, so move our polyline to the mandible polyline
     Quaternion s = Quaternion(-normal, mandiblePolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
@@ -213,17 +218,18 @@ void ViewerFibula::addGhostPlanes(int nb){
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
     ghostLocation.clear();
+    const double securityMargin = 30.0;       // this is temporary
 
     unsigned int index = curve->indexForLength(curveIndexL, distance[0]);
     ghostLocation.push_back(index);
-    unsigned int nextIndex = curve->indexForLength(index, 30.0);        // 30 is a tempory security margin
+    unsigned int nextIndex = curve->indexForLength(index, securityMargin);
     ghostLocation.push_back(nextIndex);     // the mirror plane
 
     for(unsigned int i=1; i<static_cast<unsigned int>(nb); i++){
         index = curve->indexForLength(ghostLocation[2*i-1], distance[i]);
         ghostLocation.push_back(index);
         unsigned int nbU = curve->getNbU();
-        nextIndex = curve->indexForLength(index, 30.0);
+        nextIndex = curve->indexForLength(index, securityMargin);
         if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
         else ghostLocation.push_back(nbU-1);
 
@@ -338,7 +344,6 @@ void ViewerFibula::cutMesh(){
 
 void ViewerFibula::handleCut(){
     if(isCutSignal && isPlanesRecieved){
-        // delete ghost planes first?
         for(unsigned int i=0; i<ghostPlanes.size(); i++){
             mesh.addPlane(ghostPlanes[i]);
         }
