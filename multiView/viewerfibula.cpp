@@ -54,15 +54,9 @@ void ViewerFibula::createPolyline(){
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
-    if(mesh.getIsCut()){
-        resetMandibleInfo(polyline, axes);
-        setPlanePositions();
-        setPlaneOrientations();
-    }
-    else{
-        repositionPlane(leftPlane, curveIndexL+indexOffset);
-        repositionPlane(rightPlane, curveIndexR+indexOffset);
-    }
+    resetMandibleInfo(polyline, axes);
+    setPlanePositions();
+    setPlaneOrientations();
     update();
 }
 
@@ -85,6 +79,7 @@ void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
 
     // This step has to be done for at least the director in order to give it a base from which to rotate
+
     // Orientate the left plane
     Vec normal = leftPlane->getNormal();        // The normal defines the polyline, so move our polyline to the mandible polyline
     Quaternion s = Quaternion(-normal, mandiblePolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
@@ -250,7 +245,7 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 }
 
 // Add ghost planes that correspond to the ghost planes in the jaw
-void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){  
+void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(nb==0){      // if no ghost planes were actually recieved
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
         ghostPlanes.clear();        // TODO look at this (call noGhostPlanesToRecieve?)

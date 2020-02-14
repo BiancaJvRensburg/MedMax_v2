@@ -76,8 +76,6 @@ protected:
     Quaternion getNewOrientation(unsigned int index);
     Vec getCustomProjection(Vec a, Vec normal);        // project a onto a plane defined by the normal
 
-    void repositionPlane(Plane* p, unsigned int index);
-
     ManipulatedFrame* viewerFrame;
 
     Plane *leftPlane;
@@ -118,6 +116,7 @@ private:
 
     void rotatePlane(Plane* p, int position);
     void movePlane(Plane *p, bool isLeft, unsigned int index);
+    void repositionPlane(Plane* p, unsigned int index);
     void addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
     void addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
 };

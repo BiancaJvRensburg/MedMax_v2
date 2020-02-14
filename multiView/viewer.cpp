@@ -3,7 +3,7 @@
 #include "Vec3D.h"
 #include <QGLViewer/manipulatedFrame.h>
 
-Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(parent) { 
+Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(parent) {
     Camera *c = camera();       // switch the cameras
     setCamera(cam);
     delete c;
@@ -545,7 +545,7 @@ void Viewer::updateCamera(const Vec3Df & center, float radius){
     camera()->showEntireScene();
 }
 
-void Viewer::updatePlanes(){  
+void Viewer::updatePlanes(){
     repositionPlane(leftPlane, curveIndexL);
     repositionPlane(rightPlane, curveIndexR);
 
