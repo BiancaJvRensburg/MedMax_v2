@@ -194,16 +194,27 @@ double Curve::discreteChordLength(unsigned int indexS, unsigned int indexE){
     return sum;
 }
 
+unsigned int Curve::getClosestDistance(double target, unsigned int indexS, unsigned int a, unsigned int b){
+    double aDist = discreteLength(indexS, indexS+a);
+    double bDist = discreteLength(indexS, indexS+b);
+    double aTarget = abs(target - aDist);
+    double bTarget = abs(target - bDist);
+
+    if(aTarget < bTarget) return a;
+    return b;
+}
+
 // Returns the index which is length away from indexS
 unsigned int Curve::indexForLength(unsigned int indexS, double length){
     unsigned int i=0;
 
-    // First condition should never happen, just extra protection to prevent crashes
     if(length > 0){
         while(indexS+i < nbU-1 && discreteLength(indexS, indexS+i) < length) i++;
+        if(i!=0) i = getClosestDistance(length, indexS, i, i-1);
     }
     else{
         while(indexS+i > 0 && discreteLength(indexS, indexS+i) < abs(length)) i--;
+        if(i!=nbU-1) i = getClosestDistance(length, indexS, i, i+1);
     }
 
     return indexS+i;

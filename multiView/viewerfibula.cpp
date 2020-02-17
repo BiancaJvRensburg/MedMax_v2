@@ -218,16 +218,22 @@ void ViewerFibula::addGhostPlanes(int nb){
 
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
-    ghostLocation.clear();
-    const double securityMargin = 30.0;       // this is temporary
+    distances.clear();
+    for(unsigned int i=0; i<=nb; i++) distances.push_back(distance[i]);
 
-    unsigned int index = curve->indexForLength(curveIndexL, distance[0]);
+    findIndexesFromDistances();
+}
+
+void ViewerFibula::findIndexesFromDistances(){
+    ghostLocation.clear();
+    unsigned int index = curve->indexForLength(curveIndexL+indexOffset, distances[0]);
     ghostLocation.push_back(index);
     unsigned int nextIndex = curve->indexForLength(index, securityMargin);
     ghostLocation.push_back(nextIndex);     // the mirror plane
+    unsigned int nb = static_cast<unsigned int>(distances.size()-1);
 
-    for(unsigned int i=1; i<static_cast<unsigned int>(nb); i++){
-        index = curve->indexForLength(ghostLocation[2*i-1], distance[i]);
+    for(unsigned int i=1; i<nb; i++){
+        index = curve->indexForLength(ghostLocation[2*i-1], distances[i]);
         ghostLocation.push_back(index);
         unsigned int nbU = curve->getNbU();
         nextIndex = curve->indexForLength(index, securityMargin);
@@ -235,7 +241,8 @@ void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
         else ghostLocation.push_back(nbU-1);
 
     }
-    curveIndexR = curve->indexForLength(ghostLocation[2*static_cast<unsigned int>(nb)-1], distance[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
+    curveIndexR = curve->indexForLength(ghostLocation[2*nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
+
 }
 
 // NOT USED
@@ -285,6 +292,7 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyl
 
 // One of the ghost planes is moved in the jaw
 // NOT USED FOR NOW
+// Probably out of date
 void ViewerFibula::middlePlaneMoved(unsigned int nb, double distances[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     if(nb==0) return;
 
@@ -316,7 +324,7 @@ void ViewerFibula::initCurve(){
 
     curve = new Curve(nbCP, control);
 
-    nbU = 1500;
+    nbU = 2500;
 
     int nbSeg = nbCP-3;
     nbU -= static_cast<unsigned int>(static_cast<int>(nbU)%nbSeg);

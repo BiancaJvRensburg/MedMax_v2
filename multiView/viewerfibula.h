@@ -45,6 +45,7 @@ private:
     void setPlanePositions();
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
     void swivelToPolyline();
+    void findIndexesFromDistances();
 
     bool isCutSignal;
     bool isPlanesRecieved;
@@ -53,6 +54,9 @@ private:
     int maxOffset;
     std::vector<Vec> mandiblePolyline;      // the last mandible polyline we recieved
     std::vector<Vec> mandibleAxes;          // the last mandible axes we recieved
+    std::vector<double> distances;
+
+    const double securityMargin = 30.0;       // this is temporary
 };
 
 #endif // VIEWERFIBULA_H

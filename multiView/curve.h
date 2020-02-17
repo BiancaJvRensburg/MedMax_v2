@@ -63,6 +63,8 @@ private:
 
     void initConnections();
 
+    unsigned int getClosestDistance(double target, unsigned int indexS, unsigned int a, unsigned int b);       // get the index which is closest to the target distance
+
     // Frenet frame
     Vec* dt;
     Vec* d2t;
