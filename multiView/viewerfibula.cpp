@@ -94,6 +94,7 @@ void ViewerFibula::setPlaneOrientations(){
     leftPlane->rotate(s.normalized());
 
     // Orientate the ghost planes
+
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
         // initial orientation
@@ -103,7 +104,7 @@ void ViewerFibula::setPlaneOrientations(){
         // To polyline
         Quaternion b;
         if(i%2==0) b = Quaternion(Vec(0,0,1), fibulaPolyline[i+1]);
-        else b = Quaternion(Vec(0,0,1), fibulaPolyline[i+1]);
+        else b = Quaternion(-Vec(0,0,1), fibulaPolyline[i+1]);
         ghostPlanes[i]->rotate(b);
         // To mandible
         if(i%2==0) b = Quaternion(Vec(0,0,1), mandiblePolyline[i+1]);
@@ -118,7 +119,7 @@ void ViewerFibula::setPlaneOrientations(){
 
     swivelToPolyline();
 
-    Q_EMIT requestAxes();
+    //Q_EMIT requestAxes();
 }
 
 double calcNorm(Vec &v){
@@ -127,23 +128,6 @@ double calcNorm(Vec &v){
 
 void ViewerFibula::swivelToPolyline(){
     if(ghostPlanes.size()==0){
-        // Project the mand and the fib on the left plane
-        /*std::vector<Vec> fibulaPolyline = getPolyline();
-        Vec mandPoly = mandiblePolyline[1];
-        Vec fibPoly = fibulaPolyline[1];
-        mandPoly.normalize();
-        fibPoly.normalize();
-        std::cout << "Mandible : " << mandPoly.x << " , " << mandPoly.y << " , " << mandPoly.z << std::endl;
-        std::cout << "Fibula : " << fibPoly.x << " , " << fibPoly.y << " , " << fibPoly.z << std::endl;
-
-        Vec mandPoint = rightPlane->getLocalProjection(mandPoly);
-        Vec fibPoint = rightPlane->getLocalProjection(fibPoly);
-
-        double alpha = angle(mandPoint, fibPoint)+ M_PI;    // Get the angle between the two
-        Vec axis = Vec(0,0,1);
-        leftPlane->rotatePlane(axis, alpha);
-        rightPlane->rotatePlane(axis, alpha);*/
-
         Vec axis = Vec(0,0,1);
         leftPlane->rotatePlane(axis, M_PI*2.0);
         rightPlane->rotatePlane(axis, M_PI*2.0);
@@ -154,41 +138,59 @@ void ViewerFibula::swivelToPolyline(){
         std::vector<Vec> fibulaPolyline = getPolyline();
 
         // Left
-        Vec mandPoint = leftPlane->getLocalProjection(mandiblePolyline[0]);
-        Vec fibPoint = leftPlane->getLocalProjection(fibulaPolyline[0]);
-        mandPoint.normalize();
-        fibPoint.normalize();
-        double alpha = angle(mandPoint, fibPoint) + M_PI;
-
+        double alpha = 2.0*M_PI;
         leftPlane->rotatePlane(axis, alpha);
+        std::cout << "Left rotated " << std::endl;
         ghostPlanes[0]->rotatePlane(axis, alpha);
+        std::cout << "ghost rotated " << std::endl;
 
         // Ghost
         for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
-            mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
-            fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
+            std::cout << i << std::endl;
+            Vec mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
+            Vec fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
             mandPoint.normalize();
             fibPoint.normalize();
             alpha = angle(mandPoint, fibPoint) + M_PI;
 
+            alpha = 2.0*M_PI;
             ghostPlanes[i]->rotatePlane(axis, alpha);
             ghostPlanes[i+1]->rotatePlane(axis, alpha);
         }
 
         // Right
         unsigned int lastIndex = mandiblePolyline.size()-1;
-        mandPoint = rightPlane->getLocalProjection(mandiblePolyline[lastIndex]);
-        fibPoint = rightPlane->getLocalProjection(fibulaPolyline[lastIndex]);
-        mandPoint.normalize();
-        fibPoint.normalize();
-        alpha = angle(mandPoint, fibPoint) + M_PI;
-
+        alpha = 2.0*M_PI;
         rightPlane->rotatePlane(axis, alpha);
-        ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha);*/ // the last ghost plane
+        std::cout << "Right rotated " << std::endl;
+        ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
+        std::cout << "Last rotated " << std::endl;*/
         Vec axis = Vec(0,0,1);
         leftPlane->rotatePlane(axis, M_PI*2.0);
         rightPlane->rotatePlane(axis, M_PI*2.0);
-        //for(int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->rotatePlane(axis, M_PI*2.0);
+
+        std::vector<Vec> fibulaPolyline = getPolyline();
+
+        for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
+            mandiblePolyline[i+1].normalize();
+            fibulaPolyline[i+1].normalize();
+            Vec mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
+            Vec fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
+            mandPoint.normalize();
+            fibPoint.normalize();
+            double alpha = angle(mandPoint, fibPoint) + M_PI;
+
+            ghostPlanes[i]->rotatePlane(axis, alpha);
+            ghostPlanes[i+1]->rotatePlane(axis, alpha);
+        }
+
+
+        //for(unsigned int i=1; i<ghostPlanes.size()-1; i+=2) ghostPlanes[i]->rotatePlane(axis, M_PI*2.0);
+        //for(unsigned int i=0; i<ghostPlanes.size(); i+=2) ghostPlanes[i]->rotatePlane(-axis, M_PI*2.0);
+        /*for(unsigned int i=1; i<ghostPlanes.size()-1; i++) {
+            if(i%2==0) ghostPlanes[i]->rotatePlane(-axis, M_PI*2.0);
+            else ghostPlanes[i]->rotatePlane(axis, M_PI*2.0);
+        }*/
     }
 }
 
