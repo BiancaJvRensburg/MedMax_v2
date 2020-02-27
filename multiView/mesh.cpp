@@ -421,7 +421,6 @@ void Mesh::planeIntersection(unsigned int index){
         unsigned int t1 = triangles[i].getVertex(1);
         unsigned int t2 = triangles[i].getVertex(2);
 
-
         if(planes[index]->isIntersection(Vec(vertices[t0]), Vec(vertices[t1]), Vec(vertices[t2]) )){        // if the triangle intersects the plane
             intersectionTriangles[index].push_back(i);      // save the triangle index
 

@@ -29,7 +29,7 @@ public:
         p.z = z;
     }
     void setPoint(Vec p){ this->p = p; }
-    Frame& getFrame(){  return mf; }
+    Frame& getFrame(){ return mf; }
     const Frame* getReferenceFrame(){ return  mf.referenceFrame(); }
     const Quaternion& getOrientation();
 
