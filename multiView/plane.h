@@ -50,14 +50,13 @@ public:
     Frame getFrameCopy();
 
     void setOrientationFromOtherReference(std::vector<Vec> &frame, unsigned int startIndex, Plane* reference);
+    void setRotation(Quaternion q) { cp.getFrame().setRotation(q); }
+    void rotate(Quaternion q) { cp.getFrame().rotate(q); }
 
     Movable status;
 
 private:
     void initBasePlane();
-    void rotate(Quaternion q) { cp.getFrame().rotate(q); }
-    void setRotation(Quaternion q) { cp.getFrame().setRotation(q); }
-
     AxisPlaneConstraint constraint;
     AxisPlaneConstraint constraintFree;
     Vec points[4];

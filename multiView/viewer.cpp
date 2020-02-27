@@ -369,8 +369,8 @@ void Viewer::movePlane(Plane *p, bool isLeft, unsigned int curveIndex){
 
     double distance;
 
-    if(!isGhostPlanes || !isGhostActive) distance = curve->discreteChordLength(curveIndexL, curveIndexR);       // get the distance of the mandible curve
-    else if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
+    /*if(!(isGhostPlanes && isGhostActive)) distance = curve->discreteChordLength(curveIndexL, curveIndexR);       // get the distance of the mandible curve
+    else*/ if(ghostPlanes.size()==0) distance = curve->discreteLength(curveIndexL, curveIndexR);  // is cut but no ghost planes
     else{
         if(isLeft) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
         else distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
@@ -561,10 +561,27 @@ Quaternion Viewer::getNewOrientation(unsigned int index){
     return s.normalized();
 }
 
+/*double getNorm(Vec &a){
+    return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+}*/
+
 double Viewer::angle(Vec a, Vec b){
     double na = a.norm();
     double nb = b.norm();
     double ab = a*b;
+
+    /*std::cout.precision(std::numeric_limits<double>::max_digits10);
+    std::cout << "NormA : " << std::fixed << na <<std::endl;
+    std::cout << "NormA calc : " << getNorm(a) <<std::endl;
+    std::cout << "NormB : " << nb <<std::endl;
+     std::cout << "NormB calc : " << getNorm(b) <<std::endl;
+    std::cout << "A : " << a.x << " , " << a.y << " , " << a.z << std::endl;
+    std::cout << "B : " << b.x << " , " << b.y << " , " << b.z << std::endl;
+    std::cout << "ab : " << ab <<std::endl;
+
+    std::cout << "Na nb : " << na*nb << std::endl;
+    std::cout << " total : " << ab / (na*nb) << std::endl;
+    std::cout << " Angle : " << acos(ab / (na*nb)) << std::endl;*/
 
     return acos(ab / (na*nb));
 }

@@ -26,7 +26,6 @@ std::vector<Vec> ViewerFibula::getPolyline(){
 
     createPolyline();
 
-    // Get the polyline vector in relation to the planes (in order of the planes)
     v = leftPlane->getPolylineVector(polyline[1]);
     polylineInPlanes.push_back(v);
 
@@ -84,12 +83,15 @@ void ViewerFibula::setPlanePositions(){
 void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
 
-    // This step has to be done for at least the director in order to give it a base from which to rotate
+    std::vector<Vec> fibulaPolyline = getPolyline();
+    Quaternion bLeft = Quaternion(Vec(0,0,1), fibulaPolyline[0]);
+    Quaternion bRight = Quaternion(-Vec(0,0,1), fibulaPolyline[fibulaPolyline.size()-1]);
+    leftPlane->rotate(bLeft.normalized());
+    rightPlane->rotate(bRight.normalized());
 
-    // Orientate the left plane
     Vec normal = leftPlane->getNormal();        // The normal defines the polyline, so move our polyline to the mandible polyline
-    Quaternion s = Quaternion(-normal, mandiblePolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
-    leftPlane->setOrientation(s.normalized());
+    Quaternion s = Quaternion(normal, mandiblePolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
+    leftPlane->rotate(s.normalized());
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
@@ -101,21 +103,32 @@ void ViewerFibula::setPlaneOrientations(){
     // Orientate the right plane
     normal = rightPlane->getNormal();
     s = Quaternion(normal, mandiblePolyline[mandiblePolyline.size()-1]);
-    rightPlane->setOrientation(s.normalized());
+    rightPlane->rotate(s.normalized());
 
-    swivelToPolyline();
+    // swivelToPolyline();
 
-    Q_EMIT requestAxes();
+    //Q_EMIT requestAxes();
+}
+
+double calcNorm(Vec &v){
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
 void ViewerFibula::swivelToPolyline(){
     if(ghostPlanes.size()==0){
         // Project the mand and the fib on the left plane
         std::vector<Vec> fibulaPolyline = getPolyline();
-        Vec mandPoint = rightPlane->getLocalProjection(mandiblePolyline[1]);
-        Vec fibPoint = rightPlane->getLocalProjection(fibulaPolyline[1]);
-        mandPoint.normalize();  // normalise them so they have the same length
-        fibPoint.normalize();
+        Vec mandPoly = mandiblePolyline[1];
+        Vec fibPoly = fibulaPolyline[1];
+        mandPoly.normalize();
+        fibPoly.normalize();
+        std::cout << "Mandible : " << mandPoly.x << " , " << mandPoly.y << " , " << mandPoly.z << std::endl;
+        std::cout << "Fibula : " << fibPoly.x << " , " << fibPoly.y << " , " << fibPoly.z << std::endl;
+        mandPoly.normalize();
+        fibPoly.normalize();
+
+        Vec mandPoint = rightPlane->getLocalProjection(mandPoly);
+        Vec fibPoint = rightPlane->getLocalProjection(fibPoly);
 
         double alpha = angle(mandPoint, fibPoint)+ M_PI;    // Get the angle between the two
         Vec axis = Vec(0,0,1);
@@ -324,7 +337,7 @@ void ViewerFibula::initCurve(){
 
     curve = new Curve(nbCP, control);
 
-    nbU = 2500;
+    nbU = 20000;
 
     int nbSeg = nbCP-3;
     nbU -= static_cast<unsigned int>(static_cast<int>(nbU)%nbSeg);
