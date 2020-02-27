@@ -95,9 +95,20 @@ void ViewerFibula::setPlaneOrientations(){
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        normal = ghostPlanes[i]->getNormal();
-        s = Quaternion(normal, mandiblePolyline[i]);
-        ghostPlanes[i]->setOrientation(s.normalized());
+        repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
+        // initial orientation
+       /* normal = ghostPlanes[i]->getNormal();
+        s = Quaternion(normal, mandiblePolyline[i+1]);
+        ghostPlanes[i]->setOrientation(s.normalized());*/
+        // To polyline
+        Quaternion b;
+        if(i%2==0) b = Quaternion(Vec(0,0,1), fibulaPolyline[i+1]);
+        else b = Quaternion(Vec(0,0,1), fibulaPolyline[i+1]);
+        ghostPlanes[i]->rotate(b);
+        // To mandible
+        if(i%2==0) b = Quaternion(Vec(0,0,1), mandiblePolyline[i+1]);
+        else b = Quaternion(Vec(0,0,1), mandiblePolyline[i+1]);
+        ghostPlanes[i]->rotate(b);
     }
 
     // Orientate the right plane
@@ -139,7 +150,7 @@ void ViewerFibula::swivelToPolyline(){
     }
 
     else{
-        Vec axis = Vec(0,0,1);
+        /*Vec axis = Vec(0,0,1);
         std::vector<Vec> fibulaPolyline = getPolyline();
 
         // Left
@@ -173,7 +184,11 @@ void ViewerFibula::swivelToPolyline(){
         alpha = angle(mandPoint, fibPoint) + M_PI;
 
         rightPlane->rotatePlane(axis, alpha);
-        ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha); // the last ghost plane
+        ghostPlanes[lastIndex-2]->rotatePlane(axis, alpha);*/ // the last ghost plane
+        Vec axis = Vec(0,0,1);
+        leftPlane->rotatePlane(axis, M_PI*2.0);
+        rightPlane->rotatePlane(axis, M_PI*2.0);
+        //for(int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->rotatePlane(axis, M_PI*2.0);
     }
 }
 
