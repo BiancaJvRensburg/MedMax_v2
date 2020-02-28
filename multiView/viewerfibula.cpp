@@ -53,7 +53,7 @@ void ViewerFibula::createPolyline(){
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
-    if(polyline.size()!=0){
+    if(polyline.size()!=0 && isGhostPlanes){
         resetMandibleInfo(polyline, axes);
         setPlanePositions();
         setPlaneOrientations();
@@ -83,6 +83,7 @@ void ViewerFibula::setPlanePositions(){
 void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
     Vec normal = Vec(0,0,1);
+    std::vector<Quaternion> rotations;      // left, right and then ghost
 
     // Initialise the ghost planes' rotation
     for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
@@ -91,25 +92,29 @@ void ViewerFibula::setPlaneOrientations(){
     std::vector<Vec> fibulaPolyline = getPolyline();
     Quaternion bLeft = Quaternion(normal, fibulaPolyline[0]);
     Quaternion bRight = Quaternion(-normal, fibulaPolyline[fibulaPolyline.size()-1]);
-    leftPlane->rotate(bLeft.normalized());
-    rightPlane->rotate(bRight.normalized());
+    rotations.push_back(bLeft.normalized());
+    rotations.push_back(bRight.normalized());
 
     // Now we can move the normal to the mandible polyline from the fibula polyline
     Quaternion s = Quaternion(normal, mandiblePolyline[0]);
-    leftPlane->rotate(s.normalized());
+    rotations[0] *= s.normalized();
     s = Quaternion(-normal, mandiblePolyline[mandiblePolyline.size()-1]);
-    rightPlane->rotate(s.normalized());
+    rotations[1] *= s.normalized();
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         // To fibula
         Quaternion b = Quaternion(normal, fibulaPolyline[i+1]);
-        ghostPlanes[i]->rotate(b);
+        rotations.push_back(b);
         // To mandible
         if(i%2==0) b = Quaternion(-normal, mandiblePolyline[i+1]);       // the mandible polyline is in relation to the forward facing plane
         else b = Quaternion(normal, mandiblePolyline[i+1]);
-        ghostPlanes[i]->rotate(b);
+        rotations[i+2] *= b;
     }
+
+    leftPlane->rotate(rotations[0]);
+    rightPlane->rotate(rotations[1]);
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->rotate(rotations[i+2]);
 
     swivelToPolyline();
 
@@ -229,19 +234,19 @@ void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec 
 }
 
 // Don't wait for ghost planes, go ahead and cut
-void ViewerFibula::noGhostPlanesToRecieve(){
+void ViewerFibula::noGhostPlanesToRecieve(std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     isPlanesRecieved = true;
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
+    ghostPlanes.clear();
+    mesh.deleteGhostPlanes();
+    isGhostPlanes = true;
+    repositionPlanes(mandPolyline, axes);
     handleCut();
 }
 
 // Add ghost planes that correspond to the ghost planes in the jaw
 void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
-    if(nb==0){      // if no ghost planes were actually recieved
-        for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
-        ghostPlanes.clear();
-        mesh.deleteGhostPlanes();
-        return;
-    }
+    if(nb==0) return;
 
     findGhostLocations(nb, distance);
     addGhostPlanes(2* static_cast<int>(nb));    // 2*nb ghost planes : there are 2 angles for each plane in the manible, so twice the number of ghost planes

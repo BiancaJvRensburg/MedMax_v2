@@ -310,7 +310,7 @@ void Viewer::cutMesh(){
 
     Q_EMIT preparingToCut();
 
-    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
 
     Q_EMIT okToCut();       // The dialog wasn't cancelled so the fibula can be cut
 
@@ -431,7 +431,7 @@ void Viewer::handlePlaneMoveEnd(){
 
     // Recut
     Q_EMIT preparingToCut();
-    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
     Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);
