@@ -14,6 +14,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->nbGhostPlanes = 0;
     this->isGhostPlanes = false;
     this->isGhostActive = true;
+    this->isDrawPlane = true;
 }
 
 void Viewer::draw() {
@@ -29,20 +30,27 @@ void Viewer::draw() {
     if(isGhostPlanes && isGhostActive) drawPolyline();
 
     // draw the planes
-    glColor3f(1.0, 0, 0);
-    leftPlane->draw();
+    if(isDrawPlane || !mesh.getIsCut()){
+        glColor3f(1.0, 0, 0);
+        leftPlane->draw();
 
-    glColor3f(0, 1.0, 0);
-    rightPlane->draw();
+        glColor3f(0, 1.0, 0);
+        rightPlane->draw();
 
-    for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
-        glColor3f(0,0,1.0);
-        ghostPlanes[i]->draw();
+        for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
+            glColor3f(0,0,1.0);
+            ghostPlanes[i]->draw();
+        }
     }
 
     curve->draw();
 
     glPopMatrix();
+}
+
+void Viewer::toggleIsDrawPlane(){
+    isDrawPlane = !isDrawPlane;
+    update();
 }
 
 // Updates the polyline vector and angles when a plane is moved (sends the angles to the fibula)

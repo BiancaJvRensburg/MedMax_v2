@@ -34,6 +34,7 @@ public Q_SLOTS:
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);
     void toUpdate();
     void getAxes();
+    void toggleIsDrawPlane();
 
 Q_SIGNALS:
     void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
@@ -94,6 +95,7 @@ protected:
     unsigned int nbU;
     int sliderMax;
     bool isDrawMesh;
+    bool isDrawPlane;
 
     const double constraint = 25;
 
