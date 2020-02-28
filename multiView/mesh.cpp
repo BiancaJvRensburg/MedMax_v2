@@ -148,8 +148,6 @@ void Mesh::getColour(unsigned int vertex){
 
 void Mesh::addPlane(Plane *p){
     planes.push_back(p);
-    planeNeighbours.push_back(-1);  // This is done once for the neg and once for the pos
-    planeNeighbours.push_back(-1);
     std::vector<unsigned int> init;
     intersectionTriangles.push_back(init);
     updatePlaneIntersections(p);
@@ -165,7 +163,8 @@ void Mesh::updatePlaneIntersections(){
         flooding.clear();
         for(unsigned int i=0; i<vertices.size(); i++) flooding.push_back(-1);       // reset the flooding values
 
-        for(unsigned int i=0; i<planeNeighbours.size(); i++) planeNeighbours[i] = -1;       // reset the neighbourhoods
+        planeNeighbours.clear();
+        for(unsigned int i=0; i<planes.size()*2; i++) planeNeighbours.push_back(-1);        // reset the plane neighbours
 
         for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i);
 
