@@ -82,33 +82,34 @@ void ViewerFibula::setPlanePositions(){
 
 void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
+    Vec normal = Vec(0,0,1);
 
+    // Initialise the ghost planes' rotation
     for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
 
+    // Reset the rotation to line up with the fibula polyline
     std::vector<Vec> fibulaPolyline = getPolyline();
-    Quaternion bLeft = Quaternion(Vec(0,0,1), fibulaPolyline[0]);
-    Quaternion bRight = Quaternion(-Vec(0,0,1), fibulaPolyline[fibulaPolyline.size()-1]);
+    Quaternion bLeft = Quaternion(normal, fibulaPolyline[0]);
+    Quaternion bRight = Quaternion(-normal, fibulaPolyline[fibulaPolyline.size()-1]);
     leftPlane->rotate(bLeft.normalized());
     rightPlane->rotate(bRight.normalized());
 
-    Vec normal = leftPlane->getNormal();        // The normal defines the polyline, so move our polyline to the mandible polyline
-    Quaternion s = Quaternion(normal, mandiblePolyline[0]);  // -normal so it doesnt do a 180 flip (a rotation of the normal to the polyline)
+    // Now we can move the normal to the mandible polyline from the fibula polyline
+    Quaternion s = Quaternion(normal, mandiblePolyline[0]);
     leftPlane->rotate(s.normalized());
+    s = Quaternion(-normal, mandiblePolyline[mandiblePolyline.size()-1]);
+    rightPlane->rotate(s.normalized());
 
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        Quaternion b = Quaternion(Vec(0,0,1), fibulaPolyline[i+1]);
+        // To fibula
+        Quaternion b = Quaternion(normal, fibulaPolyline[i+1]);
         ghostPlanes[i]->rotate(b);
         // To mandible
-        if(i%2==0) b = Quaternion(-Vec(0,0,1), mandiblePolyline[i+1]);       // the mandible polyline is in relation to the forward facing plane
-        else b = Quaternion(Vec(0,0,1), mandiblePolyline[i+1]);
+        if(i%2==0) b = Quaternion(-normal, mandiblePolyline[i+1]);       // the mandible polyline is in relation to the forward facing plane
+        else b = Quaternion(normal, mandiblePolyline[i+1]);
         ghostPlanes[i]->rotate(b);
     }
-
-    // Orientate the right plane
-    normal = rightPlane->getNormal();
-    s = Quaternion(-normal, mandiblePolyline[mandiblePolyline.size()-1]);
-    rightPlane->rotate(s.normalized());
 
     swivelToPolyline();
 
@@ -124,20 +125,16 @@ void ViewerFibula::swivelToPolyline(){
     leftPlane->rotatePlane(axis, M_PI*2.0);
     rightPlane->rotatePlane(axis, M_PI*2.0);
 
-    if(ghostPlanes.size()!=0) {
+    if(ghostPlanes.size()!=0) {     // NOTE : always seems to be a rotation of 180 degrees
         std::vector<Vec> fibulaPolyline = getPolyline();
         for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
-            //std::cout << "Director : " << i << ",  end : " << i+1 << std::endl;
             mandiblePolyline[i+1].normalize();
             fibulaPolyline[i+1].normalize();
-            //std::cout << "Mand : " << mandiblePolyline[i+1].x << " , " << mandiblePolyline[i+1].y << " , " << mandiblePolyline[i+1].z << std::endl;
-            //std::cout << "Fib  : " << fibulaPolyline[i+1].x << " , " << fibulaPolyline[i+1].y << " , " << fibulaPolyline[i+1].z << std::endl;
             Vec mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
             Vec fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
             mandPoint.normalize();
             fibPoint.normalize();
             double alpha = angle(mandPoint, fibPoint) + M_PI;
-            //std::cout << "Angle to rotate : " << (alpha-M_PI)*180.0/M_PI << std::endl;
             ghostPlanes[i]->rotatePlane(axis, alpha);
             ghostPlanes[i+1]->rotatePlane(axis, alpha);
         }
@@ -210,23 +207,18 @@ void ViewerFibula::findIndexesFromDistances(){
     ghostLocation.clear();
     unsigned int index = curve->indexForLength(curveIndexL+indexOffset, distances[0]);
     ghostLocation.push_back(index);
-    //std::cout << "Ghost location 0 : " << ghostLocation[0] << std::endl;
     unsigned int nextIndex = curve->indexForLength(index, securityMargin);
     ghostLocation.push_back(nextIndex);     // the mirror plane
-    //std::cout << "Ghost location 1 : " << ghostLocation[1] << std::endl;
     unsigned int nb = static_cast<unsigned int>(distances.size()-1);
 
     for(unsigned int i=1; i<nb; i++){
         index = curve->indexForLength(ghostLocation[2*i-1], distances[i]);
         ghostLocation.push_back(index);
-        //std::cout << "Ghost location " << 2*i << " : " << ghostLocation[2*i] << std::endl;
         unsigned int nbU = curve->getNbU();
         nextIndex = curve->indexForLength(index, securityMargin);
         if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
         else ghostLocation.push_back(nbU-1);
-        //std::cout << "Ghost location " << 2*i+1 << " : " << ghostLocation[2*i+1] << std::endl;
     }
-    //std::cout << "Nb ghost locations found : " << ghostLocation.size() << std::endl;
     curveIndexR = curve->indexForLength(ghostLocation[2*nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
 }
 
@@ -244,7 +236,6 @@ void ViewerFibula::noGhostPlanesToRecieve(){
 
 // Add ghost planes that correspond to the ghost planes in the jaw
 void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::vector<Vec> mandPolyline, std::vector<Vec> axes){
-    //std::cout << "Nb ghost planes recieved : " << nb << std::endl;
     if(nb==0){      // if no ghost planes were actually recieved
         for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
         ghostPlanes.clear();
@@ -256,16 +247,6 @@ void ViewerFibula::ghostPlanesRecieved(unsigned int nb, double distance[], std::
     addGhostPlanes(2* static_cast<int>(nb));    // 2*nb ghost planes : there are 2 angles for each plane in the manible, so twice the number of ghost planes
 
     repositionPlanes(mandPolyline, axes);
-
-    /*std::cout << "  LOCATIONS : " << std::endl;
-    Vec l = leftPlane->getPosition();
-    std::cout << "      Left : " << l.x << " , " << l.y << " , " << l.z << std::endl;
-    for(unsigned int i=0; i<ghostLocation.size(); i++){
-        l = ghostPlanes[i]->getPosition();
-        std::cout << "      " << i << " : " << l.x << " , " << l.y << " , " << l.z << std::endl;
-    }
-    l = rightPlane->getPosition();
-    std::cout << "      Right : " << l.x << " , " << l.y << " , " << l.z << std::endl;*/
 
     isPlanesRecieved = true;
     handleCut();
