@@ -53,7 +53,7 @@ void ViewerFibula::createPolyline(){
 }
 
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
-    if(polyline.size()!=0 && isGhostPlanes){
+    if(isGhostPlanes){
         resetMandibleInfo(polyline, axes);
         setPlanePositions();
         setPlaneOrientations();

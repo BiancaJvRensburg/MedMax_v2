@@ -316,6 +316,8 @@ void Viewer::cutMesh(){
     if(isNumberRecieved) nbGhostPlanes = nbPieces-1;
     else return;
 
+    isGhostPlanes = true;
+
     Q_EMIT preparingToCut();
 
     if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
@@ -323,7 +325,6 @@ void Viewer::cutMesh(){
     Q_EMIT okToCut();       // The dialog wasn't cancelled so the fibula can be cut
 
     mesh.setIsCut(Side::INTERIOR, true, true);      // cut the mandible mesh and initialise the ghost planes
-    isGhostPlanes = true;
     initGhostPlanes();
 
     update();
@@ -569,10 +570,6 @@ Quaternion Viewer::getNewOrientation(unsigned int index){
     Quaternion s = Quaternion(Vec(0,0,1.0), curve->tangent(index));
     return s.normalized();
 }
-
-/*double getNorm(Vec &a){
-    return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
-}*/
 
 double Viewer::angle(Vec a, Vec b){
     double na = a.norm();
