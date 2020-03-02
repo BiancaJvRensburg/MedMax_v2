@@ -25,7 +25,7 @@ public Q_SLOTS:
     void cutMesh();
     void uncutMesh();
 
-    void noGhostPlanesToRecieve();
+    void noGhostPlanesToRecieve(std::vector<Vec>, std::vector<Vec>);
 
     void recieveAxes(std::vector<Vec>);
     void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);

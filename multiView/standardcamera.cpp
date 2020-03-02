@@ -32,9 +32,9 @@ StandardCamera::StandardCamera() {
 
 void StandardCamera::changeOrthoFrustumSize(int delta) {
   if (delta > 0)
-    orthoSize *= 1.1;
+    orthoSize *= static_cast<float>(1.1);
   else
-    orthoSize /= 1.1;
+    orthoSize /= static_cast<float>(1.1);
 }
 
 void StandardCamera::getOrthoWidthHeight(GLdouble &halfWidth,

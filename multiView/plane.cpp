@@ -137,13 +137,6 @@ Vec Plane::getProjection(Vec p){
 }
 
 Vec Plane::getLocalProjection(Vec localP){
-    //std::cout << "Local p : " << localP.x << " , " << localP.y << " , " << localP.z << std::endl;
-    //double lpn = localP * normal;
-   // std::cout << "LpN : " << lpn << std::endl;
-   // Vec sub = normal * lpn;
-    //std::cout << "normal * lpn : " << sub.x << " , " << sub.y << " , " << sub.z << std::endl;
-    //Vec res = localP - sub;
-   // std::cout << "res : " << res.x << " , " << res.y << " , " << res.z << std::endl;
     return localP - normal * (localP * normal);             // don't convert between coordinate systems
 }
 

@@ -14,6 +14,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->nbGhostPlanes = 0;
     this->isGhostPlanes = false;
     this->isGhostActive = true;
+    this->isDrawPlane = true;
 }
 
 void Viewer::draw() {
@@ -29,20 +30,27 @@ void Viewer::draw() {
     if(isGhostPlanes && isGhostActive) drawPolyline();
 
     // draw the planes
-    glColor3f(1.0, 0, 0);
-    leftPlane->draw();
+    if(isDrawPlane || !mesh.getIsCut()){
+        glColor3f(1.0, 0, 0);
+        leftPlane->draw();
 
-    glColor3f(0, 1.0, 0);
-    rightPlane->draw();
+        glColor3f(0, 1.0, 0);
+        rightPlane->draw();
 
-    for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
-        glColor3f(0,0,1.0);
-        ghostPlanes[i]->draw();
+        for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
+            glColor3f(0,0,1.0);
+            ghostPlanes[i]->draw();
+        }
     }
 
     curve->draw();
 
     glPopMatrix();
+}
+
+void Viewer::toggleIsDrawPlane(){
+    isDrawPlane = !isDrawPlane;
+    update();
 }
 
 // Updates the polyline vector and angles when a plane is moved (sends the angles to the fibula)
@@ -308,14 +316,15 @@ void Viewer::cutMesh(){
     if(isNumberRecieved) nbGhostPlanes = nbPieces-1;
     else return;
 
+    isGhostPlanes = true;
+
     Q_EMIT preparingToCut();
 
-    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
 
     Q_EMIT okToCut();       // The dialog wasn't cancelled so the fibula can be cut
 
     mesh.setIsCut(Side::INTERIOR, true, true);      // cut the mandible mesh and initialise the ghost planes
-    isGhostPlanes = true;
     initGhostPlanes();
 
     update();
@@ -431,7 +440,7 @@ void Viewer::handlePlaneMoveEnd(){
 
     // Recut
     Q_EMIT preparingToCut();
-    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend();
+    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
     Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);
@@ -544,6 +553,7 @@ void Viewer::ghostPlaneMoved(){
 void Viewer::updateCamera(const Vec3Df & center, float radius){
     camera()->setSceneCenter(Vec(static_cast<double>(center[0]), static_cast<double>(center[1]), static_cast<double>(center[2])));
     camera()->setSceneRadius(static_cast<double>(radius*1.05f));
+    camera()->setZClippingCoefficient(static_cast<double>(radius/8.0f));
     camera()->showEntireScene();
 }
 
@@ -560,10 +570,6 @@ Quaternion Viewer::getNewOrientation(unsigned int index){
     Quaternion s = Quaternion(Vec(0,0,1.0), curve->tangent(index));
     return s.normalized();
 }
-
-/*double getNorm(Vec &a){
-    return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
-}*/
 
 double Viewer::angle(Vec a, Vec b){
     double na = a.norm();
