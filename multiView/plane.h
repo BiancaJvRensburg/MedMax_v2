@@ -4,7 +4,7 @@
 #include <QGLViewer/qglviewer.h>
 #include <QGLViewer/manipulatedFrame.h>
 
-#include "curvepoint.h"
+#include "controlpoint.h"
 
 enum Movable {STATIC, DYNAMIC};
 
@@ -40,7 +40,7 @@ public:
     Vec getProjection(Vec p);
     Vec getLocalProjection(Vec p);      // for vectors already in local coordinates
     const Vec& getPosition(){ return cp.getPoint(); }
-    CurvePoint& getCurvePoint(){ return cp; }
+    ControlPoint& getCurvePoint(){ return cp; }
 
     Vec getLocalCoordinates(Vec v) { return cp.getFrame().localCoordinatesOf(v); }    // same as get polyline
     Vec getMeshCoordinatesFromLocal(Vec v){ return cp.getFrame().localInverseCoordinatesOf(v); }
@@ -63,7 +63,7 @@ private:
     double size;
     double rotationPercentage;
     Vec normal;
-    CurvePoint cp;
+    ControlPoint cp;
 };
 
 #endif // PLANE_H

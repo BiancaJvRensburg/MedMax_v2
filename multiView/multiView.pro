@@ -13,7 +13,6 @@ HEADERS  = \
     camerapathplayer.h \
     controlpoint.h \
     curve.h \
-    curvepoint.h \
     mainwindow.h \
     mesh.h \
     meshreader.h \
@@ -27,7 +26,6 @@ SOURCES  = main.cpp \
     camerapathplayer.cpp \
     controlpoint.cpp \
     curve.cpp \
-    curvepoint.cpp \
     mainwindow.cpp \
     mesh.cpp \
     plane.cpp \
