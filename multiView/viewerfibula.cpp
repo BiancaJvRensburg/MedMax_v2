@@ -121,10 +121,6 @@ void ViewerFibula::setPlaneOrientations(){
     Q_EMIT requestAxes();
 }
 
-double calcNorm(Vec &v){
-    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
-}
-
 void ViewerFibula::swivelToPolyline(){
     Vec axis = Vec(0,0,1);
     leftPlane->rotatePlane(axis, M_PI*2.0);
@@ -187,12 +183,13 @@ void ViewerFibula::planesMoved(){
 }
 
 // Add the ghost planes (this should only be called once)
-void ViewerFibula::addGhostPlanes(int nb){
+void ViewerFibula::addGhostPlanes(unsigned int nb){
     for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];     // remove any ghost planes
     ghostPlanes.clear();
+    Vec pos = Vec(0,0,0);
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        ghostPlanes.push_back(new Plane(25.0, Movable::STATIC));
+        ghostPlanes.push_back(new Plane(25.0, Movable::STATIC, pos));
 
         // If we're too far along the fibula, take it all back
         int overload = static_cast<int>(ghostLocation[i]) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve

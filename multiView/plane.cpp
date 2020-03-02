@@ -1,6 +1,6 @@
 #include "plane.h"
 
-Plane::Plane(double s, Movable status) : cp(Vec(0,0,0))
+Plane::Plane(double s, Movable status, Vec& pos) : cp(pos)
 {
     //Vec position = Vec(0, 0, 0);
     size = s;

@@ -9,7 +9,7 @@ class ViewerFibula : public Viewer
 
 public:
     ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMax, int fibulaOffsetMax);
-    void addGhostPlanes(int nb);
+    void addGhostPlanes(unsigned int nb);
     void handleCut();
     std::vector<Vec> getPolyline();
 

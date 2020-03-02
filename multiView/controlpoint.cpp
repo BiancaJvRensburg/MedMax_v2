@@ -3,7 +3,14 @@
 
 #include <QGLViewer/manipulatedFrame.h>
 
-ControlPoint::ControlPoint(Vec p)
+ControlPoint::ControlPoint()
+{
+    this->p = Vec(0,0,0);
+    initialise();
+    isSwitchFrames = true;
+}
+
+ControlPoint::ControlPoint(const Vec& p)
 {
     this->p = p;
     initialise();
