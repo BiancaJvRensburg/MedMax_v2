@@ -552,6 +552,7 @@ void Viewer::ghostPlaneMoved(){
 void Viewer::updateCamera(const Vec3Df & center, float radius){
     camera()->setSceneCenter(Vec(static_cast<double>(center[0]), static_cast<double>(center[1]), static_cast<double>(center[2])));
     camera()->setSceneRadius(static_cast<double>(radius*1.05f));
+    camera()->setZClippingCoefficient(static_cast<double>(radius/8.0f));
     camera()->showEntireScene();
 }
 
