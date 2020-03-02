@@ -16,8 +16,9 @@ ControlPoint::ControlPoint(double x, double y, double z)
 }
 
 void ControlPoint::initialise(){
-    mf = Frame();
+    mf = ManipulatedFrame();
     mf.setPosition(this->p.x, this->p.y, this->p.z);
+    connect(&mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
 // Call this to move a point without setting off a signal to update
@@ -34,6 +35,9 @@ void ControlPoint::draw(){
     glPushMatrix();
     glMultMatrixd(mf.matrix());
 
+    if(mf.grabsMouse()) glColor3f(0, 1, 1);
+    else glColor3f(0.6f, 0, 0.4f);
+
     glPointSize(10.0);
     glBegin(GL_POINTS);
         glVertex3d(0, 0, 0);
@@ -47,7 +51,6 @@ void ControlPoint::draw(){
 
 void ControlPoint::cntrlMoved(){
     double x,y,z;
-
     mf.getPosition(x,y,z);
     p.x = x;
     p.y = y;

@@ -29,7 +29,7 @@ public:
         p.z = z;
     }
     void setPoint(Vec p){ this->p = p; }
-    Frame& getFrame(){ return mf; }
+    ManipulatedFrame& getFrame(){ return mf; }
     const Frame* getReferenceFrame(){ return  mf.referenceFrame(); }
     const Quaternion& getOrientation();
 
@@ -45,7 +45,7 @@ Q_SIGNALS:
     void cntrlPointTranslated();
 
 protected:
-    Frame mf;
+    ManipulatedFrame mf;
     Vec p;
 };
 

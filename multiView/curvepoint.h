@@ -13,9 +13,7 @@ public:
         disconnect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
     }*/
 
-    void setPosition(Vec p){ this->p.x = p.x;
-                                this->p.y = p.y;
-                                this->p.z = p.z; }
+    void setPosition(Vec& p){ this->p = p; }
 
     void draw();
 

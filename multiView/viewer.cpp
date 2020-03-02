@@ -24,8 +24,10 @@ void Viewer::draw() {
     glMultMatrixd(manipulatedFrame()->matrix());
 
     glColor3f(1.,1.,1.);
-    mesh.draw();
-    if(isDrawMesh) mesh.drawCut();      // draw the cut versions
+    /*mesh.draw();
+    if(isDrawMesh) mesh.drawCut();*/    // draw the cut versions
+
+    curve->drawControl();
 
     if(isGhostPlanes && isGhostActive) drawPolyline();
 
@@ -493,7 +495,7 @@ void Viewer::initCurve(){
     nbU = 100;
     curve->generateCatmull(nbU);
 
-   initPlanes(Movable::STATIC);
+   initPlanes(Movable::DYNAMIC);
 }
 
 void Viewer::initPlanes(Movable status){
@@ -647,4 +649,30 @@ std::vector<Vec> Viewer::getReferenceAxes(){
         addFrameChangeToAxes(v, rightPlane, ghostPlanes[lastIndex]);
     }
     return v;
+}
+
+void Viewer::postSelection(const QPoint &point) {
+  // Compute orig and dir, used to draw a representation of the intersecting
+  // line
+  Vec orig, dir;
+  camera()->convertClickToLine(point, orig, dir);
+
+  // Find the selectedPoint coordinates, using camera()->pointUnderPixel().
+  bool found;
+  Vec selectedPoint = camera()->pointUnderPixel(point, found);
+  selectedPoint -= 0.01f * dir; // Small offset to make point clearly visible.
+  // Note that "found" is different from (selectedObjectId()>=0) because of the
+  // size of the select region.
+
+  if (selectedName() == -1)
+    QMessageBox::information(this, "No selection",
+                             "No object selected under pixel " +
+                                 QString::number(point.x()) + "," +
+                                 QString::number(point.y()));
+  else
+    QMessageBox::information(
+        this, "Selection",
+        "Spiral number " + QString::number(selectedName()) +
+            " selected under pixel " + QString::number(point.x()) + "," +
+            QString::number(point.y()));
 }

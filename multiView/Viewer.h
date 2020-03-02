@@ -7,7 +7,6 @@
 #include "standardcamera.h"
 #include "plane.h"
 #include "curve.h"
-
 using namespace qglviewer;
 
 class Viewer : public QGLViewer
@@ -121,6 +120,8 @@ private:
     void addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
 
     bool isSpaceForGhosts();
+
+    void postSelection(const QPoint &point);
 };
 
 #endif // VIEWER_H

@@ -11,9 +11,6 @@ Plane::Plane(double s, Movable status) : cp(Vec(0,0,0))
 
     this->status = status;
 
-    /*if(status==Movable::DYNAMIC) cp = CurvePoint(position);
-    else cp = CurvePoint(position);*/
-
     initBasePlane();
 }
 
