@@ -8,7 +8,7 @@ class CurvePoint : public ControlPoint
     Q_OBJECT
 
 public:
-    CurvePoint(Vec p);
+    CurvePoint(Vec& p);
     /*~CurvePoint(){
         disconnect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
     }*/
