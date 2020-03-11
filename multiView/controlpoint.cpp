@@ -3,10 +3,18 @@
 
 #include <QGLViewer/manipulatedFrame.h>
 
-ControlPoint::ControlPoint(Vec p)
+ControlPoint::ControlPoint()
+{
+    this->p = Vec(0,0,0);
+    initialise();
+    isSwitchFrames = true;
+}
+
+ControlPoint::ControlPoint(const Vec& p)
 {
     this->p = p;
     initialise();
+    isSwitchFrames = true;
 }
 
 ControlPoint::ControlPoint(double x, double y, double z)
@@ -18,25 +26,27 @@ ControlPoint::ControlPoint(double x, double y, double z)
 void ControlPoint::initialise(){
     mf = ManipulatedFrame();
     mf.setPosition(this->p.x, this->p.y, this->p.z);
-    connect(&mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
+    //connect(&mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
 // Call this to move a point without setting off a signal to update
 void ControlPoint::moveControlPoint(Vec newPos){
-    p.x = newPos.x;
+   /* p.x = newPos.x;
     p.y = newPos.y;
     p.z = newPos.z;
 
-    mf.setPosition(this->p.x, this->p.y, this->p.z);
+    mf.setPosition(this->p.x, this->p.y, this->p.z);*/
 }
 
 void ControlPoint::draw(){
 
-    glPushMatrix();
-    glMultMatrixd(mf.matrix());
+    if(isSwitchFrames){
+        glPushMatrix();
+        glMultMatrixd(mf.matrix());
+    }
 
-    if(mf.grabsMouse()) glColor3f(0, 1, 1);
-    else glColor3f(0.6f, 0, 0.4f);
+    /*if(mf.grabsMouse()) glColor3f(0, 1, 1);
+    else glColor3f(0.6f, 0, 0.4f);*/
 
     glPointSize(10.0);
     glBegin(GL_POINTS);
@@ -46,7 +56,7 @@ void ControlPoint::draw(){
     glPointSize(1.0);
     glColor3f(1.0,1.0,1.0);
 
-    glPopMatrix();
+    if(isSwitchFrames) glPopMatrix();
 }
 
 void ControlPoint::cntrlMoved(){

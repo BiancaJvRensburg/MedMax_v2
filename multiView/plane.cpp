@@ -1,6 +1,6 @@
 #include "plane.h"
 
-Plane::Plane(double s, Movable status) : cp(Vec(0,0,0))
+Plane::Plane(double s, Movable status, Vec& pos) : cp(pos)
 {
     //Vec position = Vec(0, 0, 0);
     size = s;
@@ -35,7 +35,11 @@ void Plane::draw(){
         glVertex3f(static_cast<float>(points[3].x), static_cast<float>(points[3].y), static_cast<float>(points[3].z));
     glEnd();
 
-    if(status==Movable::DYNAMIC) cp.draw();
+    if(status==Movable::DYNAMIC){
+        cp.toggleSwitchFrames();
+        cp.draw();
+        cp.toggleSwitchFrames();
+    }
 
     glDisable(GL_DEPTH);
     glDisable(GL_DEPTH_TEST);

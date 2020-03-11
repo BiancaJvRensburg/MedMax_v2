@@ -9,7 +9,7 @@ class ViewerFibula : public Viewer
 
 public:
     ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMax, int fibulaOffsetMax);
-    void addGhostPlanes(int nb);
+    void addGhostPlanes(unsigned int nb);
     void handleCut();
     std::vector<Vec> getPolyline();
 
@@ -44,7 +44,7 @@ private:
     void setPlaneOrientations();
     void setPlanePositions();
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
-    void swivelToPolyline();
+    void swivelToPolyline(std::vector<Vec>& fibulaPolyline);
     void findIndexesFromDistances();
 
     bool isCutSignal;
@@ -55,6 +55,7 @@ private:
     std::vector<Vec> mandiblePolyline;      // the last mandible polyline we recieved
     std::vector<Vec> mandibleAxes;          // the last mandible axes we recieved
     std::vector<double> distances;
+    bool isNeedToFlip;
 
     const double securityMargin = 30.0;       // this is temporary
 };

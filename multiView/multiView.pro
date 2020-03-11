@@ -12,8 +12,8 @@ TARGET   = multiView
 HEADERS  = \
     camerapathplayer.h \
     controlpoint.h \
-    curve.h \
     curvepoint.h \
+    curve.h \
     mainwindow.h \
     mesh.h \
     meshreader.h \
@@ -26,8 +26,8 @@ HEADERS  = \
 SOURCES  = main.cpp \
     camerapathplayer.cpp \
     controlpoint.cpp \
-    curve.cpp \
     curvepoint.cpp \
+    curve.cpp \
     mainwindow.cpp \
     mesh.cpp \
     plane.cpp \

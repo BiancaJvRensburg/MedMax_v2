@@ -202,24 +202,30 @@ void MainWindow::initToolBars () {
 void MainWindow::openSkullMesh(){
     QString openFileNameLabel, selectedFilter;
 
-    QString fileFilter = "OFF (*.off)";
+    QString defaultFilename = "C:\\Users\\Medmax\\Documents\\Bianca\\Meshes\\Mand_B.off";
+    skullViewer->openOFF(defaultFilename);
+
+    /*QString fileFilter = "OFF (*.off)";
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select a skull mesh"), openFileNameLabel, fileFilter, &selectedFilter);
 
     if(fileName.isEmpty()) return;
 
-    skullViewer->openOFF(fileName);
+    skullViewer->openOFF(fileName);*/
 }
 
 void MainWindow::openFibulaMesh(){
     QString openFileNameLabel, selectedFilter;
 
-    QString fileFilter = "OFF (*.off)";
+    QString defaultFilename = "C:\\Users\\Medmax\\Documents\\Bianca\\Meshes\\Fibula_G.off";
+    fibulaViewer->openOFF(defaultFilename);
+
+    /*QString fileFilter = "OFF (*.off)";
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select a fibula mesh"), openFileNameLabel, fileFilter, &selectedFilter);
 
     if(fileName.isEmpty()) return;
 
-    fibulaViewer->openOFF(fileName);
+    fibulaViewer->openOFF(fileName);*/
 }
 

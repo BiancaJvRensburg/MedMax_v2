@@ -13,7 +13,7 @@ using namespace qglviewer;
 class Plane
 {
 public:
-    Plane(double s, Movable status);
+    Plane(double s, Movable status, Vec& pos);
 
     void setSize(double s){ size = s; }
     void setPosition(Vec pos);
@@ -39,7 +39,7 @@ public:
     //const Frame& getFrame(){ return *cp->getFrame(); }
     Vec getProjection(Vec p);
     Vec getLocalProjection(Vec p);      // for vectors already in local coordinates
-    const Vec& getPosition(){ return cp.getPoint(); }
+    Vec& getPosition(){ return cp.getPoint(); }
     CurvePoint& getCurvePoint(){ return cp; }
 
     Vec getLocalCoordinates(Vec v) { return cp.getFrame().localCoordinatesOf(v); }    // same as get polyline

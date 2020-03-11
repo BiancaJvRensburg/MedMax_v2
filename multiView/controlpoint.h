@@ -13,22 +13,23 @@ class ControlPoint : public QObject
     Q_OBJECT
 
 public:
-    ControlPoint(Vec p);
+    ControlPoint();
+    ControlPoint(const Vec& p);
     ControlPoint(double x, double y, double z);
     /*~ControlPoint(){
         delete mf;
     }*/
 
-    const Vec& getPoint(){ return p; }
+    Vec& getPoint(){ return p; }
     double getX(){ return p.x; }
     double getY(){ return p.y; }
     double getZ(){ return p.z; }
-    void setPoint(double x, double y, double z){
+    void setPosition(double& x, double& y, double& z){
         p.x = x;
         p.y = y;
         p.z = z;
     }
-    void setPoint(Vec p){ this->p = p; }
+    void setPosition(Vec& p){ this->p = p; }
     ManipulatedFrame& getFrame(){ return mf; }
     const Frame* getReferenceFrame(){ return  mf.referenceFrame(); }
     const Quaternion& getOrientation();
@@ -37,6 +38,8 @@ public:
 
     void initialise();
     virtual void draw();
+
+    void toggleSwitchFrames(){ isSwitchFrames = !isSwitchFrames; }
 
 public Q_SLOTS:
     virtual void cntrlMoved();
@@ -47,6 +50,7 @@ Q_SIGNALS:
 protected:
     ManipulatedFrame mf;
     Vec p;
+    bool isSwitchFrames;
 };
 
 #endif // CONTROLPOINT_H

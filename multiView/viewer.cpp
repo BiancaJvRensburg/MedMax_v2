@@ -24,10 +24,8 @@ void Viewer::draw() {
     glMultMatrixd(manipulatedFrame()->matrix());
 
     glColor3f(1.,1.,1.);
-    /*mesh.draw();
-    if(isDrawMesh) mesh.drawCut();*/    // draw the cut versions
-
-    curve->drawControl();
+    mesh.draw();
+    if(isDrawMesh) mesh.drawCut();   // draw the cut versions
 
     if(isGhostPlanes && isGhostActive) drawPolyline();
 
@@ -501,9 +499,10 @@ void Viewer::initCurve(){
 void Viewer::initPlanes(Movable status){
     curveIndexR = nbU - 1;
     curveIndexL = 0;
+    Vec pos = Vec(0,0,0);
 
-    leftPlane = new Plane(40.0, status);
-    rightPlane = new Plane(40.0, status);
+    leftPlane = new Plane(40.0, status, pos);
+    rightPlane = new Plane(40.0, status, pos);
 
     repositionPlane(leftPlane, curveIndexL);
     repositionPlane(rightPlane, curveIndexR);
@@ -522,7 +521,8 @@ void Viewer::addGhostPlanes(unsigned int nb){
     double distances[nb+1];     // +1 for the last plane
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC));
+        Vec pos = Vec(0,0,0);
+        ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC, pos));
         repositionPlane(ghostPlanes[i], ghostLocation[i]);
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
@@ -649,30 +649,4 @@ std::vector<Vec> Viewer::getReferenceAxes(){
         addFrameChangeToAxes(v, rightPlane, ghostPlanes[lastIndex]);
     }
     return v;
-}
-
-void Viewer::postSelection(const QPoint &point) {
-  // Compute orig and dir, used to draw a representation of the intersecting
-  // line
-  Vec orig, dir;
-  camera()->convertClickToLine(point, orig, dir);
-
-  // Find the selectedPoint coordinates, using camera()->pointUnderPixel().
-  bool found;
-  Vec selectedPoint = camera()->pointUnderPixel(point, found);
-  selectedPoint -= 0.01f * dir; // Small offset to make point clearly visible.
-  // Note that "found" is different from (selectedObjectId()>=0) because of the
-  // size of the select region.
-
-  if (selectedName() == -1)
-    QMessageBox::information(this, "No selection",
-                             "No object selected under pixel " +
-                                 QString::number(point.x()) + "," +
-                                 QString::number(point.y()));
-  else
-    QMessageBox::information(
-        this, "Selection",
-        "Spiral number " + QString::number(selectedName()) +
-            " selected under pixel " + QString::number(point.x()) + "," +
-            QString::number(point.y()));
 }

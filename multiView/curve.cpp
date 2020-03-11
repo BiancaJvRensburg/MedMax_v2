@@ -7,7 +7,7 @@ Curve::Curve(unsigned int nbCP, std::vector<Vec>& cntrlPoints){
     nbControlPoint = nbCP;
 
     for(unsigned int i=0; i<nbCP; i++){
-        TabControlPoint.push_back(new ControlPoint(static_cast<Vec>(cntrlPoints[i])));
+        TabControlPoint.push_back(new ControlPoint(cntrlPoints[i]));
     }
 
     initConnections();

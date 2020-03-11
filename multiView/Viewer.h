@@ -120,8 +120,6 @@ private:
     void addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p);
 
     bool isSpaceForGhosts();
-
-    void postSelection(const QPoint &point);
 };
 
 #endif // VIEWER_H
