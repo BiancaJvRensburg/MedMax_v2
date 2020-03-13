@@ -16,7 +16,7 @@ void Mesh::computeBB(){
         }
     }
 
-    radius = (BBMax - BBMin).norm();
+    radius = (BBMax - BBMin).norm() / 2.0f;
 
     BBCentre = (BBMax + BBMin)/2.0f;
 }
@@ -562,4 +562,26 @@ void Mesh::drawCut(){
 float Mesh::getBBRadius(){
     computeBB();
     return radius;
+}
+
+void Mesh::readJSON(const QJsonObject &json){
+    if(json.contains("vertices") && json["vertices"].isArray()){
+        vertices.clear();
+        QJsonArray vArray = json["vertices"].toArray();
+        for(int i=0; i<vArray.size(); i++){
+            QJsonArray singleV = vArray[i].toArray();
+            vertices.push_back(Vec3Df(singleV[0].toDouble(), singleV[1].toDouble(), singleV[2].toDouble()));
+        }
+    }
+
+    if(json.contains("triangles") && json["triangles"].isArray()){
+        triangles.clear();
+        QJsonArray tArray = json["triangles"].toArray();
+        for(int i=0; i<tArray.size(); i++){
+            QJsonArray singleT = tArray[i].toArray();
+            triangles.push_back(Triangle(singleT[0].toInt(), singleT[1].toInt(), singleT[2].toInt()));
+        }
+    }
+
+    update();
 }

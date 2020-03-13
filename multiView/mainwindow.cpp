@@ -177,7 +177,15 @@ void MainWindow::initFileActions(){
     connect(drawPlaneAction, &QAction::triggered, skullViewer, &Viewer::toggleIsDrawPlane);
     connect(drawPlaneAction, &QAction::triggered, fibulaViewer, &ViewerFibula::toggleIsDrawPlane);
 
+    QAction *openJsonFileAction = new QAction("Open mandible JSON", this);
+    connect(openJsonFileAction, &QAction::triggered, this, &MainWindow::openMandJSON);
+
+    QAction *openJsonFibFileAction = new QAction("Open fibula JSON", this);
+    connect(openJsonFibFileAction, &QAction::triggered, this, &MainWindow::openFibJSON);
+
     fileActionGroup->addAction(openFileSkullAction);
+    fileActionGroup->addAction(openJsonFileAction);
+    fileActionGroup->addAction(openJsonFibFileAction);
     fileActionGroup->addAction(openFileFibulaAction);
     fileActionGroup->addAction(unCutMeshAction);
     fileActionGroup->addAction(cutMeshAction);
@@ -202,24 +210,66 @@ void MainWindow::initToolBars () {
 void MainWindow::openSkullMesh(){
     QString openFileNameLabel, selectedFilter;
 
-    QString fileFilter = "OFF (*.off)";
+    QString defaultFilename = "C:\\Users\\Medmax\\Documents\\Bianca\\Meshes\\Mand_B.off";
+    skullViewer->openOFF(defaultFilename);
+
+    /*QString fileFilter = "OFF (*.off)";
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select a skull mesh"), openFileNameLabel, fileFilter, &selectedFilter);
 
     if(fileName.isEmpty()) return;
 
-    skullViewer->openOFF(fileName);
+    skullViewer->openOFF(fileName);*/
 }
 
 void MainWindow::openFibulaMesh(){
     QString openFileNameLabel, selectedFilter;
 
-    QString fileFilter = "OFF (*.off)";
+    QString defaultFilename = "C:\\Users\\Medmax\\Documents\\Bianca\\Meshes\\Fibula_G.off";
+    fibulaViewer->openOFF(defaultFilename);
+
+    /*QString fileFilter = "OFF (*.off)";
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select a fibula mesh"), openFileNameLabel, fileFilter, &selectedFilter);
 
     if(fileName.isEmpty()) return;
 
-    fibulaViewer->openOFF(fileName);
+    fibulaViewer->openOFF(fileName);*/
 }
+
+void MainWindow::readJSON(const QJsonObject &json, Viewer *v){
+    if(json.contains("calibration") && json["calibration"].isObject()){
+        QJsonObject calibration = json["calibration"].toObject();
+        v->readJSON(calibration);
+    }
+}
+
+void MainWindow::openJSON(Viewer *v){
+    QString openFileNameLabel, selectedFilter;
+
+    QString fileFilter = "JSON (*.json)";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select a mesh"), openFileNameLabel, fileFilter, &selectedFilter);
+
+
+    QFile loadFile(filename);
+
+    if (!loadFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open save file.");
+        return;
+    }
+
+    QByteArray saveData = loadFile.readAll();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+
+    readJSON(loadDoc.object(), v);
+}
+
+void MainWindow::openMandJSON(){
+    openJSON(skullViewer);
+}
+
+void MainWindow::openFibJSON(){
+    openJSON(fibulaViewer);
+}
+
 

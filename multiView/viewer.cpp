@@ -15,6 +15,7 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->isGhostPlanes = false;
     this->isGhostActive = true;
     this->isDrawPlane = true;
+    this->isCurve = false;
 }
 
 void Viewer::draw() {
@@ -25,25 +26,28 @@ void Viewer::draw() {
 
     glColor3f(1.,1.,1.);
     mesh.draw();
-    if(isDrawMesh) mesh.drawCut();    // draw the cut versions
+    if(isDrawMesh) mesh.drawCut();   // draw the cut versions
 
-    if(isGhostPlanes && isGhostActive) drawPolyline();
+    if(isCurve){
+        if(isGhostPlanes && isGhostActive) drawPolyline();
 
-    // draw the planes
-    if(isDrawPlane || !mesh.getIsCut()){
-        glColor3f(1.0, 0, 0);
-        leftPlane->draw();
+        // draw the planes
+        if(isDrawPlane || !mesh.getIsCut()){
+            glColor3f(1.0, 0, 0);
+            leftPlane->draw();
 
-        glColor3f(0, 1.0, 0);
-        rightPlane->draw();
+            glColor3f(0, 1.0, 0);
+            rightPlane->draw();
 
-        for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
-            glColor3f(0,0,1.0);
-            ghostPlanes[i]->draw();
+            for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
+                glColor3f(0,0,1.0);
+                ghostPlanes[i]->draw();
+            }
         }
-    }
 
-    curve->draw();
+         curve->draw();
+         curve->drawControl();
+    }
 
     glPopMatrix();
 }
@@ -136,7 +140,7 @@ void Viewer::init() {
   setManipulatedFrame(viewerFrame);
   setAxisIsDrawn(false);
 
-  initCurve();
+  //initCurve();
 
   glEnable(GL_LIGHTING);
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
@@ -288,7 +292,7 @@ void Viewer::initGhostPlanes(){
 
         addGhostPlanes(finalNb);
 
-        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &ControlPoint::cntrlPointTranslated, this, &Viewer::ghostPlaneMoved);        // connnect the ghost planes
+        for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);        // connnect the ghost planes
 
          // Send the info to the fibula
         std::vector<Vec> poly = updatePolyline();
@@ -343,6 +347,9 @@ void Viewer::moveLeftPlane(int position){
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     unsigned int index = static_cast<unsigned int>(percentage * static_cast<double>(nbU) );
 
+    std::cout << "Index left : " <<curveIndexL << std::endl;
+    std::cout << "Index right : " << curveIndexR << std::endl;
+
     if(curve->indexForLength(curveIndexR, -constraint) > index){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
         if(curveIndexL >= nbU) curveIndexL = nbU-1;     // shouldn't ever happen
@@ -350,6 +357,8 @@ void Viewer::moveLeftPlane(int position){
     else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ) return;       // already in the correct position
     else curveIndexL = curve->indexForLength(curveIndexR, -constraint);     // get the new position
 
+    std::cout << "Now index left : " <<curveIndexL << std::endl;
+    std::cout << "Now index right : " << curveIndexR << std::endl;
     movePlane(leftPlane, true, curveIndexL);
 }
 
@@ -467,10 +476,7 @@ void Viewer::openOFF(QString filename) {
     update();
 }
 
-void Viewer::initCurve(){
-    const long nbCP = 9;
-    std::vector<Vec> control;
-
+void Viewer::initCurve(){    
     control.push_back(Vec(-56.9335, -13.9973, 8.25454));
 
     control.push_back(Vec(-50.8191, -20.195, -19.53));
@@ -485,24 +491,27 @@ void Viewer::initCurve(){
 
     control.push_back(Vec(52.3669, -15.4613, 8.70223));
 
+    constructCurve();
+}
 
-    curve = new Curve(nbCP, control);
-
-    connect(curve, &Curve::curveReinitialised, this, &Viewer::updatePlanes);
-
+void Viewer::constructCurve(){
+    curve = new Curve(control.size(), control);
     nbU = 100;
     curve->generateCatmull(nbU);
-
-   initPlanes(Movable::DYNAMIC);
+    isCurve = true;
+    initPlanes(Movable::DYNAMIC);
 }
 
 void Viewer::initPlanes(Movable status){
     curveIndexR = nbU - 1;
     curveIndexL = 0;
     Vec pos = Vec(0,0,0);
+    float size;
+    if(status==Movable::DYNAMIC) size = mesh.getBBRadius() / 2.5f;
+    else size = mesh.getBBRadius() / 8.0f;
 
-    leftPlane = new Plane(40.0, status, pos);
-    rightPlane = new Plane(40.0, status, pos);
+    leftPlane = new Plane(static_cast<double>(size), status, pos);
+    rightPlane = new Plane(static_cast<double>(size), status, pos);
 
     repositionPlane(leftPlane, curveIndexL);
     repositionPlane(rightPlane, curveIndexR);
@@ -649,4 +658,26 @@ std::vector<Vec> Viewer::getReferenceAxes(){
         addFrameChangeToAxes(v, rightPlane, ghostPlanes[lastIndex]);
     }
     return v;
+}
+
+void Viewer::readJSON(const QJsonObject &json){
+    if(json.contains("mesh") && json["mesh"].isObject()){
+        QJsonObject meshObject = json["mesh"].toObject();
+        mesh.readJSON(meshObject);
+        connect(&mesh, &Mesh::updateViewer, this, &Viewer::toUpdate);
+    }
+
+    if(json.contains("control points") && json["control points"].isArray()){
+        control.clear();
+        QJsonArray controlArray = json["control points"].toArray();
+        for(int i=0; i<controlArray.size(); i++){
+            QJsonArray singleControl = controlArray[i].toArray();
+            control.push_back(Vec(singleControl[0].toDouble(), singleControl[1].toDouble(), singleControl[2].toDouble()));
+        }
+        constructCurve();
+    }
+
+    Vec3Df center = mesh.getBBCentre();
+    float radius = mesh.getBBRadius();
+    updateCamera(center, radius);
 }

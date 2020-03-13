@@ -5,13 +5,14 @@ CurvePoint::CurvePoint(Vec& p) : ControlPoint (p)
     //this->p = p;
     this->mf = ManipulatedFrame();
     //this->curveIndex = curveIndex;
-    //connect(&mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
-    connect(&(static_cast<ManipulatedFrame&>(mf)), &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
+    connect(&mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
+    //connect(&(dynamic_cast<ManipulatedFrame&>(mf)), &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
 }
 
 void CurvePoint::draw(){
 
-    if((static_cast<ManipulatedFrame&>(mf)).grabsMouse()) glColor3f(0, 1, 1);
+    //if((static_cast<ManipulatedFrame&>(mf)).grabsMouse()) glColor3f(0, 1, 1);
+    if(mf.grabsMouse()) glColor3f(0, 1, 1);
     else glColor3f(0.6f, 0, 0.4f);
 
     glPointSize(10.0);

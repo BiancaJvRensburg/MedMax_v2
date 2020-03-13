@@ -19,6 +19,8 @@ public:
         update();
     }
     ~Mesh(){}
+    void init();
+    Vec3Df& getBBCentre(){ return BBCentre; }
 
     std::vector<Vec3Df> &getVertices(){return vertices;}
     const std::vector<Vec3Df> &getVertices()const {return vertices;}
@@ -55,6 +57,8 @@ public:
 
     void invertNormal(){normalDirection *= -1;}
 
+    void readJSON(const QJsonObject &json);
+
 public Q_SLOTS:
     void recieveInfoFromFibula(std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
@@ -63,7 +67,6 @@ Q_SIGNALS:
     void updateViewer();
 
 protected:
-    void init();
     void computeBB();
 
     void computeTriangleNormals();

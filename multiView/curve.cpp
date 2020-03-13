@@ -208,6 +208,8 @@ unsigned int Curve::getClosestDistance(double target, unsigned int indexS, unsig
 unsigned int Curve::indexForLength(unsigned int indexS, double length){
     unsigned int i=0;
 
+    //std::cout << "Index : " << indexS << "   length : " << length << std::endl;
+
     if(length > 0){
         while(indexS+i < nbU-1 && discreteLength(indexS, indexS+i) < length) i++;
         if(i!=0) i = getClosestDistance(length, indexS, i, i-1);
