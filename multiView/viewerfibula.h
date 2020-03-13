@@ -56,7 +56,7 @@ private:
     std::vector<double> distances;
     bool isNeedToFlip;
 
-    const double securityMargin = 30.0;       // this is temporary
+    const double securityMargin = 30;       // this is temporary
 };
 
 #endif // VIEWERFIBULA_H

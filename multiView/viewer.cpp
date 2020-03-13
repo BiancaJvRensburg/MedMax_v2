@@ -351,10 +351,14 @@ void Viewer::moveLeftPlane(int position){
     std::cout << "Index right : " << curveIndexR << std::endl;
 
     if(curve->indexForLength(curveIndexR, -constraint) > index){  // Only move if we're going backwards or we haven't met the other plane
+        std::cout<< "Well this happened.. " << std::endl;
         curveIndexL = index;
         if(curveIndexL >= nbU) curveIndexL = nbU-1;     // shouldn't ever happen
     }
-    else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ) return;       // already in the correct position
+    else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ){
+        std::cout<< "already 'correct' " << std::endl;
+        return;       // already in the correct position
+    }
     else curveIndexL = curve->indexForLength(curveIndexR, -constraint);     // get the new position
 
     std::cout << "Now index left : " <<curveIndexL << std::endl;
@@ -661,9 +665,10 @@ std::vector<Vec> Viewer::getReferenceAxes(){
 }
 
 void Viewer::readJSON(const QJsonObject &json){
+    double scale = 1.0;
     if(json.contains("mesh") && json["mesh"].isObject()){
         QJsonObject meshObject = json["mesh"].toObject();
-        mesh.readJSON(meshObject);
+        mesh.readJSON(meshObject, scale);
         connect(&mesh, &Mesh::updateViewer, this, &Viewer::toUpdate);
     }
 
@@ -672,7 +677,7 @@ void Viewer::readJSON(const QJsonObject &json){
         QJsonArray controlArray = json["control points"].toArray();
         for(int i=0; i<controlArray.size(); i++){
             QJsonArray singleControl = controlArray[i].toArray();
-            control.push_back(Vec(singleControl[0].toDouble(), singleControl[1].toDouble(), singleControl[2].toDouble()));
+            control.push_back(Vec(singleControl[0].toDouble()*scale, singleControl[1].toDouble()*scale, singleControl[2].toDouble()*scale));
         }
         constructCurve();
     }

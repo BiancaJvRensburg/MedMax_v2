@@ -564,7 +564,7 @@ float Mesh::getBBRadius(){
     return radius;
 }
 
-void Mesh::readJSON(const QJsonObject &json){
+void Mesh::readJSON(const QJsonObject &json, double &scale){
     if(json.contains("vertices") && json["vertices"].isArray()){
         vertices.clear();
         QJsonArray vArray = json["vertices"].toArray();
@@ -583,5 +583,18 @@ void Mesh::readJSON(const QJsonObject &json){
         }
     }
 
+    if(json.contains("scale") && json["scale"].isDouble()){
+        scale = 1.0/json["scale"].toDouble();
+        uniformScale(scale);
+    }
+
     update();
+}
+
+void Mesh::uniformScale(float s){
+    for(unsigned int i=0; i<vertices.size(); i++) vertices[i] *= s;
+    BBMax *= s;
+    BBMin *= s;
+    BBCentre *= s;
+    radius *= s;
 }

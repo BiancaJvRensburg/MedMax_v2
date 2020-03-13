@@ -57,7 +57,7 @@ public:
 
     void invertNormal(){normalDirection *= -1;}
 
-    void readJSON(const QJsonObject &json);
+    void readJSON(const QJsonObject &json, double &scale);
 
 public Q_SLOTS:
     void recieveInfoFromFibula(std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
@@ -93,6 +93,8 @@ protected:
     void cutFibula(bool* truthTriangles);
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours();
+
+    void uniformScale(float s);
 
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
