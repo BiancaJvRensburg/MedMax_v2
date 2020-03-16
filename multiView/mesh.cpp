@@ -576,10 +576,54 @@ void Mesh::readJSON(const QJsonObject &json, double &scale){
 
     if(json.contains("triangles") && json["triangles"].isArray()){
         triangles.clear();
+        vertexNeighbours.clear();
+        vertexTriangles.clear();
+
+        for(unsigned int i=0; i<vertices.size(); i++){
+            std::vector<unsigned int> init;
+            vertexNeighbours.push_back(init);
+            vertexTriangles.push_back(init);
+        }
+
         QJsonArray tArray = json["triangles"].toArray();
         for(int i=0; i<tArray.size(); i++){
             QJsonArray singleT = tArray[i].toArray();
-            triangles.push_back(Triangle(singleT[0].toInt(), singleT[1].toInt(), singleT[2].toInt()));
+            unsigned int triIndex = triangles.size();
+            unsigned int vert[3] = {static_cast<unsigned int>(singleT[0].toInt()), static_cast<unsigned int>(singleT[1].toInt()), static_cast<unsigned int>(singleT[2].toInt())};
+            triangles.push_back(Triangle(vert[0], vert[1], vert[2]));
+
+            // Add to neighbours
+            for(int k=0; k<3; k++){
+                bool found = false;
+
+                for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
+                    if(vertexNeighbours[vert[k]][i] == vert[(k+1)%3]){
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(found == false){
+                    vertexNeighbours[vert[k]].push_back(vert[(k+1)%3]);
+                    vertexNeighbours[vert[(k+1)%3]].push_back(vert[k]);
+                }
+            }
+
+            // Add to vertexTriangles
+            for(int k=0; k<3; k++){
+                bool found = false;
+
+                for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
+                    if(vertexTriangles[vert[k]][i] == triIndex){
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(found == false){
+                    vertexTriangles[vert[k]].push_back(triIndex);
+                }
+            }
         }
     }
 
