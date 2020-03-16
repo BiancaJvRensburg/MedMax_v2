@@ -15,6 +15,8 @@ class Plane
 public:
     Plane(double s, Movable status, Vec& pos);
 
+    void toggleIsVisible(){ isVisible = !isVisible; }
+
     void setSize(double s){ size = s; }
     void setPosition(Vec pos);
     void setOrientation(Quaternion q){ cp.getFrame().setOrientation(q); }
@@ -64,6 +66,7 @@ private:
     double rotationPercentage;
     Vec normal;
     CurvePoint cp;
+    bool isVisible;
 };
 
 #endif // PLANE_H

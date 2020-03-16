@@ -89,7 +89,7 @@ void Mesh::glTriangle(unsigned int i){
         glVertex(vertices[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::glTriangleSmooth(unsigned int i){
@@ -101,7 +101,7 @@ void Mesh::glTriangleSmooth(unsigned int i){
         glVertex(smoothedVerticies[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::glTriangleFibInMand(unsigned int i){
@@ -113,7 +113,7 @@ void Mesh::glTriangleFibInMand(unsigned int i){
         glVertex(fibInMandVerticies[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::getColour(unsigned int vertex){
@@ -141,9 +141,9 @@ void Mesh::getColour(unsigned int vertex){
         while(g>1.f) g -= 1.f;
         while(b>1.f) b -= 1.f;
 
-        glColor3f(r,g,b);
+        glColor4f(r,g,b, alphaTransparency);
     }
-    else glColor3f(1.0, 1.0, 1.0);
+    else glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::addPlane(Plane *p){
@@ -588,21 +588,19 @@ void Mesh::readJSON(const QJsonObject &json, double &scale){
         QJsonArray tArray = json["triangles"].toArray();
         for(int i=0; i<tArray.size(); i++){
             QJsonArray singleT = tArray[i].toArray();
-            unsigned int triIndex = triangles.size();
+            unsigned int triIndex = static_cast<unsigned int>(triangles.size());
             unsigned int vert[3] = {static_cast<unsigned int>(singleT[0].toInt()), static_cast<unsigned int>(singleT[1].toInt()), static_cast<unsigned int>(singleT[2].toInt())};
             triangles.push_back(Triangle(vert[0], vert[1], vert[2]));
 
             // Add to neighbours
             for(int k=0; k<3; k++){
                 bool found = false;
-
                 for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
                     if(vertexNeighbours[vert[k]][i] == vert[(k+1)%3]){
                         found = true;
                         break;
                     }
                 }
-
                 if(found == false){
                     vertexNeighbours[vert[k]].push_back(vert[(k+1)%3]);
                     vertexNeighbours[vert[(k+1)%3]].push_back(vert[k]);
@@ -612,14 +610,12 @@ void Mesh::readJSON(const QJsonObject &json, double &scale){
             // Add to vertexTriangles
             for(int k=0; k<3; k++){
                 bool found = false;
-
                 for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
                     if(vertexTriangles[vert[k]][i] == triIndex){
                         found = true;
                         break;
                     }
                 }
-
                 if(found == false){
                     vertexTriangles[vert[k]].push_back(triIndex);
                 }

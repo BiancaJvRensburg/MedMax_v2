@@ -10,6 +10,7 @@ Plane::Plane(double s, Movable status, Vec& pos) : cp(pos)
     constraintFree.setRotationConstraint(AxisPlaneConstraint::FREE, Vec(0,0,1));
 
     this->status = status;
+    this->isVisible = true;
 
     initBasePlane();
 }
@@ -25,27 +26,29 @@ void Plane::draw(){
     glPushMatrix();
     glMultMatrixd(cp.getFrame().matrix());
 
-    glEnable(GL_DEPTH);
-    glEnable(GL_DEPTH_TEST);
+    if(isVisible){
+        glEnable(GL_DEPTH);
+        glEnable(GL_DEPTH_TEST);
 
-    glBegin(GL_QUADS);
-        glVertex3f(static_cast<float>(points[0].x), static_cast<float>(points[0].y), static_cast<float>(points[0].z));
-        glVertex3f(static_cast<float>(points[1].x), static_cast<float>(points[1].y), static_cast<float>(points[1].z));
-        glVertex3f(static_cast<float>(points[2].x), static_cast<float>(points[2].y), static_cast<float>(points[2].z));
-        glVertex3f(static_cast<float>(points[3].x), static_cast<float>(points[3].y), static_cast<float>(points[3].z));
-    glEnd();
+        glBegin(GL_QUADS);
+            glVertex3f(static_cast<float>(points[0].x), static_cast<float>(points[0].y), static_cast<float>(points[0].z));
+            glVertex3f(static_cast<float>(points[1].x), static_cast<float>(points[1].y), static_cast<float>(points[1].z));
+            glVertex3f(static_cast<float>(points[2].x), static_cast<float>(points[2].y), static_cast<float>(points[2].z));
+            glVertex3f(static_cast<float>(points[3].x), static_cast<float>(points[3].y), static_cast<float>(points[3].z));
+        glEnd();
+
+        glDisable(GL_DEPTH);
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    glColor3f(1,1,1);
+    //QGLViewer::drawAxis(size/2.0);
 
     if(status==Movable::DYNAMIC){
         cp.toggleSwitchFrames();
         cp.draw();
         cp.toggleSwitchFrames();
     }
-
-    glDisable(GL_DEPTH);
-    glDisable(GL_DEPTH_TEST);
-
-    glColor3f(1,1,1);
-    QGLViewer::drawAxis(size/2.0);
 
     glPopMatrix();
 }

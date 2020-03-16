@@ -14,7 +14,6 @@ Viewer::Viewer(QWidget *parent, StandardCamera *cam, int sliderMax) : QGLViewer(
     this->nbGhostPlanes = 0;
     this->isGhostPlanes = false;
     this->isGhostActive = true;
-    this->isDrawPlane = true;
     this->isCurve = false;
 }
 
@@ -32,28 +31,27 @@ void Viewer::draw() {
         if(isGhostPlanes && isGhostActive) drawPolyline();
 
         // draw the planes
-        if(isDrawPlane || !mesh.getIsCut()){
-            glColor3f(1.0, 0, 0);
-            leftPlane->draw();
+        glColor3f(1.0, 0, 0);
+        leftPlane->draw();
 
-            glColor3f(0, 1.0, 0);
-            rightPlane->draw();
+        glColor3f(0, 1.0, 0);
+        rightPlane->draw();
 
-            for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
-                glColor3f(0,0,1.0);
-                ghostPlanes[i]->draw();
-            }
+        for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
+            glColor3f(0,0,1.0);
+            ghostPlanes[i]->draw();
         }
 
          curve->draw();
-         curve->drawControl();
     }
 
     glPopMatrix();
 }
 
 void Viewer::toggleIsDrawPlane(){
-    isDrawPlane = !isDrawPlane;
+    leftPlane->toggleIsVisible();
+    rightPlane->toggleIsVisible();
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->toggleIsVisible();
     update();
 }
 
@@ -145,6 +143,8 @@ void Viewer::init() {
   glEnable(GL_LIGHTING);
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
   glLineWidth (1.0f);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   initSignals();
 }
@@ -511,9 +511,7 @@ void Viewer::initPlanes(Movable status){
     curveIndexR = nbU - 1;
     curveIndexL = 0;
     Vec pos = Vec(0,0,0);
-    float size;
-    if(status==Movable::DYNAMIC) size = mesh.getBBRadius() / 2.5f;
-    else size = mesh.getBBRadius() / 8.0f;
+    float size = 40.0;
 
     leftPlane = new Plane(static_cast<double>(size), status, pos);
     rightPlane = new Plane(static_cast<double>(size), status, pos);
@@ -686,4 +684,10 @@ void Viewer::readJSON(const QJsonObject &json){
     Vec3Df center = mesh.getBBCentre();
     float radius = mesh.getBBRadius();
     updateCamera(center, radius);
+}
+
+void Viewer::setAlpha(int position){
+    float a = static_cast<float>(position) / 100.f;
+    mesh.setAlpha(a);
+    update();
 }

@@ -35,6 +35,7 @@ public Q_SLOTS:
     void toUpdate();
     void getAxes();
     void toggleIsDrawPlane();
+    void setAlpha(int);
 
 Q_SIGNALS:
     void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
@@ -97,7 +98,6 @@ protected:
     unsigned int nbU;
     int sliderMax;
     bool isDrawMesh;
-    bool isDrawPlane;
 
     const double constraint = 25;
 

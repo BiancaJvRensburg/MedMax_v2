@@ -53,6 +53,8 @@ public:
     void drawCut();
     bool getIsCut(){ return isCut; }
 
+    void setAlpha(float a){ alphaTransparency = a; }
+
     typedef std::priority_queue< std::pair< float , int > , std::deque< std::pair< float , int > > , std::greater< std::pair< float , int > > > FacesQueue;
 
     void invertNormal(){normalDirection *= -1;}
@@ -135,6 +137,7 @@ protected:
     bool isTransfer = true;
 
     int normalDirection;
+    float alphaTransparency = 1.f;
 };
 
 #endif // MESH_H
