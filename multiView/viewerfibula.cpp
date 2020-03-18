@@ -55,10 +55,8 @@ void ViewerFibula::createPolyline(){
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
     if(isGhostPlanes){
         resetMandibleInfo(polyline, axes);
-        repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
-        repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
         //setPlanePositions();
-        setPlaneOrientations();
+        setPlaneOrientations(true);
    }
     else{
         repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
@@ -82,11 +80,14 @@ void ViewerFibula::setPlanePositions(){
     }
 }
 
-void ViewerFibula::setPlaneOrientations(){
+void ViewerFibula::setPlaneOrientations(bool isFirstPass){
     if(mandiblePolyline.size()==0) return;
     Vec normal = Vec(0,0,1);
 
-    // Initialise the ghost planes' rotation
+    // Initialise the planes' rotation
+    if(!isFirstPass) findIndexesFromDistances();
+    repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
+    repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
     for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
 
     // Reset the rotation to line up with the fibula polyline
@@ -124,8 +125,11 @@ void ViewerFibula::setPlaneOrientations(){
     }
 
     std::cout << "Approaching planes :" << std::endl;*/
-    for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
-        approachPlanes(i);
+    if(isFirstPass){
+        for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
+            approachPlanes(i);
+        }
+        setPlaneOrientations(false);
     }
 
     /*std::cout << "ACTUAL DISTANCES : " << std::endl;
@@ -437,6 +441,7 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     Vec p1, p2;
     findClosestPoint(pStart, p1, p2);
     double distZ = p2.z - p1.z;
+    const double security = 5.0;
 
     Vec pB1, pB2;
     pB1 = curve->getPoint(ghostLocation[pStart]);
@@ -445,9 +450,11 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
 
     double distPercentage = distZ/currentDistZ;
     double distShift = euclideanDistance(pB1, pB2) * distPercentage;
-
-    /*for(unsigned int i=pStart+1; i<ghostPlanes.size(); i++) ghostLocation[i] -= distShift;
-    curveIndexR -= distShift;*/
+    if(distShift > security) distShift -= security;
+    //std::cout << "Dist shift : " << distShift << std::endl;
+    distances[pStart+1] -= distShift;
+    //std::cout << "New dist " << pStart+1 <<  ": " << distances[pStart+1] << std::endl;
+    /*curveIndexR -= distShift;*/
 
     /*std::cout << "Points : " << p1.x << " , " << p1.y << " , " << p1.z << " and " << p2.x << " , " << p2.y << " , " << p2.z << std::endl;
     std::cout << "Bases : " << pB1.x << " , " << pB1.y << " , " << pB1.z << " and " << pB2.x << " , " << pB2.y << " , " << pB2.z << std::endl;
