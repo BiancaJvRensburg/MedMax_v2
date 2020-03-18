@@ -118,12 +118,12 @@ void ViewerFibula::setPlaneOrientations(){
 
     Q_EMIT requestAxes();
 
-    std::cout << "Distances : " << std::endl;
+    /*std::cout << "Distances : " << std::endl;
     for(unsigned int i = 0; i<distances.size(); i++){
         std::cout << i << " : " << distances[i] << std::endl;
     }
 
-    std::cout << "Approaching planes :" << std::endl;
+    std::cout << "Approaching planes :" << std::endl;*/
     for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
         approachPlanes(i);
     }
@@ -242,35 +242,29 @@ void ViewerFibula::addGhostPlanes(unsigned int nb){
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
     distances.clear();
-   // std::cout << "DISTANCES : " << std::endl;
-    for(unsigned int i=0; i<=nb; i++) {
-       // std::cout << i << " : " << distance[i] << std::endl;
+    for(unsigned int i=0; i<nb; i++) {
         distances.push_back(distance[i]);
+        distances.push_back(securityMargin);
     }
+
+    distances.push_back(distance[nb]);
 
     findIndexesFromDistances();
 }
 
 void ViewerFibula::findIndexesFromDistances(){
     ghostLocation.clear();
-    unsigned int index = curve->indexForLength(curveIndexL+indexOffset, distances[0]);
-    ghostLocation.push_back(index);
-    unsigned int nextIndex = curve->indexForLength(index, securityMargin);
-    ghostLocation.push_back(nextIndex);     // the mirror plane
     unsigned int nb = static_cast<unsigned int>(distances.size()-1);
 
+    unsigned int index = curve->indexForLength(curveIndexL+indexOffset, distances[0]);
+    ghostLocation.push_back(index);
+
     for(unsigned int i=1; i<nb; i++){
-        index = curve->indexForLength(ghostLocation[2*i-1], distances[i]);
+        index = curve->indexForLength(ghostLocation[i-1], distances[i]);
         ghostLocation.push_back(index);
-        unsigned int nbU = curve->getNbU();
-        nextIndex = curve->indexForLength(index, securityMargin);
-        if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
-        else ghostLocation.push_back(nbU-1);
-        /*Vec v0, v1, v2, v3;
-        ghostPlanes[ghostLocation.size()-1]->getCorners(v0, v1, v2, v3);
-        std::cout << "Intersection? : " << ghostPlanes[ghostLocation.size()-2]->isIntersectionPlane(v0, v1, v2, v3) << std::endl;*/
     }
-    curveIndexR = curve->indexForLength(ghostLocation[2*nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
+
+    curveIndexR = curve->indexForLength(ghostLocation[nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
 }
 
 // NOT USED
@@ -442,14 +436,18 @@ Vec ViewerFibula::findMaxZ(const std::vector<unsigned int> &tIndexes, Plane &tem
 void ViewerFibula::approachPlanes(unsigned int pStart){
     Vec p1, p2;
     findClosestPoint(pStart, p1, p2);
-    double dist = p2.z - p1.z; //euclideanDistance(p1, p2);
+    double distZ = p2.z - p1.z;
 
     Vec pB1, pB2;
     pB1 = curve->getPoint(ghostLocation[pStart]);
     pB2 = curve->getPoint(ghostLocation[pStart+1]);
-    double currentDist = pB2.z - pB1.z;
+    double currentDistZ = pB2.z - pB1.z;
 
-    double distShift = currentDist - dist;
+    double distPercentage = distZ/currentDistZ;
+    double distShift = euclideanDistance(pB1, pB2) * distPercentage;
+
+    /*for(unsigned int i=pStart+1; i<ghostPlanes.size(); i++) ghostLocation[i] -= distShift;
+    curveIndexR -= distShift;*/
 
     /*std::cout << "Points : " << p1.x << " , " << p1.y << " , " << p1.z << " and " << p2.x << " , " << p2.y << " , " << p2.z << std::endl;
     std::cout << "Bases : " << pB1.x << " , " << pB1.y << " , " << pB1.z << " and " << pB2.x << " , " << pB2.y << " , " << pB2.z << std::endl;
