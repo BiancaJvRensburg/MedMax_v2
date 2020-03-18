@@ -19,6 +19,8 @@ public:
         update();
     }
     ~Mesh(){}
+    void init();
+    Vec3Df& getBBCentre(){ return BBCentre; }
 
     std::vector<Vec3Df> &getVertices(){return vertices;}
     const std::vector<Vec3Df> &getVertices()const {return vertices;}
@@ -31,6 +33,10 @@ public:
 
     std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
+
+    std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
+    Triangle& getTriangle(unsigned int i){ return triangles[i]; }
+    Vec3Df& getVertex(unsigned int i){ return vertices[i]; }
 
     void draw();
 
@@ -51,9 +57,13 @@ public:
     void drawCut();
     bool getIsCut(){ return isCut; }
 
+    void setAlpha(float a){ alphaTransparency = a; }
+
     typedef std::priority_queue< std::pair< float , int > , std::deque< std::pair< float , int > > , std::greater< std::pair< float , int > > > FacesQueue;
 
     void invertNormal(){normalDirection *= -1;}
+
+    void readJSON(const QJsonObject &json, double &scale);
 
 public Q_SLOTS:
     void recieveInfoFromFibula(std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
@@ -63,7 +73,6 @@ Q_SIGNALS:
     void updateViewer();
 
 protected:
-    void init();
     void computeBB();
 
     void computeTriangleNormals();
@@ -91,6 +100,10 @@ protected:
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours();
 
+    void uniformScale(float s);
+
+    Vec getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex);
+
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
     std::vector <int> coloursIndicies;      // the value of each index allowing us to calculate its colour
@@ -98,7 +111,7 @@ protected:
     std::vector <Plane*> planes;
     std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
 
-    std::vector <int> flooding;
+    std::vector<int> flooding;
     std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
     std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
     std::vector<int> planeNeighbours;       // which planes are neighbours
@@ -130,6 +143,7 @@ protected:
     bool isTransfer = true;
 
     int normalDirection;
+    float alphaTransparency = 1.f;
 };
 
 #endif // MESH_H

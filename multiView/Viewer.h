@@ -15,7 +15,8 @@ class Viewer : public QGLViewer
 
 public :
     Viewer(QWidget *parent, StandardCamera *camera, int sliderMax);
-    void openOFF(QString f);
+    void openOFF(QString f);   
+    void readJSON(const QJsonObject &json);
     Mesh mesh;
 
 public Q_SLOTS:
@@ -34,6 +35,7 @@ public Q_SLOTS:
     void toUpdate();
     void getAxes();
     void toggleIsDrawPlane();
+    void setAlpha(int);
 
 Q_SIGNALS:
     void leftPosChanged(double, std::vector<Vec>, std::vector<Vec>);
@@ -76,6 +78,8 @@ protected:
     Vec getCustomProjection(Vec a, Vec normal);        // project a onto a plane defined by the normal
     void repositionPlane(Plane* p, unsigned int index);
 
+    void constructCurve();
+
     ManipulatedFrame* viewerFrame;
 
     Plane *leftPlane;
@@ -94,9 +98,11 @@ protected:
     unsigned int nbU;
     int sliderMax;
     bool isDrawMesh;
-    bool isDrawPlane;
 
     const double constraint = 25;
+
+    std::vector<Vec> control;
+    bool isCurve;
 
     Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
 

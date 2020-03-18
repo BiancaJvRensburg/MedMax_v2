@@ -15,6 +15,8 @@ class Plane
 public:
     Plane(double s, Movable status, Vec& pos);
 
+    void toggleIsVisible(){ isVisible = !isVisible; }
+
     void setSize(double s){ size = s; }
     void setPosition(Vec pos);
     void setOrientation(Quaternion q){ cp.getFrame().setOrientation(q); }
@@ -53,6 +55,9 @@ public:
     void setRotation(Quaternion q) { cp.getFrame().setRotation(q); }
     void rotate(Quaternion q) { cp.getFrame().rotate(q); }
 
+    bool isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
+    void getCorners(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
+
     Movable status;
 
 private:
@@ -64,6 +69,7 @@ private:
     double rotationPercentage;
     Vec normal;
     CurvePoint cp;
+    bool isVisible;
 };
 
 #endif // PLANE_H

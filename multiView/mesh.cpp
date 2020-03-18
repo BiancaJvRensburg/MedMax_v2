@@ -16,7 +16,7 @@ void Mesh::computeBB(){
         }
     }
 
-    radius = (BBMax - BBMin).norm();
+    radius = (BBMax - BBMin).norm() / 2.0f;
 
     BBCentre = (BBMax + BBMin)/2.0f;
 }
@@ -89,7 +89,7 @@ void Mesh::glTriangle(unsigned int i){
         glVertex(vertices[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::glTriangleSmooth(unsigned int i){
@@ -101,7 +101,7 @@ void Mesh::glTriangleSmooth(unsigned int i){
         glVertex(smoothedVerticies[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::glTriangleFibInMand(unsigned int i){
@@ -113,7 +113,7 @@ void Mesh::glTriangleFibInMand(unsigned int i){
         glVertex(fibInMandVerticies[t.getVertex(j)]);
     }
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::getColour(unsigned int vertex){
@@ -141,9 +141,9 @@ void Mesh::getColour(unsigned int vertex){
         while(g>1.f) g -= 1.f;
         while(b>1.f) b -= 1.f;
 
-        glColor3f(r,g,b);
+        glColor4f(r,g,b, alphaTransparency);
     }
-    else glColor3f(1.0, 1.0, 1.0);
+    else glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
 void Mesh::addPlane(Plane *p){
@@ -204,7 +204,21 @@ void Mesh::cutMesh(){
     // ! Conserve this order
     createSmoothedTriangles();
 
+    /*for(unsigned int j=0; j<intersectionTriangles.size(); j++){
+        const std::vector<unsigned int> &v = intersectionTriangles[j];
+        for(unsigned int k=0; k<v.size(); k++) {
+            truthTriangles[v[k]] = false;
+            trianglesCut.erase(trianglesCut.begin()+v[k]);
+        }
+    }*/
+
     if(cuttingSide == Side::EXTERIOR){      // fill the colours on the fibula and send the segments to the mandible
+        /*for(unsigned int j=0; j<intersectionTriangles.size(); j++){
+            const std::vector<unsigned int> &v = intersectionTriangles[j];
+            for(unsigned int k=0; k<v.size(); k++) {
+                trianglesCut.erase(trianglesCut.begin()+v[k]);
+            }
+        }*/
         fillColours();
         if(isTransfer){
             sendToManible();
@@ -222,6 +236,13 @@ void Mesh::cutMandible(bool* truthTriangles){
 }
 
 void Mesh::cutFibula(bool* truthTriangles){
+    for(unsigned int j=0; j<intersectionTriangles.size(); j++){
+            const std::vector<unsigned int> &v = intersectionTriangles[j];
+            for(unsigned int k=0; k<v.size(); k++) {
+                truthTriangles[v[k]] = true;
+        }
+    }
+
     getSegmentsToKeep();    // figure out what to keep (TODO can be done earlier)
     for(unsigned int i=0; i<flooding.size(); i++){
         bool isKeep = false;
@@ -351,16 +372,32 @@ void Mesh::createSmoothedFibula(){
             for(unsigned int k=0; k<3; k++){    // find which verticies are on the otherside of the cut
                 unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
 
-                bool isOutlier = true;
+                bool isOutlier = false;
                 for(unsigned int l=0; l<segmentsConserved.size(); l++){
                     if(flooding[vertexIndex] == segmentsConserved[l]){
                         actualFlooding = flooding[vertexIndex];
-                        isOutlier = false;
+                        isOutlier = true;
                     }
                 }
 
                 if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])]==-1 || isOutlier){        // if we need to change it
-                    Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
+                    Vec newVertex;
+                    unsigned int lastIndex = planes.size()-1;
+                    if(i>2 && i<lastIndex){
+                        if(i%2==0) newVertex = getPolylineProjectedVertex(i, i-1, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, i+1, vertexIndex);
+                    }
+                    else if(i==2) newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
+                    else if(i==lastIndex) newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
+                    else if(i==0){
+                        if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, 2, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
+                    }
+                    else if(i==1){
+                        if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, lastIndex, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
+                    }
+                    //else newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
                     smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
                 }
                 // else don't change the original
@@ -373,6 +410,17 @@ void Mesh::createSmoothedFibula(){
             }
         }
     }
+}
+
+Vec Mesh::getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex){
+    Vec n = planes[p2]->getPosition() - planes[p1]->getPosition();
+    n.normalize();
+    n = planes[p1]->getLocalVector(n);
+    Vec p = Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2]));
+    p = planes[p1]->getLocalCoordinates(p);
+    double alpha = p.z / n.z;
+    Vec newVertex = p - alpha*n;
+    return planes[p1]->getMeshCoordinatesFromLocal(newVertex);
 }
 
 void Mesh::updatePlaneIntersections(Plane *p){
@@ -562,4 +610,79 @@ void Mesh::drawCut(){
 float Mesh::getBBRadius(){
     computeBB();
     return radius;
+}
+
+void Mesh::readJSON(const QJsonObject &json, double &scale){
+    if(json.contains("vertices") && json["vertices"].isArray()){
+        vertices.clear();
+        QJsonArray vArray = json["vertices"].toArray();
+        for(int i=0; i<vArray.size(); i++){
+            QJsonArray singleV = vArray[i].toArray();
+            vertices.push_back(Vec3Df(singleV[0].toDouble(), singleV[1].toDouble(), singleV[2].toDouble()));
+        }
+    }
+
+    if(json.contains("triangles") && json["triangles"].isArray()){
+        triangles.clear();
+        vertexNeighbours.clear();
+        vertexTriangles.clear();
+
+        for(unsigned int i=0; i<vertices.size(); i++){
+            std::vector<unsigned int> init;
+            vertexNeighbours.push_back(init);
+            vertexTriangles.push_back(init);
+        }
+
+        QJsonArray tArray = json["triangles"].toArray();
+        for(int i=0; i<tArray.size(); i++){
+            QJsonArray singleT = tArray[i].toArray();
+            unsigned int triIndex = static_cast<unsigned int>(triangles.size());
+            unsigned int vert[3] = {static_cast<unsigned int>(singleT[0].toInt()), static_cast<unsigned int>(singleT[1].toInt()), static_cast<unsigned int>(singleT[2].toInt())};
+            triangles.push_back(Triangle(vert[0], vert[1], vert[2]));
+
+            // Add to neighbours
+            for(int k=0; k<3; k++){
+                bool found = false;
+                for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
+                    if(vertexNeighbours[vert[k]][i] == vert[(k+1)%3]){
+                        found = true;
+                        break;
+                    }
+                }
+                if(found == false){
+                    vertexNeighbours[vert[k]].push_back(vert[(k+1)%3]);
+                    vertexNeighbours[vert[(k+1)%3]].push_back(vert[k]);
+                }
+            }
+
+            // Add to vertexTriangles
+            for(int k=0; k<3; k++){
+                bool found = false;
+                for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
+                    if(vertexTriangles[vert[k]][i] == triIndex){
+                        found = true;
+                        break;
+                    }
+                }
+                if(found == false){
+                    vertexTriangles[vert[k]].push_back(triIndex);
+                }
+            }
+        }
+    }
+
+    if(json.contains("scale") && json["scale"].isDouble()){
+        scale = 1.0/json["scale"].toDouble();
+        uniformScale(scale);
+    }
+
+    update();
+}
+
+void Mesh::uniformScale(float s){
+    for(unsigned int i=0; i<vertices.size(); i++) vertices[i] *= s;
+    BBMax *= s;
+    BBMin *= s;
+    BBCentre *= s;
+    radius *= s;
 }

@@ -13,7 +13,6 @@ public:
     void handleCut();
     std::vector<Vec> getPolyline();
 
-
 public Q_SLOTS:
     void movePlanes(int);
     void planesMoved();
@@ -41,11 +40,16 @@ private:
     void createPolyline();
     void matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z);
     void repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes);
-    void setPlaneOrientations();
+    void setPlaneOrientations(bool isFirstPass);
     void setPlanePositions();
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
     void swivelToPolyline(std::vector<Vec>& fibulaPolyline);
     void findIndexesFromDistances();
+    void findClosestPoint(unsigned int pNb, Vec &a, Vec &b);
+    Vec findMinZ(const std::vector<unsigned int> &tIndex, Plane &tempPlane);
+    Vec findMaxZ(const std::vector<unsigned int> &tIndex, Plane &tempPlane);
+    void approachPlanes(unsigned int pStart);
+    double euclideanDistance(Vec &a, Vec &b);
 
     bool isCutSignal;
     bool isPlanesRecieved;
@@ -57,7 +61,7 @@ private:
     std::vector<double> distances;
     bool isNeedToFlip;
 
-    const double securityMargin = 30.0;       // this is temporary
+    const double securityMargin = 30;       // this is temporary
 };
 
 #endif // VIEWERFIBULA_H
