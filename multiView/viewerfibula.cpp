@@ -117,6 +117,30 @@ void ViewerFibula::setPlaneOrientations(){
     swivelToPolyline(fibulaPolyline);
 
     Q_EMIT requestAxes();
+
+    std::cout << "Distances : " << std::endl;
+    for(unsigned int i = 0; i<distances.size(); i++){
+        std::cout << i << " : " << distances[i] << std::endl;
+    }
+
+    std::cout << "Approaching planes :" << std::endl;
+    for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
+        approachPlanes(i);
+    }
+
+    /*std::cout << "ACTUAL DISTANCES : " << std::endl;
+    std::cout << "0 : " << curve->discreteLength(curveIndexL, ghostLocation[0]) << std::endl;
+    for(unsigned int i=0; i<ghostPlanes.size()-1; i++) {
+        std::cout << i+1 << " : " <<  curve->discreteLength(ghostLocation[i], ghostLocation[i+1]) << std::endl;
+    }
+    std::cout << "last : " << curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR) << std::endl;*/
+
+    /*std::cout << "Checking intersections" << std::endl;
+    for(unsigned int i=0; i<ghostLocation.size()-1; i+=2){
+        Vec v0, v1, v2, v3;
+        ghostPlanes[i+1]->getCorners(v0, v1, v2, v3);
+        std::cout << "Intersection? : " << ghostPlanes[i]->isIntersectionPlane(v0, v1, v2, v3) << std::endl;
+    }*/
 }
 
 void ViewerFibula::swivelToPolyline(std::vector<Vec>& fibulaPolyline){
@@ -218,7 +242,11 @@ void ViewerFibula::addGhostPlanes(unsigned int nb){
 // Find the locations of the ghost planes from the distances from the planes in the mandible
 void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
     distances.clear();
-    for(unsigned int i=0; i<=nb; i++) distances.push_back(distance[i]);
+   // std::cout << "DISTANCES : " << std::endl;
+    for(unsigned int i=0; i<=nb; i++) {
+       // std::cout << i << " : " << distance[i] << std::endl;
+        distances.push_back(distance[i]);
+    }
 
     findIndexesFromDistances();
 }
@@ -238,6 +266,9 @@ void ViewerFibula::findIndexesFromDistances(){
         nextIndex = curve->indexForLength(index, securityMargin);
         if((nextIndex)<nbU) ghostLocation.push_back(nextIndex);
         else ghostLocation.push_back(nbU-1);
+        /*Vec v0, v1, v2, v3;
+        ghostPlanes[ghostLocation.size()-1]->getCorners(v0, v1, v2, v3);
+        std::cout << "Intersection? : " << ghostPlanes[ghostLocation.size()-2]->isIntersectionPlane(v0, v1, v2, v3) << std::endl;*/
     }
     curveIndexR = curve->indexForLength(ghostLocation[2*nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
 }
@@ -359,4 +390,73 @@ void ViewerFibula::uncutMesh(){
     ghostPlanes.clear();
     repositionPlanes(mandiblePolyline, mandibleAxes);
     update();
+}
+
+void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
+    Vec pos(0,0,0);
+    Plane tempPlane(40.0, Movable::STATIC, pos);
+    repositionPlane(&tempPlane, ghostLocation[pNb]);
+
+    const std::vector<unsigned int> tInd1 = mesh.getIntersectionTriangles(pNb+2);
+    a = findMaxZ(tInd1, tempPlane);
+    const std::vector<unsigned int> tInd2 = mesh.getIntersectionTriangles(pNb+3);
+    b = findMinZ(tInd2, tempPlane);
+}
+
+Vec ViewerFibula::findMinZ(const std::vector<unsigned int> &tIndexes, Plane &tempPlane){
+    Vec minI(0,0,0);
+    double min = DBL_MAX;
+    for(unsigned int i=0; i<tIndexes.size(); i++){ // for each triangle aligned with the plane
+        for(unsigned int j=0; j<3; j++){
+            unsigned int v = mesh.getTriangle(tIndexes[i]).getVertex(j);
+            Vec vVec = Vec(mesh.getVertex(v));
+            double z = tempPlane.getLocalCoordinates(vVec).z;
+            if(z < min){
+                min = z;
+                minI = vVec;
+            }
+        }
+    }
+
+    return minI;
+}
+
+Vec ViewerFibula::findMaxZ(const std::vector<unsigned int> &tIndexes, Plane &tempPlane){
+    Vec maxI(0,0,0);
+    double max = -DBL_MAX;
+    for(unsigned int i=0; i<tIndexes.size(); i++){ // for each triangle aligned with the plane
+        for(unsigned int j=0; j<3; j++){
+            unsigned int vI = mesh.getTriangle(tIndexes[i]).getVertex(j);
+            Vec vVec = Vec(mesh.getVertex(vI));
+            double z = tempPlane.getLocalCoordinates(vVec)[0];
+            if(z > max){
+                max = z;
+                maxI = vVec;
+            }
+        }
+    }
+
+    return maxI;
+}
+
+void ViewerFibula::approachPlanes(unsigned int pStart){
+    Vec p1, p2;
+    findClosestPoint(pStart, p1, p2);
+    double dist = p2.z - p1.z; //euclideanDistance(p1, p2);
+
+    Vec pB1, pB2;
+    pB1 = curve->getPoint(ghostLocation[pStart]);
+    pB2 = curve->getPoint(ghostLocation[pStart+1]);
+    double currentDist = pB2.z - pB1.z;
+
+    double distShift = currentDist - dist;
+
+    /*std::cout << "Points : " << p1.x << " , " << p1.y << " , " << p1.z << " and " << p2.x << " , " << p2.y << " , " << p2.z << std::endl;
+    std::cout << "Bases : " << pB1.x << " , " << pB1.y << " , " << pB1.z << " and " << pB2.x << " , " << pB2.y << " , " << pB2.z << std::endl;
+    std::cout << "Current distance : " << pB2.z - pB1.z << std::endl;
+    std::cout << "Distance " << pStart << " and " << pStart+1 << " : " << dist << std::endl;*/
+}
+
+double ViewerFibula::euclideanDistance(Vec &a, Vec &b){
+    return sqrt( pow(a.x-b.x, 2.0) + pow(a.y-b.y, 2.0) + pow(a.z-b.z, 2.0));
 }

@@ -23,6 +23,8 @@ void Viewer::draw() {
     glPushMatrix();
     glMultMatrixd(manipulatedFrame()->matrix());
 
+    drawAxis(15.0);
+
     glColor3f(1.,1.,1.);
     mesh.draw();
     if(isDrawMesh) mesh.drawCut();   // draw the cut versions

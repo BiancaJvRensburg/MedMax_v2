@@ -167,11 +167,11 @@ void MainWindow::initDisplayDockWidgets(){
 void MainWindow::initFileActions(){
     fileActionGroup = new QActionGroup(this);
 
-    QAction *openFileSkullAction = new QAction("Open skull mesh", this);
+   /* QAction *openFileSkullAction = new QAction("Open skull mesh", this);
     connect(openFileSkullAction, &QAction::triggered, this, &MainWindow::openSkullMesh);
 
     QAction *openFileFibulaAction = new QAction("Open fibula mesh", this);
-    connect(openFileFibulaAction, &QAction::triggered, this, &MainWindow::openFibulaMesh);
+    connect(openFileFibulaAction, &QAction::triggered, this, &MainWindow::openFibulaMesh);*/
 
     QAction *cutMeshAction = new QAction("Cut", this);
     connect(cutMeshAction, &QAction::triggered, skullViewer, &Viewer::cutMesh);
@@ -195,10 +195,10 @@ void MainWindow::initFileActions(){
     QAction *openJsonFibFileAction = new QAction("Open fibula JSON", this);
     connect(openJsonFibFileAction, &QAction::triggered, this, &MainWindow::openFibJSON);
 
-    fileActionGroup->addAction(openFileSkullAction);
+    //fileActionGroup->addAction(openFileSkullAction);
     fileActionGroup->addAction(openJsonFileAction);
     fileActionGroup->addAction(openJsonFibFileAction);
-    fileActionGroup->addAction(openFileFibulaAction);
+    //fileActionGroup->addAction(openFileFibulaAction);
     fileActionGroup->addAction(unCutMeshAction);
     fileActionGroup->addAction(cutMeshAction);
     fileActionGroup->addAction(drawMeshAction);

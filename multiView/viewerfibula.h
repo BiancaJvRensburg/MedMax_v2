@@ -45,6 +45,11 @@ private:
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
     void swivelToPolyline(std::vector<Vec>& fibulaPolyline);
     void findIndexesFromDistances();
+    void findClosestPoint(unsigned int pNb, Vec &a, Vec &b);
+    Vec findMinZ(const std::vector<unsigned int> &tIndex, Plane &tempPlane);
+    Vec findMaxZ(const std::vector<unsigned int> &tIndex, Plane &tempPlane);
+    void approachPlanes(unsigned int pStart);
+    double euclideanDistance(Vec &a, Vec &b);
 
     bool isCutSignal;
     bool isPlanesRecieved;

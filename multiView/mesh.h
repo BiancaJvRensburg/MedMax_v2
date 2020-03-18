@@ -34,6 +34,10 @@ public:
     std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
 
+    std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
+    Triangle& getTriangle(unsigned int i){ return triangles[i]; }
+    Vec3Df& getVertex(unsigned int i){ return vertices[i]; }
+
     void draw();
 
     void recomputeNormals();

@@ -55,6 +55,9 @@ public:
     void setRotation(Quaternion q) { cp.getFrame().setRotation(q); }
     void rotate(Quaternion q) { cp.getFrame().rotate(q); }
 
+    bool isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
+    void getCorners(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
+
     Movable status;
 
 private:
