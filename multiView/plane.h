@@ -13,9 +13,11 @@ using namespace qglviewer;
 class Plane
 {
 public:
-    Plane(double s, Movable status, Vec& pos);
+    Plane(double s, Movable status, Vec& pos, float alpha);
 
     void toggleIsVisible(){ isVisible = !isVisible; }
+    void setAlpha(float alpha){ this->alpha = alpha; }
+    float getAlpha(){ return alpha; }
 
     void setSize(double s){ size = s; }
     void setPosition(Vec pos);
@@ -58,6 +60,8 @@ public:
     bool isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
     void getCorners(Vec &v0, Vec &v1, Vec &v2, Vec &v3);
 
+    void matchPlane(Plane *p);
+
     Movable status;
 
 private:
@@ -70,6 +74,7 @@ private:
     Vec normal;
     CurvePoint cp;
     bool isVisible;
+    float alpha;
 };
 
 #endif // PLANE_H

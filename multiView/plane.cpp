@@ -1,6 +1,6 @@
 #include "plane.h"
 
-Plane::Plane(double s, Movable status, Vec& pos) : cp(pos)
+Plane::Plane(double s, Movable status, Vec& pos, float alpha) : cp(pos)
 {
     //Vec position = Vec(0, 0, 0);
     size = s;
@@ -11,6 +11,7 @@ Plane::Plane(double s, Movable status, Vec& pos) : cp(pos)
 
     this->status = status;
     this->isVisible = true;
+    this->alpha = alpha;
 
     initBasePlane();
 }
@@ -199,4 +200,8 @@ bool Plane::isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3){
     }
 
     return false;   // if we haven't found a line that meets the criteria
+}
+
+void Plane::matchPlane(Plane *p){
+    cp.matchCurvepoint(p->cp);
 }

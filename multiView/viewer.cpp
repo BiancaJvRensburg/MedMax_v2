@@ -33,14 +33,14 @@ void Viewer::draw() {
         if(isGhostPlanes && isGhostActive) drawPolyline();
 
         // draw the planes
-        glColor3f(1.0, 0, 0);
+        glColor4f(1.0, 0, 0, leftPlane->getAlpha());
         leftPlane->draw();
 
-        glColor3f(0, 1.0, 0);
+        glColor4f(0, 1.0, 0, rightPlane->getAlpha());
         rightPlane->draw();
 
         for(unsigned int i=0; i<ghostPlanes.size(); i++){       // draw the ghost planes
-            glColor3f(0,0,1.0);
+            glColor4f(0,0,1.0, ghostPlanes[i]->getAlpha());
             ghostPlanes[i]->draw();
         }
 
@@ -135,6 +135,7 @@ void Viewer::toUpdate(){
 void Viewer::init() {
   setMouseTracking(true);
   restoreStateFromFile();
+  setBackgroundColor(QColor("gray"));
 
   viewerFrame = new ManipulatedFrame();
   setManipulatedFrame(viewerFrame);
@@ -515,8 +516,8 @@ void Viewer::initPlanes(Movable status){
     Vec pos = Vec(0,0,0);
     float size = 40.0;
 
-    leftPlane = new Plane(static_cast<double>(size), status, pos);
-    rightPlane = new Plane(static_cast<double>(size), status, pos);
+    leftPlane = new Plane(static_cast<double>(size), status, pos, 0.5);
+    rightPlane = new Plane(static_cast<double>(size), status, pos, 0.5);
 
     repositionPlane(leftPlane, curveIndexL);
     repositionPlane(rightPlane, curveIndexR);
@@ -536,7 +537,7 @@ void Viewer::addGhostPlanes(unsigned int nb){
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
         Vec pos = Vec(0,0,0);
-        ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC, pos));
+        ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC, pos, leftPlane->getAlpha()));
         repositionPlane(ghostPlanes[i], ghostLocation[i]);
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
@@ -690,6 +691,9 @@ void Viewer::readJSON(const QJsonObject &json){
 
 void Viewer::setAlpha(int position){
     float a = static_cast<float>(position) / 100.f;
-    mesh.setAlpha(a);
+    //mesh.setAlpha(a);
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->setAlpha(a);
+    leftPlane->setAlpha(a);
+    rightPlane->setAlpha(a);
     update();
 }

@@ -85,10 +85,15 @@ void MainWindow::initDisplayDockWidgets(){
     rightPlaneSlider->setMaximum(sliderMax);
     contentLayoutMand->addRow("Right slider", rightPlaneSlider);
 
-    QSlider *mandAlphaSlider = new QSlider(Qt::Horizontal);
+    /*QSlider *mandAlphaSlider = new QSlider(Qt::Horizontal);
     mandAlphaSlider->setMaximum(100);
     mandAlphaSlider->setSliderPosition(100);
-    contentLayoutMand->addRow("Mandible Transparency", mandAlphaSlider);
+    contentLayoutMand->addRow("Mandible Transparency", mandAlphaSlider);*/
+
+    QSlider *planeAlphaSlider = new QSlider(Qt::Horizontal);
+    planeAlphaSlider->setMaximum(100);
+    planeAlphaSlider->setSliderPosition(50);
+    contentLayoutMand->addRow("Plane Transparency", planeAlphaSlider);
 
     // PlaneRotation sliders (skull)
     QSlider *leftPlaneRotationSlider = new QSlider(Qt::Horizontal);
@@ -102,7 +107,9 @@ void MainWindow::initDisplayDockWidgets(){
     // Connect the skull sliders
     connect(leftPlaneSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::moveLeftPlane);
     connect(rightPlaneSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::moveRightPlane);
-    connect(mandAlphaSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::setAlpha);
+    //connect(mandAlphaSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::setAlpha);
+    connect(planeAlphaSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::setAlpha);
+    connect(planeAlphaSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), fibulaViewer, &ViewerFibula::setAlpha);
     connect(leftPlaneRotationSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::rotateLeftPlane);
     connect(rightPlaneRotationSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), skullViewer, &Viewer::rotateRightPlane);
     connect(leftPlaneRotationSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), fibulaViewer, &ViewerFibula::rotateLeftPlane);
@@ -121,16 +128,16 @@ void MainWindow::initDisplayDockWidgets(){
     contentLayoutFibula->addRow("Fibula position slider", fibulaSlider);
     fibulaSlider->setMaximum(fibulaOffsetMax);
 
-    QSlider *fibTransparencySlider = new QSlider(Qt::Horizontal);
+    /*QSlider *fibTransparencySlider = new QSlider(Qt::Horizontal);
     contentLayoutFibula->addRow("Fibula transparency", fibTransparencySlider);
     fibTransparencySlider->setMaximum(100);
-    fibTransparencySlider->setSliderPosition(100);
+    fibTransparencySlider->setSliderPosition(100);*/
 
     // Connect the fibula slider
     connect(fibulaSlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), fibulaViewer, &ViewerFibula::movePlanes);
     connect(fibulaSlider, &QSlider::sliderReleased, fibulaViewer, &ViewerFibula::planesMoved);
     connect(fibulaViewer, &ViewerFibula::setPlaneSliderValue, fibulaSlider, &QSlider::setValue);
-    connect(fibTransparencySlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), fibulaViewer, &ViewerFibula::setAlpha);
+    //connect(fibTransparencySlider, static_cast<void (QSlider::*)(int)>(&QSlider::sliderMoved), fibulaViewer, &ViewerFibula::setAlpha);
 
     // Connect the two views
     connect(skullViewer, &Viewer::leftPosChanged, fibulaViewer, &ViewerFibula::movePlaneDistance);
