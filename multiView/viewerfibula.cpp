@@ -55,7 +55,6 @@ void ViewerFibula::createPolyline(){
 void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
     if(isGhostPlanes){
         resetMandibleInfo(polyline, axes);
-        //setPlanePositions();
         setPlaneOrientations(true);
    }
     else{
@@ -124,8 +123,8 @@ void ViewerFibula::setPlaneOrientations(bool isFirstPass){
             approachPlanes(i);
         }
         findIndexesFromDistances();
-        setPlanePositions();
-        //setPlaneOrientations(false);
+        //setPlanePositions();
+        setPlaneOrientations(false);
     }
 }
 
@@ -383,6 +382,10 @@ void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
     a = findMaxZ(tInd1, tempPlane);
     const std::vector<unsigned int> tInd2 = mesh.getIntersectionTriangles(pNb+3);
     b = findMinZ(tInd2, tempPlane2);
+
+    /*std::cout << "Plane min and max : " << pNb << std::endl;
+    std::cout << a.x << " , " << a.y << " , " << a.z << std::endl;
+    std::cout << b.x << " , " << b.y << " , " << b.z << std::endl;*/
 }
 
 Vec ViewerFibula::findMinZ(const std::vector<unsigned int> &tIndexes, Plane &tempPlane){

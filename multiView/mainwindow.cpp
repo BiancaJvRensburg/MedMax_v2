@@ -167,7 +167,7 @@ void MainWindow::initDisplayDockWidgets(){
 void MainWindow::initFileActions(){
     fileActionGroup = new QActionGroup(this);
 
-   /* QAction *openFileSkullAction = new QAction("Open skull mesh", this);
+    /*QAction *openFileSkullAction = new QAction("Open skull mesh", this);
     connect(openFileSkullAction, &QAction::triggered, this, &MainWindow::openSkullMesh);
 
     QAction *openFileFibulaAction = new QAction("Open fibula mesh", this);
