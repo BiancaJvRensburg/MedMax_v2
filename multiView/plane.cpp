@@ -200,3 +200,7 @@ bool Plane::isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3){
 
     return false;   // if we haven't found a line that meets the criteria
 }
+
+void Plane::matchPlane(Plane *p){
+    cp.matchCurvepoint(p->cp);
+}

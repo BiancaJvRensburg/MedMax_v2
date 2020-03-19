@@ -9,11 +9,15 @@ class CurvePoint : public ControlPoint
 
 public:
     CurvePoint(Vec& p);
+    //CurvePoint(CurvePoint &cp);
     /*~CurvePoint(){
         disconnect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
     }*/
 
     void setPosition(Vec& p){ this->p = p; }
+
+    void matchCurvepoint(CurvePoint &c);
+    Quaternion getOrientation(){ return mf.orientation(); }
 
     void draw();
 

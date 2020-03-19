@@ -156,6 +156,7 @@ void Mesh::addPlane(Plane *p){
 void Mesh::deleteGhostPlanes(){
     if(planes.size()==2) return;        // Keep the left and right planes
     planes.erase(planes.begin()+2, planes.end());       // delete the ghost planes
+    intersectionTriangles.erase(intersectionTriangles.begin()+2, intersectionTriangles.end());
 }
 
 void Mesh::updatePlaneIntersections(){
@@ -222,6 +223,13 @@ void Mesh::cutMandible(bool* truthTriangles){
 }
 
 void Mesh::cutFibula(bool* truthTriangles){
+    for(unsigned int j=0; j<intersectionTriangles.size(); j++){
+            const std::vector<unsigned int> &v = intersectionTriangles[j];
+            for(unsigned int k=0; k<v.size(); k++) {
+                truthTriangles[v[k]] = true;
+        }
+    }
+
     getSegmentsToKeep();    // figure out what to keep (TODO can be done earlier)
     for(unsigned int i=0; i<flooding.size(); i++){
         bool isKeep = false;
@@ -351,16 +359,32 @@ void Mesh::createSmoothedFibula(){
             for(unsigned int k=0; k<3; k++){    // find which verticies are on the otherside of the cut
                 unsigned int vertexIndex = triangles[intersectionTriangles[i][j]].getVertex(k);
 
-                bool isOutlier = true;
+                bool isOutlier = false;
                 for(unsigned int l=0; l<segmentsConserved.size(); l++){
                     if(flooding[vertexIndex] == segmentsConserved[l]){
                         actualFlooding = flooding[vertexIndex];
-                        isOutlier = false;
+                        isOutlier = true;
                     }
                 }
 
                 if(planeNeighbours[static_cast<unsigned int>(flooding[vertexIndex])]==-1 || isOutlier){        // if we need to change it
-                    Vec newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
+                    Vec newVertex;
+                    unsigned int lastIndex = planes.size()-1;
+                    if(i>2 && i<lastIndex){
+                        if(i%2==0) newVertex = getPolylineProjectedVertex(i, i-1, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, i+1, vertexIndex);
+                    }
+                    else if(i==2) newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
+                    else if(i==lastIndex && lastIndex!=1) newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
+                    else if(i==0){
+                        if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, 2, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
+                    }
+                    else if(i==1){
+                        if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, lastIndex, vertexIndex);
+                        else newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
+                    }
+                    //else newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
                     smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
                 }
                 // else don't change the original
@@ -373,6 +397,17 @@ void Mesh::createSmoothedFibula(){
             }
         }
     }
+}
+
+Vec Mesh::getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex){
+    Vec n = planes[p2]->getPosition() - planes[p1]->getPosition();
+    n.normalize();
+    n = planes[p1]->getLocalVector(n);
+    Vec p = Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2]));
+    p = planes[p1]->getLocalCoordinates(p);
+    double alpha = p.z / n.z;
+    Vec newVertex = p - alpha*n;
+    return planes[p1]->getMeshCoordinatesFromLocal(newVertex);
 }
 
 void Mesh::updatePlaneIntersections(Plane *p){

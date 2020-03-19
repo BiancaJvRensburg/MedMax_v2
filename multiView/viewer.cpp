@@ -503,7 +503,7 @@ void Viewer::initCurve(){
 
 void Viewer::constructCurve(){
     curve = new Curve(control.size(), control);
-    nbU = 100;
+    nbU = 2000;
     curve->generateCatmull(nbU);
     isCurve = true;
     initPlanes(Movable::DYNAMIC);

@@ -38,3 +38,8 @@ void CurvePoint::cntrlMoved(){
 
     Q_EMIT CurvePoint::curvePointTranslated(offset);
 }
+
+void CurvePoint::matchCurvepoint(CurvePoint &c){
+    //p = c.getPoint();
+    mf.setOrientation(c.getOrientation());
+}

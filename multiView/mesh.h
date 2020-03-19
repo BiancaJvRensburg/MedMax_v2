@@ -102,6 +102,8 @@ protected:
 
     void uniformScale(float s);
 
+    Vec getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex);
+
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
     std::vector <int> coloursIndicies;      // the value of each index allowing us to calculate its colour
@@ -109,7 +111,7 @@ protected:
     std::vector <Plane*> planes;
     std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
 
-    std::vector <int> flooding;
+    std::vector<int> flooding;
     std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
     std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
     std::vector<int> planeNeighbours;       // which planes are neighbours
