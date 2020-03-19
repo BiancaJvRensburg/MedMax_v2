@@ -85,7 +85,6 @@ void ViewerFibula::setPlaneOrientations(bool isFirstPass){
     Vec normal = Vec(0,0,1);
 
     // Initialise the planes' rotation
-    if(!isFirstPass) findIndexesFromDistances();
     repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
     repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
     for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
@@ -119,32 +118,15 @@ void ViewerFibula::setPlaneOrientations(bool isFirstPass){
 
     Q_EMIT requestAxes();
 
-    /*std::cout << "Distances : " << std::endl;
-    for(unsigned int i = 0; i<distances.size(); i++){
-        std::cout << i << " : " << distances[i] << std::endl;
-    }
-
-    std::cout << "Approaching planes :" << std::endl;*/
-    if(isFirstPass){
+    //std::cout << "Approaching planes :" << std::endl;
+    if(isFirstPass && ghostPlanes.size()!=0){
         for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
             approachPlanes(i);
         }
-        setPlaneOrientations(false);
+        findIndexesFromDistances();
+        setPlanePositions();
+        //setPlaneOrientations(false);
     }
-
-    /*std::cout << "ACTUAL DISTANCES : " << std::endl;
-    std::cout << "0 : " << curve->discreteLength(curveIndexL, ghostLocation[0]) << std::endl;
-    for(unsigned int i=0; i<ghostPlanes.size()-1; i++) {
-        std::cout << i+1 << " : " <<  curve->discreteLength(ghostLocation[i], ghostLocation[i+1]) << std::endl;
-    }
-    std::cout << "last : " << curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR) << std::endl;*/
-
-    /*std::cout << "Checking intersections" << std::endl;
-    for(unsigned int i=0; i<ghostLocation.size()-1; i+=2){
-        Vec v0, v1, v2, v3;
-        ghostPlanes[i+1]->getCorners(v0, v1, v2, v3);
-        std::cout << "Intersection? : " << ghostPlanes[i]->isIntersectionPlane(v0, v1, v2, v3) << std::endl;
-    }*/
 }
 
 void ViewerFibula::swivelToPolyline(std::vector<Vec>& fibulaPolyline){
@@ -394,11 +376,13 @@ void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
     Vec pos(0,0,0);
     Plane tempPlane(40.0, Movable::STATIC, pos);
     repositionPlane(&tempPlane, ghostLocation[pNb]);
+    Plane tempPlane2(40.0, Movable::STATIC, pos);
+    repositionPlane(&tempPlane2, ghostLocation[pNb+1]);
 
     const std::vector<unsigned int> tInd1 = mesh.getIntersectionTriangles(pNb+2);
     a = findMaxZ(tInd1, tempPlane);
     const std::vector<unsigned int> tInd2 = mesh.getIntersectionTriangles(pNb+3);
-    b = findMinZ(tInd2, tempPlane);
+    b = findMinZ(tInd2, tempPlane2);
 }
 
 Vec ViewerFibula::findMinZ(const std::vector<unsigned int> &tIndexes, Plane &tempPlane){
@@ -441,7 +425,7 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     Vec p1, p2;
     findClosestPoint(pStart, p1, p2);
     double distZ = p2.z - p1.z;
-    const double security = 10.0;
+    const double security = 15.0;
 
     Vec pB1, pB2;
     pB1 = curve->getPoint(ghostLocation[pStart]);
@@ -451,6 +435,7 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     double distPercentage = distZ/currentDistZ;
     double distShift = euclideanDistance(pB1, pB2) * distPercentage;
     if(distShift > security) distShift -= security;
+    else distShift = 0;
     //std::cout << "Dist shift : " << distShift << std::endl;
     distances[pStart+1] -= distShift;
     //std::cout << "New dist " << pStart+1 <<  ": " << distances[pStart+1] << std::endl;

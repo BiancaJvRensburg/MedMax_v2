@@ -156,6 +156,7 @@ void Mesh::addPlane(Plane *p){
 void Mesh::deleteGhostPlanes(){
     if(planes.size()==2) return;        // Keep the left and right planes
     planes.erase(planes.begin()+2, planes.end());       // delete the ghost planes
+    intersectionTriangles.erase(intersectionTriangles.begin()+2, intersectionTriangles.end());
 }
 
 void Mesh::updatePlaneIntersections(){
@@ -204,21 +205,7 @@ void Mesh::cutMesh(){
     // ! Conserve this order
     createSmoothedTriangles();
 
-    /*for(unsigned int j=0; j<intersectionTriangles.size(); j++){
-        const std::vector<unsigned int> &v = intersectionTriangles[j];
-        for(unsigned int k=0; k<v.size(); k++) {
-            truthTriangles[v[k]] = false;
-            trianglesCut.erase(trianglesCut.begin()+v[k]);
-        }
-    }*/
-
     if(cuttingSide == Side::EXTERIOR){      // fill the colours on the fibula and send the segments to the mandible
-        /*for(unsigned int j=0; j<intersectionTriangles.size(); j++){
-            const std::vector<unsigned int> &v = intersectionTriangles[j];
-            for(unsigned int k=0; k<v.size(); k++) {
-                trianglesCut.erase(trianglesCut.begin()+v[k]);
-            }
-        }*/
         fillColours();
         if(isTransfer){
             sendToManible();
@@ -388,7 +375,7 @@ void Mesh::createSmoothedFibula(){
                         else newVertex = getPolylineProjectedVertex(i, i+1, vertexIndex);
                     }
                     else if(i==2) newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
-                    else if(i==lastIndex) newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
+                    else if(i==lastIndex && lastIndex!=1) newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
                     else if(i==0){
                         if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, 2, vertexIndex);
                         else newVertex = getPolylineProjectedVertex(i, 1, vertexIndex);
