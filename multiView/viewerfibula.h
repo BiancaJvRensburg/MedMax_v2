@@ -40,7 +40,7 @@ private:
     void createPolyline();
     void matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z);
     void repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes);
-    void setPlaneOrientations(bool isFirstPass);
+    void setPlaneOrientations();
     void setPlanePositions();
     void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
     void swivelToPolyline(std::vector<Vec>& fibulaPolyline);

@@ -104,11 +104,6 @@ protected:
     std::vector<Vec> control;
     bool isCurve;
 
-    Vec pointOne;
-    Vec pointTwo;
-    Plane* tempPlane;
-    std::vector<unsigned int> vOnP;
-
     Vec convertToPlane(Plane *base, Plane *p, Vec axis);        // get the z axis of p in relation to base
 
 private:
