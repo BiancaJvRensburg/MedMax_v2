@@ -681,21 +681,29 @@ void Mesh::uniformScale(float s){
     radius *= s;
 }
 
-std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb){
+std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb, Plane *p){
     std::vector<unsigned int> v;
+   // createSmoothedFibula();
     for(unsigned int i=0; i<intersectionTriangles[planeNb].size(); i++){
-        unsigned int index = intersectionTriangles[planeNb][i];
-        if(abs(planes[planeNb]->getLocalCoordinates(Vec(smoothedVerticies[index])).z) < 0.001){
-            bool isFound = false;
-            for(unsigned int j=0; j<v.size(); j++){
-                if(v[j]==index){
-                    isFound = true;
-                    break;
+        for(unsigned int k=0; k<3; k++){
+            unsigned int triangleNb = intersectionTriangles[planeNb][i];
+            //std::cout << "Triangle nb" << triangleNb << std::endl;
+            unsigned int index = triangles[triangleNb].getVertex(k);
+            if(abs(p->getLocalCoordinates(Vec(smoothedVerticies[index])).z) < 0.001){
+                bool isFound = false;
+                for(unsigned int j=0; j<v.size(); j++){
+                    if(v[j]==index){
+                        isFound = true;
+                        break;
+                    }
                 }
+                if(!isFound) v.push_back(index);
             }
-            if(!isFound) v.push_back(index);
         }
     }
 
+   /* std::cout << "intersection size : " << intersectionTriangles[planeNb].size() << std::endl;
+    std::cout << "smoothed size : " << smoothedVerticies.size() << std::endl;
+    std::cout << "size : " << v.size() << std::endl;*/
     return v;
 }

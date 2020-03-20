@@ -126,6 +126,7 @@ void ViewerFibula::setPlaneOrientations(bool isFirstPass){
 
     //std::cout << "Approaching planes :" << std::endl;
     if(isFirstPass && ghostPlanes.size()!=0){
+        mesh.updatePlaneIntersections();
         for(unsigned int i=0; i<ghostPlanes.size(); i+=2){
             approachPlanes(i);
         }
@@ -401,7 +402,7 @@ void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
 
     tempPlane->rotate(Quaternion(Vec(0,0,1),poly));
 
-    std::vector<unsigned int> tInd1 = mesh.getVerticesOnPlane(pNb+2);
+    std::vector<unsigned int> tInd1 = mesh.getVerticesOnPlane(pNb+2, ghostPlanes[pNb]);
     /*std::vector<unsigned int> tInd1;
     for(unsigned int i=0; i<t.size(); i++){
         Vec vCor = ghostPlanes[pNb]->getLocalCoordinates(Vec(mesh.getSmoothVertex(t[i])));
@@ -410,7 +411,7 @@ void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
     //vOnP = tInd1;
     a = findMaxZ(tInd1, *tempPlane);
     std::vector<unsigned int> tInd2;
-    tInd2 = mesh.getVerticesOnPlane(pNb+3);
+    tInd2 = mesh.getVerticesOnPlane(pNb+3, ghostPlanes[pNb+1]);
     /*for(unsigned int i=0; i<t.size(); i++){
         Vec vCor = ghostPlanes[pNb+1]->getLocalCoordinates(Vec(mesh.getSmoothVertex(t[i])));
         if(abs(vCor.z) < 0.001) tInd2.push_back(t[i]);
@@ -466,7 +467,7 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     Vec p1, p2;
     findClosestPoint(pStart, p1, p2);
     double distZ = p2.z - p1.z;
-    const double security = 10.0;
+    const double security = 7.5;
     pointOne = p1;
     pointTwo = p2;
 

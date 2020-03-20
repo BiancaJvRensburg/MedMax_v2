@@ -45,16 +45,23 @@ void Viewer::draw() {
         glColor3f(1.,1.,0.);
         //if(tempPlane!=nullptr) tempPlane->draw();
 
-        /*glEnable(GL_DEPTH);
+        glEnable(GL_DEPTH);
         glEnable(GL_DEPTH_TEST);
         glPointSize(3.0);
-         glBegin(GL_POINTS);
+        /*glBegin(GL_POINTS);
+             glColor3f(1.,0,0.);
+            glVertex3d(pointOne.x, pointOne.y, pointOne.z);
+             glColor3f(0.,1.,0.);
+            glVertex3d(pointTwo.x, pointTwo.y, pointTwo.z);
+        glEnd();*/
+
+        glBegin(GL_POINTS);
              glColor3f(1.,0,0.);
              for(unsigned int i=0; i<vOnP.size(); i++) glVertex3f(mesh.getSmoothVertex(vOnP[i])[0], mesh.getSmoothVertex(vOnP[i])[1], mesh.getSmoothVertex(vOnP[i])[2]);
         glEnd();
 
         glDisable(GL_DEPTH);
-        glDisable(GL_DEPTH_TEST);*/
+        glDisable(GL_DEPTH_TEST);
 
          curve->draw();
     }

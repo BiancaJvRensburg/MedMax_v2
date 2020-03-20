@@ -35,7 +35,7 @@ public:
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
 
     std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
-    std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb);
+    std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb, Plane *p);
     Triangle& getTriangle(unsigned int i){ return triangles[i]; }
     Vec3Df& getSmoothVertex(unsigned int i){ return smoothedVerticies[i]; }
 
