@@ -23,8 +23,6 @@ void Viewer::draw() {
     glPushMatrix();
     glMultMatrixd(manipulatedFrame()->matrix());
 
-    drawAxis(15.0);
-
     glColor3f(1.,1.,1.);
     mesh.draw();
     if(isDrawMesh) mesh.drawCut();   // draw the cut versions
@@ -43,6 +41,20 @@ void Viewer::draw() {
             glColor4f(0,0,1.0, ghostPlanes[i]->getAlpha());
             ghostPlanes[i]->draw();
         }
+
+        glColor3f(1.,1.,0.);
+        //if(tempPlane!=nullptr) tempPlane->draw();
+
+        /*glEnable(GL_DEPTH);
+        glEnable(GL_DEPTH_TEST);
+        glPointSize(3.0);
+         glBegin(GL_POINTS);
+             glColor3f(1.,0,0.);
+             for(unsigned int i=0; i<vOnP.size(); i++) glVertex3f(mesh.getSmoothVertex(vOnP[i])[0], mesh.getSmoothVertex(vOnP[i])[1], mesh.getSmoothVertex(vOnP[i])[2]);
+        glEnd();
+
+        glDisable(GL_DEPTH);
+        glDisable(GL_DEPTH_TEST);*/
 
          curve->draw();
     }

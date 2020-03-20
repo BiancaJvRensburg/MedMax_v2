@@ -35,8 +35,9 @@ public:
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
 
     std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
+    std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb);
     Triangle& getTriangle(unsigned int i){ return triangles[i]; }
-    Vec3Df& getVertex(unsigned int i){ return vertices[i]; }
+    Vec3Df& getSmoothVertex(unsigned int i){ return smoothedVerticies[i]; }
 
     void draw();
 
@@ -104,12 +105,15 @@ protected:
 
     Vec getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex);
 
+    Vec3Df& getVertex(unsigned int i){ return vertices[i]; }
+
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
     std::vector <int> coloursIndicies;      // the value of each index allowing us to calculate its colour
 
     std::vector <Plane*> planes;
     std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
+    //std::vector <std::vector <unsigned int>> verticesOnPlane;
 
     std::vector<int> flooding;
     std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours

@@ -150,6 +150,7 @@ void Mesh::addPlane(Plane *p){
     planes.push_back(p);
     std::vector<unsigned int> init;
     intersectionTriangles.push_back(init);
+    //verticesOnPlane.push_back(init);
     updatePlaneIntersections(p);
 }
 
@@ -157,6 +158,7 @@ void Mesh::deleteGhostPlanes(){
     if(planes.size()==2) return;        // Keep the left and right planes
     planes.erase(planes.begin()+2, planes.end());       // delete the ghost planes
     intersectionTriangles.erase(intersectionTriangles.begin()+2, intersectionTriangles.end());
+    //verticesOnPlane.erase(verticesOnPlane.begin()+2, verticesOnPlane.end());
 }
 
 void Mesh::updatePlaneIntersections(){
@@ -353,6 +355,7 @@ void Mesh::createSmoothedMandible(){
 
 void Mesh::createSmoothedFibula(){
     for(unsigned int i=0; i<planes.size(); i++){
+        //verticesOnPlane[i].clear();
         for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){   // for each triangle cut
             int actualFlooding = -1;    //  Conserve the "real" flooding value (will never stay at -1)
 
@@ -385,7 +388,10 @@ void Mesh::createSmoothedFibula(){
                         else newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
                     }
                     //else newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
+                    //verticesOnPlane[i].push_back(vertexIndex);
                     smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
+                   // Vec newVv = planes[i]->getLocalCoordinates(Vec(smoothedVerticies[vertexIndex]));
+                    //if(newVv.z < -0.001) std::cout << " z : " << newVv.z << std::endl;
                 }
                 // else don't change the original
             }
@@ -407,6 +413,7 @@ Vec Mesh::getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned 
     p = planes[p1]->getLocalCoordinates(p);
     double alpha = p.z / n.z;
     Vec newVertex = p - alpha*n;
+    //if(newVertex.z < -0.001) std::cout << " z : " << newVertex.z << std::endl;
     return planes[p1]->getMeshCoordinatesFromLocal(newVertex);
 }
 
@@ -672,4 +679,23 @@ void Mesh::uniformScale(float s){
     BBMin *= s;
     BBCentre *= s;
     radius *= s;
+}
+
+std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb){
+    std::vector<unsigned int> v;
+    for(unsigned int i=0; i<intersectionTriangles[planeNb].size(); i++){
+        unsigned int index = intersectionTriangles[planeNb][i];
+        if(abs(planes[planeNb]->getLocalCoordinates(Vec(smoothedVerticies[index])).z) < 0.001){
+            bool isFound = false;
+            for(unsigned int j=0; j<v.size(); j++){
+                if(v[j]==index){
+                    isFound = true;
+                    break;
+                }
+            }
+            if(!isFound) v.push_back(index);
+        }
+    }
+
+    return v;
 }

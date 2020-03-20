@@ -83,6 +83,13 @@ void ViewerFibula::setPlaneOrientations(bool isFirstPass){
     if(mandiblePolyline.size()==0) return;
     Vec normal = Vec(0,0,1);
 
+    /*std::vector<unsigned int> tInd1 = mesh.getVerticesOnPlane(2);
+    for(unsigned int i=0; i<tInd1.size(); i++){
+        Vec vCor = ghostPlanes[0]->getLocalCoordinates(Vec(mesh.getSmoothVertex(tInd1[i])));
+        if(abs(vCor.z) > 0.0001) std::cout << " z : " << vCor.z << std::endl;
+    }
+    vOnP = tInd1;*/
+
     // Initialise the planes' rotation
     repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
     repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
@@ -373,38 +380,49 @@ void ViewerFibula::uncutMesh(){
 
 void ViewerFibula::findClosestPoint(unsigned int pNb, Vec &a, Vec &b){
     Vec pos(0,0,0);
-    Plane tempPlane(40.0, Movable::STATIC, pos, 0);
-    repositionPlane(&tempPlane, ghostLocation[pNb]);
+    tempPlane = new Plane(40.0, Movable::STATIC, pos, 0);
+    tempPlane->setPosition(ghostPlanes[pNb]->getPosition());
     //tempPlane.matchPlane(ghostPlanes[pNb]);
     Vec x = ghostPlanes[pNb]->getMeshVectorFromLocal(Vec(1,0,0));
     Vec y = ghostPlanes[pNb]->getMeshVectorFromLocal(Vec(0,1,0));
     Vec z = ghostPlanes[pNb]->getMeshVectorFromLocal(Vec(0,0,1));
-    tempPlane.setFrameFromBasis(x,y,z);
-    tempPlane.rotatePlane(Vec(0,1,0), M_PI*2.0);
+    tempPlane->setFrameFromBasis(x,y,z);
+    tempPlane->rotatePlane(Vec(0,1,0), M_PI*2.0);
     /*Plane tempPlane2(40.0, Movable::STATIC, pos);
     repositionPlane(&tempPlane2, ghostLocation[pNb+1]);*/
 
     Vec poly;
     if(pNb!=0) poly = ghostPlanes[pNb]->getPosition() - ghostPlanes[pNb-1]->getPosition();
     else poly = ghostPlanes[pNb]->getPosition() - leftPlane->getPosition();
-    poly = tempPlane.getLocalVector(poly);
+    poly = tempPlane->getLocalVector(poly);
     //std::cout << "Poly : " << poly.x << " , " << poly.y << " , " << poly.z << std::endl;
     poly.y = 0;
     poly.normalize();
 
-    tempPlane.rotate(Quaternion(Vec(0,0,1),poly));
+    tempPlane->rotate(Quaternion(Vec(0,0,1),poly));
 
-    const std::vector<unsigned int> tInd1 = mesh.getIntersectionTriangles(pNb+2);
-    a = findMaxZ(tInd1, tempPlane);
-    const std::vector<unsigned int> tInd2 = mesh.getIntersectionTriangles(pNb+3);
-    b = findMinZ(tInd2, tempPlane);
+    std::vector<unsigned int> tInd1 = mesh.getVerticesOnPlane(pNb+2);
+    /*std::vector<unsigned int> tInd1;
+    for(unsigned int i=0; i<t.size(); i++){
+        Vec vCor = ghostPlanes[pNb]->getLocalCoordinates(Vec(mesh.getSmoothVertex(t[i])));
+        if(abs(vCor.z) < 0.001) tInd1.push_back(t[i]);
+    }*/
+    //vOnP = tInd1;
+    a = findMaxZ(tInd1, *tempPlane);
+    std::vector<unsigned int> tInd2;
+    tInd2 = mesh.getVerticesOnPlane(pNb+3);
+    /*for(unsigned int i=0; i<t.size(); i++){
+        Vec vCor = ghostPlanes[pNb+1]->getLocalCoordinates(Vec(mesh.getSmoothVertex(t[i])));
+        if(abs(vCor.z) < 0.001) tInd2.push_back(t[i]);
+    }*/
+    b = findMinZ(tInd2, *tempPlane);
 
     //std::cout << "Plane max and min : " << pNb << std::endl;
    /* std::cout << a.x << " , " << a.y << " , " << a.z << std::endl;
     std::cout << b.x << " , " << b.y << " , " << b.z << std::endl;*/
 
-    Vec a1 = tempPlane.getLocalCoordinates(a);
-    Vec b1 = tempPlane.getLocalCoordinates(b);
+    Vec a1 = tempPlane->getLocalCoordinates(a);
+    Vec b1 = tempPlane->getLocalCoordinates(b);
     /*std::cout << a1.x << " , " << a1.y << " , " << a1.z << std::endl;
     std::cout << b1.x << " , " << b1.y << " , " << b1.z << std::endl;*/
 
@@ -418,15 +436,12 @@ Vec ViewerFibula::findMinZ(const std::vector<unsigned int> &tIndexes, Plane &tem
     Vec minI(0,0,0);
     double min = DBL_MAX;
     for(unsigned int i=0; i<tIndexes.size(); i++){ // for each triangle aligned with the plane
-        for(unsigned int j=0; j<3; j++){
-            unsigned int v = mesh.getTriangle(tIndexes[i]).getVertex(j);
-            Vec vVec = Vec(mesh.getVertex(v));
+            Vec vVec = Vec(mesh.getSmoothVertex(tIndexes[i]));
             double z = tempPlane.getLocalCoordinates(vVec).z;
             if(z < min){
                 min = z;
                 minI = vVec;
             }
-        }
     }
 
     return minI;
@@ -436,15 +451,12 @@ Vec ViewerFibula::findMaxZ(const std::vector<unsigned int> &tIndexes, Plane &tem
     Vec maxI(0,0,0);
     double max = -DBL_MAX;
     for(unsigned int i=0; i<tIndexes.size(); i++){ // for each triangle aligned with the plane
-        for(unsigned int j=0; j<3; j++){
-            unsigned int vI = mesh.getTriangle(tIndexes[i]).getVertex(j);
-            Vec vVec = Vec(mesh.getVertex(vI));
+            Vec vVec = Vec(mesh.getSmoothVertex(tIndexes[i]));
             double z = tempPlane.getLocalCoordinates(vVec)[0];
             if(z > max){
                 max = z;
                 maxI = vVec;
             }
-        }
     }
 
     return maxI;
@@ -455,6 +467,8 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     findClosestPoint(pStart, p1, p2);
     double distZ = p2.z - p1.z;
     const double security = 10.0;
+    pointOne = p1;
+    pointTwo = p2;
 
     Vec pB1, pB2;
     pB1 = curve->getPoint(ghostLocation[pStart]);
