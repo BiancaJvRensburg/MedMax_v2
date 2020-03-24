@@ -311,11 +311,11 @@ void Viewer::initGhostPlanes(){
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
         Q_EMIT rightPosChanged(distance, poly, axes);
     }
-    else{
+    /*else{
         std::vector<Vec> poly = updatePolyline();
         std::vector<Vec> axes = getReferenceAxes();
         Q_EMIT ghostPlanesAdded(0,0, poly, axes);
-    }
+    }*/
 }
 
 void Viewer::cutMesh(){
@@ -330,7 +330,7 @@ void Viewer::cutMesh(){
 
     if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
 
-    Q_EMIT okToCut();       // The dialog wasn't cancelled so the fibula can be cut
+    Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);      // cut the mandible mesh and initialise the ghost planes
     initGhostPlanes();
@@ -351,21 +351,15 @@ void Viewer::moveLeftPlane(int position){
     double percentage = static_cast<double>(position) / static_cast<double>(sliderMax);
     unsigned int index = static_cast<unsigned int>(percentage * static_cast<double>(nbU) );
 
-    /*std::cout << "Index left : " <<curveIndexL << std::endl;
-    std::cout << "Index right : " << curveIndexR << std::endl;*/
-
     if(curve->indexForLength(curveIndexR, -constraint) > index){  // Only move if we're going backwards or we haven't met the other plane
         curveIndexL = index;
         if(curveIndexL >= nbU) curveIndexL = nbU-1;     // shouldn't ever happen
     }
     else if( curveIndexL == curve->indexForLength(curveIndexR, -constraint) ){
-        //std::cout<< "already 'correct' " << std::endl;
         return;       // already in the correct position
     }
     else curveIndexL = curve->indexForLength(curveIndexR, -constraint);     // get the new position
 
-    /*std::cout << "Now index left : " <<curveIndexL << std::endl;
-    std::cout << "Now index right : " << curveIndexR << std::endl;*/
     movePlane(leftPlane, true, curveIndexL);
 }
 
@@ -400,8 +394,6 @@ void Viewer::movePlane(Plane *p, bool isLeft, unsigned int curveIndex){
         if(isLeft) distance = curve->discreteLength(curveIndexL, ghostLocation[0]);
         else distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
-
-    //std::cout << "Distance : " << distance << std::endl;
 
     std::vector<Vec> poly = updatePolyline();
     std::vector<Vec> axes = getReferenceAxes();

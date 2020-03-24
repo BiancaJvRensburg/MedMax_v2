@@ -171,13 +171,26 @@ void Mesh::updatePlaneIntersections(){
 
         for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i);
 
-        for(unsigned int i=0; i<flooding.size(); i++){
+        /*for(unsigned int i=0; i<flooding.size(); i++){
             if(flooding[i] != -1){
                 for(unsigned int j=0; j<vertexNeighbours[i].size(); j++){
-                floodNeighbour(vertexNeighbours[i][j], flooding[i]);
+                    floodNeighbour(vertexNeighbours[i][j], flooding[i]);
+                }
+            }
+        }*/
+        for(unsigned int i=0; i<intersectionTriangles.size(); i++){
+            std::vector<unsigned int> triIndexes = intersectionTriangles[i];
+            for(unsigned int k=0; k<triIndexes.size(); k++){
+                for(unsigned int l=0; l<3; l++){
+                    Triangle t = triangles[triIndexes[k]];
+                    unsigned int index = t.getVertex(l);
+                    for(unsigned int j=0; j<vertexNeighbours[index].size(); j++){
+                        floodNeighbour(vertexNeighbours[index][j], flooding[index]);
+                    }
                 }
             }
         }
+
         mergeFlood();
         cutMesh();
     }

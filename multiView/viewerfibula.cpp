@@ -260,9 +260,9 @@ void ViewerFibula::matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec 
 // Don't wait for ghost planes, go ahead and cut
 void ViewerFibula::noGhostPlanesToRecieve(std::vector<Vec> mandPolyline, std::vector<Vec> axes){
     isPlanesRecieved = true;
-    for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
+    /*for(unsigned int i=0; i<ghostPlanes.size(); i++) delete ghostPlanes[i];
     ghostPlanes.clear();
-    mesh.deleteGhostPlanes();
+    mesh.deleteGhostPlanes();*/
     isGhostPlanes = true;
     repositionPlanes(mandPolyline, axes);
     handleCut();
