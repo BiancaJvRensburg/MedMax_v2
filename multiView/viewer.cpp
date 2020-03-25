@@ -662,23 +662,14 @@ std::vector<Vec> Viewer::getReferenceAxes(){
     return v;
 }
 
-void Viewer::readJSON(const QJsonObject &json){
-    double scale = 1.0;
-    if(json.contains("mesh") && json["mesh"].isObject()){
-        QJsonObject meshObject = json["mesh"].toObject();
-        mesh.readJSON(meshObject, scale);
-        connect(&mesh, &Mesh::updateViewer, this, &Viewer::toUpdate);
-    }
+void Viewer::readJSON(const QJsonArray &controlArray){
+    control.clear();
 
-    if(json.contains("control points") && json["control points"].isArray()){
-        control.clear();
-        QJsonArray controlArray = json["control points"].toArray();
-        for(int i=0; i<controlArray.size(); i++){
-            QJsonArray singleControl = controlArray[i].toArray();
-            control.push_back(Vec(singleControl[0].toDouble()*scale, singleControl[1].toDouble()*scale, singleControl[2].toDouble()*scale));
-        }
-        constructCurve();
+    for(int i=0; i<controlArray.size(); i++){
+        QJsonArray singleControl = controlArray[i].toArray();
+        control.push_back(Vec(singleControl[0].toDouble(), singleControl[1].toDouble(), singleControl[2].toDouble()));
     }
+    constructCurve();
 
     Vec3Df center = mesh.getBBCentre();
     float radius = mesh.getBBRadius();

@@ -16,7 +16,7 @@ class Viewer : public QGLViewer
 public :
     Viewer(QWidget *parent, StandardCamera *camera, int sliderMax);
     void openOFF(QString f);   
-    void readJSON(const QJsonObject &json);
+    void readJSON(const QJsonArray &json);
     Mesh mesh;
 
 public Q_SLOTS:

@@ -64,8 +64,6 @@ public:
 
     void invertNormal(){normalDirection *= -1;}
 
-    void readJSON(const QJsonObject &json, double &scale);
-
 public Q_SLOTS:
     void recieveInfoFromFibula(std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
 
