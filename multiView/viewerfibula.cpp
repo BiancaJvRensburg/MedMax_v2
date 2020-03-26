@@ -205,7 +205,7 @@ void ViewerFibula::movePlanes(int position){
 
 void ViewerFibula::planesMoved(){
     mesh.setTransfer(true);
-    mesh.sendToManible();
+    mesh.sendToMandible();
 }
 
 // Add the ghost planes (this should only be called once)

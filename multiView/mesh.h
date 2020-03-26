@@ -53,7 +53,7 @@ public:
     void addPlane(Plane *p);
     void deleteGhostPlanes();
     void setTransfer(bool isTransfer){ this->isTransfer = isTransfer; }
-    void sendToManible();
+    void sendToMandible();
     void setIsCut(Side s, bool isCut, bool isUpdate);
     void drawCut();
     bool getIsCut(){ return isCut; }
@@ -78,9 +78,9 @@ protected:
     Vec3Df computeTriangleNormal(unsigned int t);
     void computeVerticesNormals();
     void glTriangle(unsigned int i);
-    void glTriangleSmooth(unsigned int i);
-    void glTriangleFibInMand(unsigned int i);
-    void getColour(unsigned int vertex);
+    void glTriangleSmooth(unsigned int i, std::vector <int> &coloursIndicies);
+    void glTriangleFibInMand(unsigned int i, std::vector <int> &coloursIndicies);
+    void getColour(unsigned int vertex, std::vector <int> &coloursIndicies);
 
     void planeIntersection(unsigned int index);
 
@@ -97,7 +97,7 @@ protected:
     void cutMandible(bool* truthTriangles);
     void cutFibula(bool* truthTriangles);
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
-    void fillColours();
+    void fillColours(std::vector <int> &coloursIndicies);
 
     void uniformScale(float s);
 
@@ -107,7 +107,7 @@ protected:
 
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
-    std::vector <int> coloursIndicies;      // the value of each index allowing us to calculate its colour
+          // the value of each index allowing us to calculate its colour
 
     std::vector <Plane*> planes;
     std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle

@@ -92,11 +92,11 @@ void Mesh::glTriangle(unsigned int i){
     glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
-void Mesh::glTriangleSmooth(unsigned int i){
+void Mesh::glTriangleSmooth(unsigned int i, std::vector <int> &coloursIndicies){
     const Triangle & t = triangles[i];
 
     for(unsigned int j = 0 ; j < 3 ; j++ ){
-        if(cuttingSide==Side::EXTERIOR) getColour(t.getVertex(j));
+        if(cuttingSide==Side::EXTERIOR) getColour(t.getVertex(j), coloursIndicies);
         glNormal(verticesNormals[t.getVertex(j)]*normalDirection);
         glVertex(smoothedVerticies[t.getVertex(j)]);
     }
@@ -104,11 +104,11 @@ void Mesh::glTriangleSmooth(unsigned int i){
     glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
-void Mesh::glTriangleFibInMand(unsigned int i){
+void Mesh::glTriangleFibInMand(unsigned int i, std::vector <int> &coloursIndicies){
     const Triangle & t = fibInMandTriangles[i];
 
     for(unsigned int j = 0 ; j < 3 ; j++ ){
-        getColour(t.getVertex(j));
+        getColour(t.getVertex(j), coloursIndicies);
         glNormal(fibInMandNormals[t.getVertex(j)]*normalDirection);
         glVertex(fibInMandVerticies[t.getVertex(j)]);
     }
@@ -116,7 +116,7 @@ void Mesh::glTriangleFibInMand(unsigned int i){
     glColor4f(1.0, 1.0, 1.0, alphaTransparency);
 }
 
-void Mesh::getColour(unsigned int vertex){
+void Mesh::getColour(unsigned int vertex, std::vector <int> &coloursIndicies){
     int colour;
     float nb;
 
@@ -221,12 +221,10 @@ void Mesh::cutMesh(){
     createSmoothedTriangles();
 
     if(cuttingSide == Side::EXTERIOR){      // fill the colours on the fibula and send the segments to the mandible
-        fillColours();
         if(isTransfer){
-            sendToManible();
+            sendToMandible();
         }
     }
-
 }
 
 void Mesh::cutMandible(bool* truthTriangles){
@@ -271,7 +269,7 @@ void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i){
     }
 }
 
-void Mesh::fillColours(){
+void Mesh::fillColours(std::vector <int> &coloursIndicies){
     int tempColours[planeNeighbours.size()];
     coloursIndicies.clear();
 
@@ -492,13 +490,16 @@ void Mesh::planeIntersection(unsigned int index){
     }
 }
 
-void Mesh::sendToManible(){
+void Mesh::sendToMandible(){
     std::vector<int> planeNb;       // the plane nb associated
     std::vector<Vec> convertedVerticies;    // the vertex coordinates in relation to the plane nb
     std::vector<std::vector<int>>convertedTriangles; // the new indicies of the triangles (3 indicies)
     std::vector<int> convertedColours;
     std::vector<Vec> convertedNormals;
     int tempVerticies[smoothedVerticies.size()];   // a temporary marker for already converted verticies
+
+    std::vector <int> coloursIndicies;
+    fillColours(coloursIndicies);
 
     for(unsigned int i=0; i<smoothedVerticies.size(); i++) tempVerticies[i] = -1;
 
@@ -580,12 +581,14 @@ void Mesh::draw()
         }
     }
     else{
+        std::vector <int> coloursIndicies;
+        fillColours(coloursIndicies);
         for(unsigned int i = 0 ; i < trianglesCut.size(); i++){
-            glTriangleSmooth(trianglesCut[i]);
+            glTriangleSmooth(trianglesCut[i], coloursIndicies);
         }
 
         for(unsigned int i=0; i<fibInMandTriangles.size(); i++){
-            glTriangleFibInMand(i);
+            glTriangleFibInMand(i, coloursIndicies);
         }
     }
 
@@ -602,8 +605,10 @@ void Mesh::drawCut(){
     glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
 
     glBegin (GL_TRIANGLES);
+    std::vector <int> coloursIndicies;
+    fillColours(coloursIndicies);
     for(unsigned int i = 0 ; i < trianglesExtracted.size(); i++){
-        glTriangleSmooth(trianglesExtracted[i]);
+        glTriangleSmooth(trianglesExtracted[i], coloursIndicies);
     }
 
     glEnd();
