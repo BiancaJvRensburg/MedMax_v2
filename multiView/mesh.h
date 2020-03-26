@@ -21,7 +21,6 @@ public:
     ~Mesh(){}
     void init();
     void computeBB(Vec3Df &centre, float& radius);
-   // Vec3Df& getBBCentre(){ return BBCentre; }
 
     std::vector<Vec3Df> &getVertices(){return vertices;}
     const std::vector<Vec3Df> &getVertices()const {return vertices;}
@@ -29,13 +28,6 @@ public:
     std::vector<Triangle> &getTriangles(){return triangles;}
     const std::vector<Triangle> &getTriangles()const {return triangles;}
 
-    //std::vector< std::vector<unsigned int>> &getVertexNeighbours(){return vertexNeighbours;}
-    //const std::vector< std::vector<unsigned int>> &getVertexNeighbours()const {return vertexNeighbours;}
-
-   // std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
-    // const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
-
-    //std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
     std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb, Plane *p);
     Triangle& getTriangle(unsigned int i){ return triangles[i]; }
     Vec3Df& getSmoothVertex(unsigned int i){ return smoothedVerticies[i]; }
@@ -45,8 +37,6 @@ public:
     void recomputeNormals();
     void update();
     void clear();
-
-    //float getBBRadius();
 
     void updatePlaneIntersections();    // need one for a single plane
     void updatePlaneIntersections(Plane *p);
@@ -91,7 +81,6 @@ protected:
     void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
-
     void getSegmentsToKeep(const std::vector<int> &planeNeighbours);   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
 
     void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
@@ -99,8 +88,6 @@ protected:
     void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours(std::vector <int> &coloursIndicies, const unsigned long long nbColours);
-
-    //void uniformScale(float s);
 
     Vec getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex);
 
@@ -113,9 +100,7 @@ protected:
     std::vector<std::vector<unsigned int>> oneRing;
     std::vector<std::vector<unsigned int>> oneTriangleRing;
     std::vector<int> flooding;
-    //std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
-    //std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
-    //std::vector<int> planeNeighbours;       // which planes are neighbours
+
     bool isCut = false;
     std::vector<unsigned int> trianglesCut;     // The list of triangles after the cutting (a list of triangle indicies)
     std::vector<unsigned int> trianglesExtracted;       // The list of triangles taken out (the complement of trianglesCut)
@@ -129,16 +114,9 @@ protected:
     std::vector<Triangle> fibInMandTriangles;
     std::vector<int> fibInMandColour;       // Only the fibula bones will be coloured
     std::vector<Vec3Df> fibInMandNormals;
-    //std::vector<Vec3Df> fibInMandVerticesNormals;
     int fibInMandNbColours;
 
     Side cuttingSide = Side::INTERIOR;
-
-    //Vec3Df BBMin;
-    //Vec3Df BBMax;
-    //Vec3Df BBCentre;
-    //float radius;
-
     bool isTransfer = true;
 
     int normalDirection;
