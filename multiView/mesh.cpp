@@ -148,8 +148,8 @@ void Mesh::getColour(unsigned int vertex, std::vector <int> &coloursIndicies){
 
 void Mesh::addPlane(Plane *p){
     planes.push_back(p);
-    std::vector<unsigned int> init;
-    intersectionTriangles.push_back(init);
+    //std::vector<unsigned int> init;
+    //intersectionTriangles.push_back(init);
     //verticesOnPlane.push_back(init);
     updatePlaneIntersections(p);
 }
@@ -157,19 +157,24 @@ void Mesh::addPlane(Plane *p){
 void Mesh::deleteGhostPlanes(){
     if(planes.size()==2) return;        // Keep the left and right planes
     planes.erase(planes.begin()+2, planes.end());       // delete the ghost planes
-    intersectionTriangles.erase(intersectionTriangles.begin()+2, intersectionTriangles.end());
+    //intersectionTriangles.erase(intersectionTriangles.begin()+2, intersectionTriangles.end());
     //verticesOnPlane.erase(verticesOnPlane.begin()+2, verticesOnPlane.end());
 }
 
 void Mesh::updatePlaneIntersections(){
     if(isCut){
+        std::vector <std::vector <unsigned int>> intersectionTriangles;
+        for(unsigned int i=0; i<planes.size(); i++){
+            std::vector<unsigned int> init;
+            intersectionTriangles.push_back(init);
+        }
         flooding.clear();
         for(unsigned int i=0; i<vertices.size(); i++) flooding.push_back(-1);       // reset the flooding values
 
         planeNeighbours.clear();
         for(unsigned int i=0; i<planes.size()*2; i++) planeNeighbours.push_back(-1);        // reset the plane neighbours
 
-        for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i);
+        for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i, intersectionTriangles[i]);
 
         /*for(unsigned int i=0; i<flooding.size(); i++){
             if(flooding[i] != -1){
@@ -192,11 +197,11 @@ void Mesh::updatePlaneIntersections(){
         }
 
         mergeFlood();
-        cutMesh();
+        cutMesh(intersectionTriangles);
     }
 }
 
-void Mesh::cutMesh(){
+void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles){
     trianglesCut.clear();
 
     bool truthTriangles[triangles.size()];  // keeps a record of the triangles who are already added
@@ -208,7 +213,7 @@ void Mesh::cutMesh(){
         break;
 
         case Side::EXTERIOR:        // FIBULA
-            cutFibula(truthTriangles);
+            cutFibula(truthTriangles, intersectionTriangles);
         break;
     }
 
@@ -218,7 +223,7 @@ void Mesh::cutMesh(){
     }
 
     // ! Conserve this order
-    createSmoothedTriangles();
+    createSmoothedTriangles(intersectionTriangles);
 
     if(cuttingSide == Side::EXTERIOR){      // fill the colours on the fibula and send the segments to the mandible
         if(isTransfer){
@@ -235,7 +240,7 @@ void Mesh::cutMandible(bool* truthTriangles){
     }
 }
 
-void Mesh::cutFibula(bool* truthTriangles){
+void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles){
     for(unsigned int j=0; j<intersectionTriangles.size(); j++){
             const std::vector<unsigned int> &v = intersectionTriangles[j];
             for(unsigned int k=0; k<v.size(); k++) {
@@ -331,7 +336,7 @@ void Mesh::getSegmentsToKeep(){
     }
 }
 
-void Mesh::createSmoothedTriangles(){
+void Mesh::createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles){
     smoothedVerticies.clear();
 
 
@@ -339,16 +344,16 @@ void Mesh::createSmoothedTriangles(){
 
     switch (cuttingSide) {
         case Side::INTERIOR:
-            createSmoothedMandible();
+            createSmoothedMandible(intersectionTriangles);
         break;
 
         case Side::EXTERIOR:
-            createSmoothedFibula();
+            createSmoothedFibula(intersectionTriangles);
         break;
     }
 }
 
-void Mesh::createSmoothedMandible(){
+void Mesh::createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles){
     for(unsigned long long i=0; i<planes.size(); i++){
         for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){       // for each triangle cut
             for(unsigned int k=0; k<3; k++){    // find which verticies to keep
@@ -364,7 +369,7 @@ void Mesh::createSmoothedMandible(){
     }
 }
 
-void Mesh::createSmoothedFibula(){
+void Mesh::createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles){
     for(unsigned int i=0; i<planes.size(); i++){
         //verticesOnPlane[i].clear();
         for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){   // for each triangle cut
@@ -398,11 +403,7 @@ void Mesh::createSmoothedFibula(){
                         if(lastIndex>1) newVertex = getPolylineProjectedVertex(i, lastIndex, vertexIndex);
                         else newVertex = getPolylineProjectedVertex(i, 0, vertexIndex);
                     }
-                    //else newVertex = planes[i]->getProjection(Vec(static_cast<double>(vertices[vertexIndex][0]), static_cast<double>(vertices[vertexIndex][1]), static_cast<double>(vertices[vertexIndex][2])) );
-                    //verticesOnPlane[i].push_back(vertexIndex);
                     smoothedVerticies[vertexIndex] = Vec3Df(static_cast<float>(newVertex.x), static_cast<float>(newVertex.y), static_cast<float>(newVertex.z)); // get the projection
-                   // Vec newVv = planes[i]->getLocalCoordinates(Vec(smoothedVerticies[vertexIndex]));
-                    //if(newVv.z < -0.001) std::cout << " z : " << newVv.z << std::endl;
                 }
                 // else don't change the original
             }
@@ -465,8 +466,8 @@ void Mesh::mergeFlood(){
 }
 
 // Finds all the intersecting triangles for plane nb index
-void Mesh::planeIntersection(unsigned int index){
-    intersectionTriangles[index].clear();       // empty the list of intersections
+void Mesh::planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane){
+    intersectionTrianglesPlane.clear();       // empty the list of intersections
 
     for(unsigned int i = 0 ; i < triangles.size(); i++){
         unsigned int t0 = triangles[i].getVertex(0);
@@ -474,7 +475,7 @@ void Mesh::planeIntersection(unsigned int index){
         unsigned int t2 = triangles[i].getVertex(2);
 
         if(planes[index]->isIntersection(Vec(vertices[t0]), Vec(vertices[t1]), Vec(vertices[t2]) )){        // if the triangle intersects the plane
-            intersectionTriangles[index].push_back(i);      // save the triangle index
+            intersectionTrianglesPlane.push_back(i);      // save the triangle index
 
             // For each vertex, get the apporiate sign
             for(unsigned int j=0; j<3; j++){
@@ -487,6 +488,17 @@ void Mesh::planeIntersection(unsigned int index){
                 }
             }
         }
+    }
+}
+
+void Mesh::getIntersectionForPlane(unsigned int index, std::vector<unsigned int> &intersectionTrianglesPlane){
+    for(unsigned int i = 0 ; i < triangles.size(); i++){
+        unsigned int t0 = triangles[i].getVertex(0);
+        unsigned int t1 = triangles[i].getVertex(1);
+        unsigned int t2 = triangles[i].getVertex(2);
+
+        if(planes[index]->isIntersection(Vec(vertices[t0]), Vec(vertices[t1]), Vec(vertices[t2]) ))        // if the triangle intersects the plane
+            intersectionTrianglesPlane.push_back(i);
     }
 }
 
@@ -634,10 +646,12 @@ void Mesh::uniformScale(float s){
 
 std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb, Plane *p){
     std::vector<unsigned int> v;
+    std::vector<unsigned int> intersectionTrianglesPlane;
+    getIntersectionForPlane(planeNb, intersectionTrianglesPlane);
 
-    for(unsigned int i=0; i<intersectionTriangles[planeNb].size(); i++){
+    for(unsigned int i=0; i<intersectionTrianglesPlane.size(); i++){
         for(unsigned int k=0; k<3; k++){
-            unsigned int triangleNb = intersectionTriangles[planeNb][i];
+            unsigned int triangleNb = intersectionTrianglesPlane[i];
             unsigned int index = triangles[triangleNb].getVertex(k);
             if(abs(p->getLocalCoordinates(Vec(smoothedVerticies[index])).z) < 0.001){
                 bool isFound = false;

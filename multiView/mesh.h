@@ -34,7 +34,7 @@ public:
     std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
 
-    std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
+    //std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
     std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb, Plane *p);
     Triangle& getTriangle(unsigned int i){ return triangles[i]; }
     Vec3Df& getSmoothVertex(unsigned int i){ return smoothedVerticies[i]; }
@@ -82,20 +82,21 @@ protected:
     void glTriangleFibInMand(unsigned int i, std::vector <int> &coloursIndicies);
     void getColour(unsigned int vertex, std::vector <int> &coloursIndicies);
 
-    void planeIntersection(unsigned int index);
+    void planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
+    void getIntersectionForPlane(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
 
     void floodNeighbour(unsigned int index, int id);     // flood the neighbours of the vertex index with the value id
     void mergeFlood();      // to be called after flooding; merges the regions between the planes
 
-    void createSmoothedTriangles();
-    void createSmoothedMandible();
-    void createSmoothedFibula();
+    void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles);
+    void createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles);
+    void createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles);
 
     void getSegmentsToKeep();   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
 
-    void cutMesh();
+    void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles);
     void cutMandible(bool* truthTriangles);
-    void cutFibula(bool* truthTriangles);
+    void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles);
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours(std::vector <int> &coloursIndicies);
 
@@ -107,11 +108,9 @@ protected:
 
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
-          // the value of each index allowing us to calculate its colour
 
     std::vector <Plane*> planes;
-    std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
-    //std::vector <std::vector <unsigned int>> verticesOnPlane;
+    //std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
 
     std::vector<int> flooding;
     std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
