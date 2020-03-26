@@ -466,7 +466,7 @@ void Viewer::openOFF(QString filename) {
 
     FileIO::openOFF(filename.toStdString(), vertices, triangles);
 
-    mesh.update();
+    mesh.init();
 
     // Set the camera
     Vec3Df center;

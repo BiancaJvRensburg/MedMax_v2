@@ -2,6 +2,12 @@
 #include <algorithm>
 #include <float.h>
 
+void Mesh::init(){
+    collectOneRing(oneRing);
+    collectTriangleOneRing(oneTriangleRing);
+    update();
+}
+
 void Mesh::computeBB(){
 
     BBMin = Vec3Df( FLT_MAX, FLT_MAX, FLT_MAX );
@@ -191,8 +197,6 @@ void Mesh::deleteGhostPlanes(){
 
 void Mesh::updatePlaneIntersections(){
     if(isCut){
-        std::vector <std::vector <unsigned int>> oneRing;
-        collectOneRing(oneRing);
         std::vector <std::vector <unsigned int>> intersectionTriangles;
         intersectionTriangles.resize(planes.size());
         /*for(unsigned int i=0; i<planes.size(); i++){
@@ -214,7 +218,7 @@ void Mesh::updatePlaneIntersections(){
                     Triangle t = triangles[triIndexes[k]];
                     unsigned int index = t.getVertex(l);
                     for(unsigned int j=0; j<oneRing[index].size(); j++){
-                        floodNeighbour(oneRing[index][j], flooding[index], oneRing, planeNeighbours);
+                        floodNeighbour(oneRing[index][j], flooding[index], planeNeighbours);
                     }
                 }
             }
@@ -257,11 +261,9 @@ void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangl
 }
 
 void Mesh::cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours){
-    std::vector<std::vector<unsigned int>> oneTriangleRing;
-    collectTriangleOneRing(oneTriangleRing);
     for(unsigned int i=0; i<flooding.size(); i++){
         if(planeNeighbours[static_cast<unsigned int>(flooding[i])]==-1){
-            saveTrianglesToKeep(truthTriangles, i, oneTriangleRing);
+            saveTrianglesToKeep(truthTriangles, i);
         }
     }
 }
@@ -274,9 +276,6 @@ void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned in
         }
     }
 
-    std::vector<std::vector<unsigned int>> oneTriangleRing;
-    collectTriangleOneRing(oneTriangleRing);
-
     getSegmentsToKeep(planeNeighbours);    // figure out what to keep (TODO can be done earlier)
     for(unsigned int i=0; i<flooding.size(); i++){
         bool isKeep = false;
@@ -288,13 +287,13 @@ void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned in
         }
         if(isKeep){
             for(unsigned int j=0; j<oneTriangleRing[i].size(); j++){        // Get the triangles they belong to
-                saveTrianglesToKeep(truthTriangles, i, oneTriangleRing);
+                saveTrianglesToKeep(truthTriangles, i);
             }
         }
     }
 }
 
-void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i, std::vector<std::vector<unsigned int>> &oneTriangleRing){
+void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i){
     for(unsigned int j=0; j<oneTriangleRing[i].size(); j++){        // Get the triangles the indicies belong to
         if(!truthTriangles[oneTriangleRing[i][j]]){     // If it's not already in the list
             trianglesCut.push_back(oneTriangleRing[i][j]);
@@ -463,12 +462,12 @@ void Mesh::updatePlaneIntersections(Plane *p){
     updatePlaneIntersections();
 }
 
-void Mesh::floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &oneRing, std::vector<int> &planeNeighbours){
+void Mesh::floodNeighbour(unsigned int index, int id, std::vector<int> &planeNeighbours){
 
     if(flooding[index] == -1){      // Flood it
         flooding[index] = id;
         for(unsigned int i=0; i<oneRing[index].size(); i++){
-            floodNeighbour(oneRing[index][i], id, oneRing, planeNeighbours);
+            floodNeighbour(oneRing[index][i], id, planeNeighbours);
         }
     }
 

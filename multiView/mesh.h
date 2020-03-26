@@ -86,7 +86,7 @@ protected:
     void planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
     void getIntersectionForPlane(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
 
-    void floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &vertexNeighbours, std::vector<int> &planeNeighbours);     // flood the neighbours of the vertex index with the value id
+    void floodNeighbour(unsigned int index, int id, std::vector<int> &planeNeighbours);     // flood the neighbours of the vertex index with the value id
     void mergeFlood(const std::vector<int> &planeNeighbours);      // to be called after flooding; merges the regions between the planes
 
     void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
@@ -98,7 +98,7 @@ protected:
     void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours);
     void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
-    void saveTrianglesToKeep(bool* truthTriangles, unsigned int i, std::vector<std::vector<unsigned int>> &oneTriangleRing);
+    void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
     void fillColours(std::vector <int> &coloursIndicies, const unsigned long long nbColours);
 
     //void uniformScale(float s);
@@ -109,9 +109,10 @@ protected:
 
     std::vector <Vec3Df> vertices;      // starting verticies
     std::vector <Triangle> triangles;       // starting triangles
-
     std::vector <Plane*> planes;
 
+    std::vector<std::vector<unsigned int>> oneRing;
+    std::vector<std::vector<unsigned int>> oneTriangleRing;
     std::vector<int> flooding;
     //std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
     //std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
@@ -129,7 +130,7 @@ protected:
     std::vector<Triangle> fibInMandTriangles;
     std::vector<int> fibInMandColour;       // Only the fibula bones will be coloured
     std::vector<Vec3Df> fibInMandNormals;
-    std::vector<Vec3Df> fibInMandVerticesNormals;
+    //std::vector<Vec3Df> fibInMandVerticesNormals;
     int fibInMandNbColours;
 
     Side cuttingSide = Side::INTERIOR;
