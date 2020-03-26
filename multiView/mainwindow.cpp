@@ -258,12 +258,10 @@ void MainWindow::openFibulaMesh(){
 
 void MainWindow::readJSON(const QJsonObject &json, Viewer *v){
     if(json.contains("mesh file") && json["mesh file"].isString()){
-        std::cout << "made it in mesh file" << std::endl;
         QString fileName = json["mesh file"].toString();
         v->openOFF(fileName);
     }
     if(json.contains("control points") && json["control points"].isArray()){
-        std::cout << "made it in control points" << std::endl;
         QJsonArray controlPoints = json["control points"].toArray();
         v->readJSON(controlPoints);
     }

@@ -152,7 +152,7 @@ void ViewerFibula::swivelToPolyline(std::vector<Vec>& fibulaPolyline){
             fibPoint.normalize();
             double alpha = angle(mandPoint, fibPoint) + M_PI;
             ghostPlanes[i]->rotatePlane(axis, alpha);
-            ghostPlanes[i+1]->rotatePlane(axis, alpha);
+            //ghostPlanes[i+1]->rotatePlane(axis, alpha);
         }
         //ghostPlanes[ghostPlanes.size()-1]->rotatePlane(axis, M_PI*2.0);
     }

@@ -539,6 +539,8 @@ void Viewer::addGhostPlanes(unsigned int nb){
         else distances[i] = curve->discreteLength(ghostLocation[i-1], ghostLocation[i]);
     }
 
+    balanceGhostPlanes();
+
     distances[nb] = curve->discreteLength(ghostLocation[static_cast<unsigned int>(nb-1)], curveIndexR);
 
     std::vector<Vec> poly = updatePolyline();
@@ -555,6 +557,8 @@ void Viewer::ghostPlaneMoved(){
         if(i==0) distances[i] = segmentLength(leftPlane->getPosition(), ghostPlanes[i]->getCurvePoint().getPoint());
         else distances[i] = segmentLength(ghostPlanes[i-1]->getCurvePoint().getPoint(), ghostPlanes[i]->getCurvePoint().getPoint());
     }
+
+    balanceGhostPlanes();
 
     distances[nb] = segmentLength(rightPlane->getPosition(), ghostPlanes[nb-1]->getCurvePoint().getPoint());
 
@@ -683,4 +687,16 @@ void Viewer::setAlpha(int position){
     leftPlane->setAlpha(a);
     rightPlane->setAlpha(a);
     update();
+}
+
+void Viewer::balanceGhostPlanes(){
+    Vec norm = Vec(0,0,1);
+    std::vector<Vec> poly = updatePolyline();
+
+    for(unsigned int i=0; i<ghostPlanes.size(); i++){
+        double theta = M_PI - angle(poly[i*2+1], -norm);
+        double fi = M_PI - angle(poly[i*2+2], norm);
+        double shift = (fi - theta) / 2.0;
+        ghostPlanes[i]->rotatePlane(Vec(0,1,0), shift+M_PI);
+    }
 }

@@ -114,6 +114,7 @@ private:
     void handlePlaneMoveEnd();
     void updateMeshPolyline();
     void rotateFrame(Frame& f, Vec axis, double angle);
+    void balanceGhostPlanes();
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
     std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
