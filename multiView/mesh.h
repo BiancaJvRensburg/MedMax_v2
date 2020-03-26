@@ -85,20 +85,20 @@ protected:
     void planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
     void getIntersectionForPlane(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
 
-    void floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &vertexNeighbours);     // flood the neighbours of the vertex index with the value id
-    void mergeFlood();      // to be called after flooding; merges the regions between the planes
+    void floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &vertexNeighbours, std::vector<int> &planeNeighbours);     // flood the neighbours of the vertex index with the value id
+    void mergeFlood(const std::vector<int> &planeNeighbours);      // to be called after flooding; merges the regions between the planes
 
-    void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles);
-    void createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles);
-    void createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles);
+    void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
+    void createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
+    void createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
 
-    void getSegmentsToKeep();   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
+    void getSegmentsToKeep(const std::vector<int> &planeNeighbours);   // Only for the fibula mesh (gets the segments between 2 planes that we want to keep)
 
-    void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles);
-    void cutMandible(bool* truthTriangles);
-    void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles);
+    void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
+    void cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours);
+    void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
-    void fillColours(std::vector <int> &coloursIndicies);
+    void fillColours(std::vector <int> &coloursIndicies, const unsigned long long nbColours);
 
     void uniformScale(float s);
 
@@ -114,7 +114,7 @@ protected:
     std::vector<int> flooding;
     //std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
     std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
-    std::vector<int> planeNeighbours;       // which planes are neighbours
+    //std::vector<int> planeNeighbours;       // which planes are neighbours
     bool isCut = false;
     std::vector<unsigned int> trianglesCut;     // The list of triangles after the cutting (a list of triangle indicies)
     std::vector<unsigned int> trianglesExtracted;       // The list of triangles taken out (the complement of trianglesCut)

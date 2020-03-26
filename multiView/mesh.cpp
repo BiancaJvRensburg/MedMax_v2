@@ -190,7 +190,7 @@ void Mesh::updatePlaneIntersections(){
         flooding.clear();
         for(unsigned int i=0; i<vertices.size(); i++) flooding.push_back(-1);       // reset the flooding values
 
-        planeNeighbours.clear();
+        std::vector<int> planeNeighbours;
         for(unsigned int i=0; i<planes.size()*2; i++) planeNeighbours.push_back(-1);        // reset the plane neighbours
 
         for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i, intersectionTriangles[i]);
@@ -202,18 +202,18 @@ void Mesh::updatePlaneIntersections(){
                     Triangle t = triangles[triIndexes[k]];
                     unsigned int index = t.getVertex(l);
                     for(unsigned int j=0; j<oneRing[index].size(); j++){
-                        floodNeighbour(oneRing[index][j], flooding[index], oneRing);
+                        floodNeighbour(oneRing[index][j], flooding[index], oneRing, planeNeighbours);
                     }
                 }
             }
         }
 
-        mergeFlood();
-        cutMesh(intersectionTriangles);
+        mergeFlood(planeNeighbours);
+        cutMesh(intersectionTriangles, planeNeighbours);
     }
 }
 
-void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles){
+void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours){
     trianglesCut.clear();
 
     bool truthTriangles[triangles.size()];  // keeps a record of the triangles who are already added
@@ -221,11 +221,11 @@ void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangl
 
     switch (cuttingSide) {
         case Side::INTERIOR:        // MANDIBLE
-            cutMandible(truthTriangles);
+            cutMandible(truthTriangles, planeNeighbours);
         break;
 
         case Side::EXTERIOR:        // FIBULA
-            cutFibula(truthTriangles, intersectionTriangles);
+            cutFibula(truthTriangles, intersectionTriangles, planeNeighbours);
         break;
     }
 
@@ -235,7 +235,7 @@ void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangl
     }
 
     // ! Conserve this order
-    createSmoothedTriangles(intersectionTriangles);
+    createSmoothedTriangles(intersectionTriangles, planeNeighbours);
 
     if(cuttingSide == Side::EXTERIOR){      // fill the colours on the fibula and send the segments to the mandible
         if(isTransfer){
@@ -244,7 +244,7 @@ void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangl
     }
 }
 
-void Mesh::cutMandible(bool* truthTriangles){
+void Mesh::cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours){
     for(unsigned int i=0; i<flooding.size(); i++){
         if(planeNeighbours[static_cast<unsigned int>(flooding[i])]==-1){
             saveTrianglesToKeep(truthTriangles, i);
@@ -252,7 +252,7 @@ void Mesh::cutMandible(bool* truthTriangles){
     }
 }
 
-void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles){
+void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours){
     for(unsigned int j=0; j<intersectionTriangles.size(); j++){
             const std::vector<unsigned int> &v = intersectionTriangles[j];
             for(unsigned int k=0; k<v.size(); k++) {
@@ -260,7 +260,7 @@ void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned in
         }
     }
 
-    getSegmentsToKeep();    // figure out what to keep (TODO can be done earlier)
+    getSegmentsToKeep(planeNeighbours);    // figure out what to keep (TODO can be done earlier)
     for(unsigned int i=0; i<flooding.size(); i++){
         bool isKeep = false;
         for(unsigned int k=0; k<segmentsConserved.size(); k++){      // Only keep it if it belongs to a kept segment
@@ -286,11 +286,11 @@ void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i){
     }
 }
 
-void Mesh::fillColours(std::vector <int> &coloursIndicies){
-    int tempColours[planeNeighbours.size()];
+void Mesh::fillColours(std::vector <int> &coloursIndicies, const unsigned long long nbColours){
+    int tempColours[nbColours];
     coloursIndicies.clear();
 
-    for(unsigned int i=0; i<planeNeighbours.size(); i++) tempColours[i] = -1;       // init all to -1
+    for(unsigned int i=0; i<nbColours; i++) tempColours[i] = -1;       // init all to -1
 
     for(unsigned int i=0; i<segmentsConserved.size(); i++) tempColours[segmentsConserved[i]] = static_cast<int>(i);       // change to the seg colours value
 
@@ -302,7 +302,7 @@ void Mesh::fillColours(std::vector <int> &coloursIndicies){
 
 // WARNING : this assumes that the left and right planes are the first planes added!
 // Could search for the exterior planes beforehand using the fact that the other sides = -1
-void Mesh::getSegmentsToKeep(){
+void Mesh::getSegmentsToKeep(const std::vector<int> &planeNeighbours){
     segmentsConserved.clear();
 
     // Find the non-discarded side of the left plane
@@ -348,24 +348,23 @@ void Mesh::getSegmentsToKeep(){
     }
 }
 
-void Mesh::createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles){
+void Mesh::createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours){
     smoothedVerticies.clear();
-
 
     for(unsigned int i=0; i<vertices.size(); i++) smoothedVerticies.push_back(vertices[i]);  // Copy the verticies table
 
     switch (cuttingSide) {
         case Side::INTERIOR:
-            createSmoothedMandible(intersectionTriangles);
+            createSmoothedMandible(intersectionTriangles, planeNeighbours);
         break;
 
         case Side::EXTERIOR:
-            createSmoothedFibula(intersectionTriangles);
+            createSmoothedFibula(intersectionTriangles, planeNeighbours);
         break;
     }
 }
 
-void Mesh::createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles){
+void Mesh::createSmoothedMandible(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours){
     for(unsigned long long i=0; i<planes.size(); i++){
         for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){       // for each triangle cut
             for(unsigned int k=0; k<3; k++){    // find which verticies to keep
@@ -381,7 +380,7 @@ void Mesh::createSmoothedMandible(std::vector <std::vector <unsigned int>> &inte
     }
 }
 
-void Mesh::createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles){
+void Mesh::createSmoothedFibula(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours){
     for(unsigned int i=0; i<planes.size(); i++){
         //verticesOnPlane[i].clear();
         for(unsigned long long j=0; j<intersectionTriangles[static_cast<unsigned long long>(i)].size(); j++){   // for each triangle cut
@@ -447,12 +446,12 @@ void Mesh::updatePlaneIntersections(Plane *p){
     updatePlaneIntersections();
 }
 
-void Mesh::floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &oneRing){
+void Mesh::floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &oneRing, std::vector<int> &planeNeighbours){
 
     if(flooding[index] == -1){      // Flood it
         flooding[index] = id;
         for(unsigned int i=0; i<oneRing[index].size(); i++){
-            floodNeighbour(oneRing[index][i], id, oneRing);
+            floodNeighbour(oneRing[index][i], id, oneRing, planeNeighbours);
         }
     }
 
@@ -469,7 +468,7 @@ void Mesh::floodNeighbour(unsigned int index, int id, std::vector <std::vector <
     }
 }
 
-void Mesh::mergeFlood(){
+void Mesh::mergeFlood(const std::vector<int> &planeNeighbours){
     for(unsigned int i=0; i<flooding.size(); i++){
         if(planeNeighbours[static_cast<unsigned int>(flooding[i])] != -1 && planeNeighbours[static_cast<unsigned int>(flooding[i])] < flooding[i]){     // From the two neighbours, set them both to the lowest value
             flooding[i] = planeNeighbours[static_cast<unsigned int>(flooding[i])];
@@ -523,7 +522,7 @@ void Mesh::sendToMandible(){
     int tempVerticies[smoothedVerticies.size()];   // a temporary marker for already converted verticies
 
     std::vector <int> coloursIndicies;
-    fillColours(coloursIndicies);
+    fillColours(coloursIndicies, planes.size()*2);
 
     for(unsigned int i=0; i<smoothedVerticies.size(); i++) tempVerticies[i] = -1;
 
@@ -606,7 +605,7 @@ void Mesh::draw()
     }
     else{
         std::vector <int> coloursIndicies;
-        fillColours(coloursIndicies);
+        fillColours(coloursIndicies, planes.size()*2);
         for(unsigned int i = 0 ; i < trianglesCut.size(); i++){
             glTriangleSmooth(trianglesCut[i], coloursIndicies);
         }
@@ -630,7 +629,7 @@ void Mesh::drawCut(){
 
     glBegin (GL_TRIANGLES);
     std::vector <int> coloursIndicies;
-    fillColours(coloursIndicies);
+    fillColours(coloursIndicies, planes.size()*2);
     for(unsigned int i = 0 ; i < trianglesExtracted.size(); i++){
         glTriangleSmooth(trianglesExtracted[i], coloursIndicies);
     }
