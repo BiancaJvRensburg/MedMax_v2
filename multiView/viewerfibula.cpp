@@ -431,7 +431,7 @@ void ViewerFibula::approachPlanes(unsigned int pStart){
     Vec p1, p2;
     findClosestPoint(pStart, p1, p2);
     double distZ = p2.z - p1.z;
-    const double security = 10.0;
+    const double security = 15.0;
 
     Vec pB1, pB2;
     pB1 = curve->getPoint(ghostLocation[pStart]);
