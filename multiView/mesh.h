@@ -74,7 +74,6 @@ Q_SIGNALS:
 protected:
     void computeBB();
 
-    void computeTriangleNormals();
     Vec3Df computeTriangleNormal(unsigned int t);
     void computeVerticesNormals();
     void glTriangle(unsigned int i);
@@ -122,8 +121,6 @@ protected:
     std::vector<int> segmentsConserved; // filled with flooding values to keep
 
     std::vector<Vec3Df> smoothedVerticies;      // New verticies which line up with the cutting plane
-
-    std::vector<Vec3Df> normals;
     std::vector<Vec3Df> verticesNormals;
 
     // The fibula in the manible

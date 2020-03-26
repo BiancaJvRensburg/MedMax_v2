@@ -30,22 +30,22 @@ void Mesh::update(){
 void Mesh::clear(){
     vertices.clear();
     triangles.clear();
-    normals.clear();
+    //normals.clear();
     verticesNormals.clear();
 }
 
 void Mesh::recomputeNormals () {
-    computeTriangleNormals();
+    //computeTriangleNormals();
     computeVerticesNormals();
 }
 
-void Mesh::computeTriangleNormals(){
+/*void Mesh::computeTriangleNormals(){
     normals.clear();
 
     for(unsigned int i = 0 ; i < triangles.size() ; i++){
         normals.push_back(computeTriangleNormal(i));
     }
-}
+}*/
 
 Vec3Df Mesh::computeTriangleNormal(unsigned int id ){
     const Triangle & t = triangles[id];
@@ -68,7 +68,7 @@ void Mesh::computeVerticesNormals(){
 
     for( unsigned int t = 0 ; t < triangles.size(); ++t )
     {
-        Vec3Df const & tri_normal = normals[t];
+        Vec3Df const & tri_normal = computeTriangleNormal(t);
         verticesNormals[ triangles[t].getVertex(0) ] += tri_normal;
         verticesNormals[ triangles[t].getVertex(1) ] += tri_normal;
         verticesNormals[ triangles[t].getVertex(2) ] += tri_normal;
