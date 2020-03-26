@@ -56,10 +56,10 @@ public:
     void invertNormal(){normalDirection *= -1;}
 
 public Q_SLOTS:
-    void recieveInfoFromFibula(std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
+    void recieveInfoFromFibula(const std::vector<Vec>&, const std::vector<std::vector<int>>&, const std::vector<int>&, const std::vector<Vec>&, const int);
 
 Q_SIGNALS:
-    void sendInfoToManible(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
+    void sendInfoToManible(const std::vector<int>&, const std::vector<Vec>&, const std::vector<std::vector<int>>&, const std::vector<int>&, const std::vector<Vec>&, int);
     void updateViewer();
 
 protected:

@@ -551,7 +551,7 @@ void Mesh::sendToMandible(){
     Q_EMIT sendInfoToManible(planeNb, convertedVerticies, convertedTriangles, convertedColours, convertedNormals, (static_cast<int>(planes.size())/2));
 }
 
-void Mesh::recieveInfoFromFibula(std::vector<Vec> convertedVerticies, std::vector<std::vector<int>> convertedTriangles, std::vector<int> convertedColours, std::vector<Vec> convertedNormals, int nbColours){
+void Mesh::recieveInfoFromFibula(const std::vector<Vec> &convertedVerticies, const std::vector<std::vector<int>> &convertedTriangles, const std::vector<int> &convertedColours, const std::vector<Vec> &convertedNormals, int nbColours){
     if(cuttingSide != Side::INTERIOR) return;
 
     fibInMandTriangles.clear();

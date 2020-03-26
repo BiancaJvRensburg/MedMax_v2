@@ -76,16 +76,16 @@ std::vector<Vec> Viewer::updatePolyline(){
 void Viewer::updateMeshPolyline(){
     polyline.clear();       // The vector of the points of the polyline (the locations of the planes)
 
-    Vec p = leftPlane->getPosition();
-    polyline.push_back(p);
+    const Vec &p0 = leftPlane->getPosition();
+    polyline.push_back(p0);
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        p = Vec(ghostPlanes[i]->getCurvePoint().getX(), ghostPlanes[i]->getCurvePoint().getY(), ghostPlanes[i]->getCurvePoint().getZ());
-        polyline.push_back(p);
+        const Vec &pGhost = Vec(ghostPlanes[i]->getCurvePoint().getX(), ghostPlanes[i]->getCurvePoint().getY(), ghostPlanes[i]->getCurvePoint().getZ());
+        polyline.push_back(pGhost);
     }
 
-    p = rightPlane->getPosition();
-    polyline.push_back(p);
+    const Vec &p1 = rightPlane->getPosition();
+    polyline.push_back(p1);
 }
 
 // Get each polyline in the coordinates of its plane
@@ -142,8 +142,6 @@ void Viewer::init() {
   setManipulatedFrame(viewerFrame);
   setAxisIsDrawn(false);
 
-  //initCurve();
-
   glEnable(GL_LIGHTING);
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
   glLineWidth (1.0f);
@@ -158,8 +156,7 @@ void Viewer::initSignals(){
     connect(&mesh, &Mesh::updateViewer, this, &Viewer::toUpdate);
 }
 
-void Viewer::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Vec> verticies, std::vector<std::vector<int>> triangles, std::vector<Vec> fibulaPolyline, std::vector<int> colours, std::vector<Vec> normals, int nbColours){
-    // TODO : Be careful of this!
+void Viewer::recieveFromFibulaMesh(const std::vector<int> &planes, std::vector<Vec> verticies, const std::vector<std::vector<int>> &triangles, const std::vector<int> &colours, std::vector<Vec> normals, const int nbColours){
     /*
      * 0 : left plane
      * 1 : right plane
@@ -299,8 +296,8 @@ void Viewer::initGhostPlanes(){
         for(unsigned int i=0; i<ghostPlanes.size(); i++) connect(&(ghostPlanes[i]->getCurvePoint()), &CurvePoint::curvePointTranslated, this, &Viewer::ghostPlaneMoved);        // connnect the ghost planes
 
          // Send the info to the fibula
-        std::vector<Vec> poly = updatePolyline();
-        std::vector<Vec> axes = getReferenceAxes();
+        const std::vector<Vec> &poly = updatePolyline();
+        const std::vector<Vec> &axes = getReferenceAxes();
         double distance;        // the distance we moved
 
         if(finalNb > 0) distance = curve->discreteLength(curveIndexL, static_cast<unsigned int>(ghostLocation[0]));
@@ -311,11 +308,6 @@ void Viewer::initGhostPlanes(){
         else distance = curve->discreteLength(curveIndexL, curveIndexR);
         Q_EMIT rightPosChanged(distance, poly, axes);
     }
-    /*else{
-        std::vector<Vec> poly = updatePolyline();
-        std::vector<Vec> axes = getReferenceAxes();
-        Q_EMIT ghostPlanesAdded(0,0, poly, axes);
-    }*/
 }
 
 void Viewer::cutMesh(){
@@ -395,8 +387,8 @@ void Viewer::movePlane(Plane *p, bool isLeft, unsigned int curveIndex){
         else distance = curve->discreteLength(ghostLocation[ghostPlanes.size()-1], curveIndexR);
     }
 
-    std::vector<Vec> poly = updatePolyline();
-    std::vector<Vec> axes = getReferenceAxes();
+    const std::vector<Vec> &poly = updatePolyline();
+    const std::vector<Vec> &axes = getReferenceAxes();
 
     if(isLeft){
         Q_EMIT leftPosChanged(distance, poly, axes);
@@ -461,8 +453,6 @@ void Viewer::handlePlaneMoveEnd(){
 void Viewer::openOFF(QString filename) {
     std::vector<Vec3Df> &vertices = mesh.getVertices();
     std::vector<Triangle> &triangles = mesh.getTriangles();
-    //std::vector< std::vector<unsigned int>> &neighbours = mesh.getVertexNeighbours();
-    //std::vector< std::vector<unsigned int>> &vertexTriangles = mesh.getVertexTriangles();
 
     FileIO::openOFF(filename.toStdString(), vertices, triangles);
 
@@ -506,7 +496,7 @@ void Viewer::constructCurve(){
 void Viewer::initPlanes(Movable status){
     curveIndexR = nbU - 1;
     curveIndexL = 0;
-    Vec pos = Vec(0,0,0);
+    Vec pos(0,0,0);
     float size = 40.0;
 
     leftPlane = new Plane(static_cast<double>(size), status, pos, 0.5);
@@ -532,7 +522,7 @@ void Viewer::addGhostPlanes(unsigned int nb){
     double distances[nb+1];     // +1 for the last plane
 
     for(unsigned int i=0; i<static_cast<unsigned int>(nb); i++){
-        Vec pos = Vec(0,0,0);
+        Vec pos(0,0,0);
         ghostPlanes.push_back(new Plane(40.0, Movable::DYNAMIC, pos, leftPlane->getAlpha()));
         repositionPlane(ghostPlanes[i], ghostLocation[i]);
         if(i==0) distances[i] = curve->discreteLength(curveIndexL, ghostLocation[i]);
@@ -543,8 +533,8 @@ void Viewer::addGhostPlanes(unsigned int nb){
 
     distances[nb] = curve->discreteLength(ghostLocation[static_cast<unsigned int>(nb-1)], curveIndexR);
 
-    std::vector<Vec> poly = updatePolyline();
-    std::vector<Vec> axes = getReferenceAxes();
+    const std::vector<Vec> &poly = updatePolyline();
+    const std::vector<Vec> &axes = getReferenceAxes();
 
     Q_EMIT ghostPlanesAdded(nb, distances, poly, axes);
 }
@@ -562,8 +552,8 @@ void Viewer::ghostPlaneMoved(){
 
     distances[nb] = segmentLength(rightPlane->getPosition(), ghostPlanes[nb-1]->getCurvePoint().getPoint());
 
-    std::vector<Vec> poly = updatePolyline();
-    std::vector<Vec> axes = getReferenceAxes();
+    const std::vector<Vec> &poly = updatePolyline();
+    const std::vector<Vec> &axes = getReferenceAxes();
     Q_EMIT ghostPlanesTranslated(nb, distances, poly, axes);
 }
 
@@ -584,7 +574,7 @@ void Viewer::updatePlanes(){
 }
 
 Quaternion Viewer::getNewOrientation(unsigned int index){
-    Quaternion s = Quaternion(Vec(0,0,1.0), curve->tangent(index));
+    Quaternion s(Vec(0,0,1.0), curve->tangent(index));
     return s.normalized();
 }
 
@@ -628,9 +618,9 @@ Vec Viewer::getCustomProjection(Vec a, Vec normal){
 }
 
 void Viewer::addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p){
-    Vec axisX = Vec(1,0,0);
-    Vec axisY = Vec(0,1,0);
-    Vec axisZ = Vec(0,0,1);
+    Vec axisX(1,0,0);
+    Vec axisY(0,1,0);
+    Vec axisZ(0,0,1);
 
     axes.push_back(convertToPlane(base, p, axisX));
     axes.push_back(convertToPlane(base, p, axisY));
@@ -638,9 +628,9 @@ void Viewer::addFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p)
 }
 
 void Viewer::addInverseFrameChangeToAxes(std::vector<Vec> &axes, Plane *base, Plane *p){
-    Vec axisX = Vec(1,0,0);
-    Vec axisY = Vec(0,1,0);
-    Vec axisZ = Vec(0,0,1);
+    Vec axisX(1,0,0);
+    Vec axisY(0,1,0);
+    Vec axisZ(0,0,1);
 
     axes.push_back(convertToPlane(base, p, axisX));
     axes.push_back(convertToPlane(base, p, -axisY));
@@ -683,7 +673,6 @@ void Viewer::readJSON(const QJsonArray &controlArray){
 
 void Viewer::setAlpha(int position){
     float a = static_cast<float>(position) / 100.f;
-    //mesh.setAlpha(a);
     for(unsigned int i=0; i<ghostPlanes.size(); i++) ghostPlanes[i]->setAlpha(a);
     leftPlane->setAlpha(a);
     rightPlane->setAlpha(a);
@@ -691,8 +680,8 @@ void Viewer::setAlpha(int position){
 }
 
 void Viewer::balanceGhostPlanes(){
-    Vec norm = Vec(0,0,1);
-    std::vector<Vec> poly = updatePolyline();
+    Vec norm(0,0,1);
+    const std::vector<Vec> &poly = updatePolyline();
 
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         double theta = M_PI - angle(poly[i*2+1], -norm);

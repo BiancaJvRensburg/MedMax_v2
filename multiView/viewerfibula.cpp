@@ -12,12 +12,8 @@ void ViewerFibula::initSignals(){
     connect(&mesh, &Mesh::sendInfoToManible, this, &ViewerFibula::recieveFromFibulaMesh);
 }
 
-void ViewerFibula::recieveFromFibulaMesh(std::vector<int> planes, std::vector<Vec> verticies, std::vector<std::vector<int>> triangles, std::vector<int> colours, std::vector<Vec> normals, int nbColours){
-    std::vector<Vec> polylineInPlanes = getPolyline();
-
-    Q_EMIT sendToManible(planes, verticies, triangles, polylineInPlanes, colours, normals, nbColours);
-
-    polyline.clear();       // to stop it from being drawn
+void ViewerFibula::recieveFromFibulaMesh(const std::vector<int> &planes, const std::vector<Vec> &verticies, const std::vector<std::vector<int>> &triangles, const std::vector<int>& colours, const std::vector<Vec> &normals, const int nbColours){
+    Q_EMIT sendToManible(planes, verticies, triangles, colours, normals, nbColours);
 }
 
 std::vector<Vec> ViewerFibula::getPolyline(){

@@ -27,11 +27,11 @@ public Q_SLOTS:
     void noGhostPlanesToRecieve(std::vector<Vec>, std::vector<Vec>);
 
     void recieveAxes(std::vector<Vec>);
-    void recieveFromFibulaMesh(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<int>, std::vector<Vec>, int);
+    void recieveFromFibulaMesh(const std::vector<int>&, const std::vector<Vec>&, const std::vector<std::vector<int>>&, const std::vector<int>&, const std::vector<Vec>&, int);
 
 Q_SIGNALS:
     void setPlaneSliderValue(int);
-    void sendToManible(std::vector<int>, std::vector<Vec>, std::vector<std::vector<int>>, std::vector<Vec>, std::vector<int>, std::vector<Vec>, int);
+    void sendToManible(const std::vector<int>&, std::vector<Vec>, const std::vector<std::vector<int>>&, const std::vector<int>&, std::vector<Vec>, int);
     void requestAxes();
 
 private:
