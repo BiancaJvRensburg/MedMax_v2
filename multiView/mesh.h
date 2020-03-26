@@ -20,7 +20,8 @@ public:
     }
     ~Mesh(){}
     void init();
-    Vec3Df& getBBCentre(){ return BBCentre; }
+    void computeBB(Vec3Df &centre, float& radius);
+   // Vec3Df& getBBCentre(){ return BBCentre; }
 
     std::vector<Vec3Df> &getVertices(){return vertices;}
     const std::vector<Vec3Df> &getVertices()const {return vertices;}
@@ -45,7 +46,7 @@ public:
     void update();
     void clear();
 
-    float getBBRadius();
+    //float getBBRadius();
 
     void updatePlaneIntersections();    // need one for a single plane
     void updatePlaneIntersections(Plane *p);
@@ -72,8 +73,6 @@ Q_SIGNALS:
     void updateViewer();
 
 protected:
-    void computeBB();
-
     Vec3Df computeTriangleNormal(unsigned int t);
     void computeVerticesNormals();
     void glTriangle(unsigned int i);
@@ -135,10 +134,10 @@ protected:
 
     Side cuttingSide = Side::INTERIOR;
 
-    Vec3Df BBMin;
-    Vec3Df BBMax;
-    Vec3Df BBCentre;
-    float radius;
+    //Vec3Df BBMin;
+    //Vec3Df BBMax;
+    //Vec3Df BBCentre;
+    //float radius;
 
     bool isTransfer = true;
 

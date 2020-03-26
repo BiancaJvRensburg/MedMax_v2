@@ -8,10 +8,10 @@ void Mesh::init(){
     update();
 }
 
-void Mesh::computeBB(){
+void Mesh::computeBB(Vec3Df &centre, float &radius){
 
-    BBMin = Vec3Df( FLT_MAX, FLT_MAX, FLT_MAX );
-    BBMax = Vec3Df( -FLT_MAX, -FLT_MAX, -FLT_MAX );
+    Vec3Df BBMin( FLT_MAX, FLT_MAX, FLT_MAX );
+    Vec3Df BBMax( -FLT_MAX, -FLT_MAX, -FLT_MAX );
 
     for( unsigned int i = 0 ; i < vertices.size() ; i ++ ){
         const Vec3Df & point = vertices[i];
@@ -23,8 +23,7 @@ void Mesh::computeBB(){
     }
 
     radius = (BBMax - BBMin).norm() / 2.0f;
-
-    BBCentre = (BBMax + BBMin)/2.0f;
+    centre = (BBMax + BBMin)/2.0f;
 }
 
 void Mesh::collectOneRing(std::vector<std::vector<unsigned int>> &oneRing) {
@@ -56,7 +55,6 @@ void Mesh::collectTriangleOneRing(std::vector<std::vector<unsigned int> > &oneTr
 }
 
 void Mesh::update(){
-    computeBB();
     recomputeNormals();
     updatePlaneIntersections();
 }
@@ -658,17 +656,9 @@ void Mesh::drawCut(){
     glDisable(GL_DEPTH);
 }
 
-float Mesh::getBBRadius(){
+/*float Mesh::getBBRadius(){
     computeBB();
     return radius;
-}
-
-/*void Mesh::uniformScale(float s){
-    for(unsigned int i=0; i<vertices.size(); i++) vertices[i] *= s;
-    BBMax *= s;
-    BBMin *= s;
-    BBCentre *= s;
-    radius *= s;
 }*/
 
 std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb, Plane *p){

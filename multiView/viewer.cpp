@@ -675,8 +675,9 @@ void Viewer::readJSON(const QJsonArray &controlArray){
     }
     constructCurve();
 
-    Vec3Df center = mesh.getBBCentre();
-    float radius = mesh.getBBRadius();
+    Vec3Df center;
+    float radius;
+    mesh.computeBB(center, radius);
     updateCamera(center, radius);
 }
 
