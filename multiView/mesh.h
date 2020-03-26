@@ -28,8 +28,8 @@ public:
     std::vector<Triangle> &getTriangles(){return triangles;}
     const std::vector<Triangle> &getTriangles()const {return triangles;}
 
-    std::vector< std::vector<unsigned int>> &getVertexNeighbours(){return vertexNeighbours;}
-    const std::vector< std::vector<unsigned int>> &getVertexNeighbours()const {return vertexNeighbours;}
+    //std::vector< std::vector<unsigned int>> &getVertexNeighbours(){return vertexNeighbours;}
+    //const std::vector< std::vector<unsigned int>> &getVertexNeighbours()const {return vertexNeighbours;}
 
     std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
     const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
@@ -80,11 +80,12 @@ protected:
     void glTriangleSmooth(unsigned int i, std::vector <int> &coloursIndicies);
     void glTriangleFibInMand(unsigned int i, std::vector <int> &coloursIndicies);
     void getColour(unsigned int vertex, std::vector <int> &coloursIndicies);
+    void collectOneRing (std::vector<std::vector<unsigned int>> &oneRing);
 
     void planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
     void getIntersectionForPlane(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
 
-    void floodNeighbour(unsigned int index, int id);     // flood the neighbours of the vertex index with the value id
+    void floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &vertexNeighbours);     // flood the neighbours of the vertex index with the value id
     void mergeFlood();      // to be called after flooding; merges the regions between the planes
 
     void createSmoothedTriangles(std::vector <std::vector <unsigned int>> &intersectionTriangles);
@@ -109,10 +110,9 @@ protected:
     std::vector <Triangle> triangles;       // starting triangles
 
     std::vector <Plane*> planes;
-    //std::vector <std::vector <unsigned int>> intersectionTriangles;    // Contains the index of the triangle instead of the actual triangle
 
     std::vector<int> flooding;
-    std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
+    //std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
     std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
     std::vector<int> planeNeighbours;       // which planes are neighbours
     bool isCut = false;

@@ -16,7 +16,7 @@
 namespace FileIO{
 
     template <typename Point, typename Face>
-    void openOFF( std::string const &filename, std::vector<Point> &vertices, std::vector<Face> &triangles, std::vector< std::vector<unsigned int>> &vertexNeighbours, std::vector< std::vector<unsigned int>> &vertexTriangles)
+    void openOFF( std::string const &filename, std::vector<Point> &vertices, std::vector<Face> &triangles, std::vector< std::vector<unsigned int>> &vertexTriangles)
     {
         std::cout << "Opening " << filename << std::endl;
 
@@ -57,12 +57,10 @@ namespace FileIO{
 
         // Clear any triangles
         triangles.clear();
-        vertexNeighbours.clear();
         vertexTriangles.clear();
 
         for(unsigned int i=0; i<vertices.size(); i++){
             std::vector<unsigned int> init;
-            vertexNeighbours.push_back(init);
             vertexTriangles.push_back(init);
         }
 
@@ -79,23 +77,6 @@ namespace FileIO{
                 triangles.push_back( Face(_v1, _v2, _v3) );
 
                 unsigned int vert[3] = {_v1, _v2, _v3};
-
-                // Add to neighbours
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
-                        if(vertexNeighbours[vert[k]][i] == vert[(k+1)%3]){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexNeighbours[vert[k]].push_back(vert[(k+1)%3]);
-                        vertexNeighbours[vert[(k+1)%3]].push_back(vert[k]);
-                    }
-                }
 
                 // Add to vertexTriangles
                 for(int k=0; k<3; k++){
@@ -127,20 +108,6 @@ namespace FileIO{
                 unsigned int vert[3] = {_v1, _v2, _v3};
 
                 // First triangle
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
-                        if(vertexNeighbours[vert[k]][i] == triIndex){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexNeighbours[vert[k]].push_back(triIndex);
-                    }
-                }
 
                 // triangles
                 for(int k=0; k<3; k++){
@@ -164,22 +131,6 @@ namespace FileIO{
                 vert[1] = _v3;
                 vert[2] = _v4;
                 triIndex++;
-
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexNeighbours[vert[k]].size(); i++){
-                        if(vertexNeighbours[vert[k]][i] == vert[(k+1)%3]){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexNeighbours[vert[k]].push_back(vert[(k+1)%3]);
-                        vertexNeighbours[vert[(k+1)%3]].push_back(vert[k]);
-                    }
-                }
 
                 for(int k=0; k<3; k++){
                     bool found = false;

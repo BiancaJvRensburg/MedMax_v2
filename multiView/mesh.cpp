@@ -21,6 +21,22 @@ void Mesh::computeBB(){
     BBCentre = (BBMax + BBMin)/2.0f;
 }
 
+void Mesh::collectOneRing(std::vector<std::vector<unsigned int>> &oneRing) {
+    oneRing.resize (vertices.size());
+
+    for (unsigned int i = 0; i < triangles.size (); i++) {
+        const Triangle &ti = triangles[i];
+        for (unsigned int j = 0; j < 3; j++) {
+            unsigned int vj = ti.getVertex(j);
+            for (unsigned int k = 1; k < 3; k++) {
+                unsigned int vk = ti.getVertex((j+k)%3);
+                if (std::find (oneRing[vj].begin (), oneRing[vj].end (), vk) == oneRing[vj].end ())
+                    oneRing[vj].push_back(vk);
+            }
+        }
+    }
+}
+
 void Mesh::update(){
     computeBB();
     recomputeNormals();
@@ -163,11 +179,14 @@ void Mesh::deleteGhostPlanes(){
 
 void Mesh::updatePlaneIntersections(){
     if(isCut){
+        std::vector <std::vector <unsigned int>> oneRing;
+        collectOneRing(oneRing);
         std::vector <std::vector <unsigned int>> intersectionTriangles;
-        for(unsigned int i=0; i<planes.size(); i++){
+        intersectionTriangles.resize(planes.size());
+        /*for(unsigned int i=0; i<planes.size(); i++){
             std::vector<unsigned int> init;
             intersectionTriangles.push_back(init);
-        }
+        }*/
         flooding.clear();
         for(unsigned int i=0; i<vertices.size(); i++) flooding.push_back(-1);       // reset the flooding values
 
@@ -176,21 +195,14 @@ void Mesh::updatePlaneIntersections(){
 
         for(unsigned int i=0; i<planes.size(); i++) planeIntersection(i, intersectionTriangles[i]);
 
-        /*for(unsigned int i=0; i<flooding.size(); i++){
-            if(flooding[i] != -1){
-                for(unsigned int j=0; j<vertexNeighbours[i].size(); j++){
-                    floodNeighbour(vertexNeighbours[i][j], flooding[i]);
-                }
-            }
-        }*/
         for(unsigned int i=0; i<intersectionTriangles.size(); i++){
             std::vector<unsigned int> triIndexes = intersectionTriangles[i];
             for(unsigned int k=0; k<triIndexes.size(); k++){
                 for(unsigned int l=0; l<3; l++){
                     Triangle t = triangles[triIndexes[k]];
                     unsigned int index = t.getVertex(l);
-                    for(unsigned int j=0; j<vertexNeighbours[index].size(); j++){
-                        floodNeighbour(vertexNeighbours[index][j], flooding[index]);
+                    for(unsigned int j=0; j<oneRing[index].size(); j++){
+                        floodNeighbour(oneRing[index][j], flooding[index], oneRing);
                     }
                 }
             }
@@ -435,12 +447,12 @@ void Mesh::updatePlaneIntersections(Plane *p){
     updatePlaneIntersections();
 }
 
-void Mesh::floodNeighbour(unsigned int index, int id){
+void Mesh::floodNeighbour(unsigned int index, int id, std::vector <std::vector <unsigned int>> &oneRing){
 
     if(flooding[index] == -1){      // Flood it
         flooding[index] = id;
-        for(unsigned int i=0; i<vertexNeighbours[index].size(); i++){
-            floodNeighbour(vertexNeighbours[index][i], id);
+        for(unsigned int i=0; i<oneRing[index].size(); i++){
+            floodNeighbour(oneRing[index][i], id, oneRing);
         }
     }
 
