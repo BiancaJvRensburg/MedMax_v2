@@ -22,7 +22,7 @@ void Mesh::computeBB(){
 }
 
 void Mesh::collectOneRing(std::vector<std::vector<unsigned int>> &oneRing) {
-    oneRing.resize (vertices.size());
+    oneRing.resize(vertices.size());
 
     for (unsigned int i = 0; i < triangles.size (); i++) {
         const Triangle &ti = triangles[i];
@@ -33,6 +33,18 @@ void Mesh::collectOneRing(std::vector<std::vector<unsigned int>> &oneRing) {
                 if (std::find (oneRing[vj].begin (), oneRing[vj].end (), vk) == oneRing[vj].end ())
                     oneRing[vj].push_back(vk);
             }
+        }
+    }
+}
+
+void Mesh::collectTriangleOneRing(std::vector<std::vector<unsigned int> > &oneTriangleRing){
+    oneTriangleRing.resize(vertices.size());
+
+    for (unsigned int i = 0; i < triangles.size (); i++) {
+        const Triangle &t = triangles[i];
+        for (unsigned int j = 0; j < 3; j++) {
+            unsigned int v = t.getVertex(j);
+            oneTriangleRing[v].push_back(i);
         }
     }
 }
@@ -245,9 +257,11 @@ void Mesh::cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangl
 }
 
 void Mesh::cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours){
+    std::vector<std::vector<unsigned int>> oneTriangleRing;
+    collectTriangleOneRing(oneTriangleRing);
     for(unsigned int i=0; i<flooding.size(); i++){
         if(planeNeighbours[static_cast<unsigned int>(flooding[i])]==-1){
-            saveTrianglesToKeep(truthTriangles, i);
+            saveTrianglesToKeep(truthTriangles, i, oneTriangleRing);
         }
     }
 }
@@ -260,6 +274,9 @@ void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned in
         }
     }
 
+    std::vector<std::vector<unsigned int>> oneTriangleRing;
+    collectTriangleOneRing(oneTriangleRing);
+
     getSegmentsToKeep(planeNeighbours);    // figure out what to keep (TODO can be done earlier)
     for(unsigned int i=0; i<flooding.size(); i++){
         bool isKeep = false;
@@ -270,18 +287,18 @@ void Mesh::cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned in
             }
         }
         if(isKeep){
-            for(unsigned int j=0; j<vertexTriangles[i].size(); j++){        // Get the triangles they belong to
-                saveTrianglesToKeep(truthTriangles, i);
+            for(unsigned int j=0; j<oneTriangleRing[i].size(); j++){        // Get the triangles they belong to
+                saveTrianglesToKeep(truthTriangles, i, oneTriangleRing);
             }
         }
     }
 }
 
-void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i){
-    for(unsigned int j=0; j<vertexTriangles[i].size(); j++){        // Get the triangles the indicies belong to
-        if(!truthTriangles[vertexTriangles[i][j]]){     // If it's not already in the list
-            trianglesCut.push_back(vertexTriangles[i][j]);
-            truthTriangles[vertexTriangles[i][j]] = true;
+void Mesh::saveTrianglesToKeep(bool* truthTriangles, unsigned int i, std::vector<std::vector<unsigned int>> &oneTriangleRing){
+    for(unsigned int j=0; j<oneTriangleRing[i].size(); j++){        // Get the triangles the indicies belong to
+        if(!truthTriangles[oneTriangleRing[i][j]]){     // If it's not already in the list
+            trianglesCut.push_back(oneTriangleRing[i][j]);
+            truthTriangles[oneTriangleRing[i][j]] = true;
         }
     }
 }
@@ -647,13 +664,13 @@ float Mesh::getBBRadius(){
     return radius;
 }
 
-void Mesh::uniformScale(float s){
+/*void Mesh::uniformScale(float s){
     for(unsigned int i=0; i<vertices.size(); i++) vertices[i] *= s;
     BBMax *= s;
     BBMin *= s;
     BBCentre *= s;
     radius *= s;
-}
+}*/
 
 std::vector<unsigned int> Mesh::getVerticesOnPlane(unsigned int planeNb, Plane *p){
     std::vector<unsigned int> v;

@@ -31,8 +31,8 @@ public:
     //std::vector< std::vector<unsigned int>> &getVertexNeighbours(){return vertexNeighbours;}
     //const std::vector< std::vector<unsigned int>> &getVertexNeighbours()const {return vertexNeighbours;}
 
-    std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
-    const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
+   // std::vector< std::vector<unsigned int>> &getVertexTriangles(){return vertexTriangles;}
+    // const std::vector< std::vector<unsigned int>> &getVertexTriangles()const {return vertexTriangles;}
 
     //std::vector<unsigned int> &getIntersectionTriangles(unsigned int planeNb){ return intersectionTriangles[planeNb]; }
     std::vector<unsigned int> getVerticesOnPlane(unsigned int planeNb, Plane *p);
@@ -80,7 +80,8 @@ protected:
     void glTriangleSmooth(unsigned int i, std::vector <int> &coloursIndicies);
     void glTriangleFibInMand(unsigned int i, std::vector <int> &coloursIndicies);
     void getColour(unsigned int vertex, std::vector <int> &coloursIndicies);
-    void collectOneRing (std::vector<std::vector<unsigned int>> &oneRing);
+    void collectOneRing(std::vector<std::vector<unsigned int>> &oneRing);
+    void collectTriangleOneRing(std::vector<std::vector<unsigned int>> &oneTriangleRing);
 
     void planeIntersection(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
     void getIntersectionForPlane(unsigned int index, std::vector <unsigned int> &intersectionTrianglesPlane);
@@ -97,10 +98,10 @@ protected:
     void cutMesh(std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
     void cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours);
     void cutFibula(bool* truthTriangles, std::vector <std::vector <unsigned int>> &intersectionTriangles, const std::vector<int> &planeNeighbours);
-    void saveTrianglesToKeep(bool* truthTriangles, unsigned int i);
+    void saveTrianglesToKeep(bool* truthTriangles, unsigned int i, std::vector<std::vector<unsigned int>> &oneTriangleRing);
     void fillColours(std::vector <int> &coloursIndicies, const unsigned long long nbColours);
 
-    void uniformScale(float s);
+    //void uniformScale(float s);
 
     Vec getPolylineProjectedVertex(unsigned int p1, unsigned int p2, unsigned int vertexIndex);
 
@@ -113,7 +114,7 @@ protected:
 
     std::vector<int> flooding;
     //std::vector< std::vector<unsigned int>> vertexNeighbours;       // each vertex's neighbours
-    std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
+    //std::vector< std::vector<unsigned int>> vertexTriangles;        // the triangles each vertex belongs to
     //std::vector<int> planeNeighbours;       // which planes are neighbours
     bool isCut = false;
     std::vector<unsigned int> trianglesCut;     // The list of triangles after the cutting (a list of triangle indicies)

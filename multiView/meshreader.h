@@ -16,7 +16,7 @@
 namespace FileIO{
 
     template <typename Point, typename Face>
-    void openOFF( std::string const &filename, std::vector<Point> &vertices, std::vector<Face> &triangles, std::vector< std::vector<unsigned int>> &vertexTriangles)
+    void openOFF( std::string const &filename, std::vector<Point> &vertices, std::vector<Face> &triangles)
     {
         std::cout << "Opening " << filename << std::endl;
 
@@ -57,12 +57,6 @@ namespace FileIO{
 
         // Clear any triangles
         triangles.clear();
-        vertexTriangles.clear();
-
-        for(unsigned int i=0; i<vertices.size(); i++){
-            std::vector<unsigned int> init;
-            vertexTriangles.push_back(init);
-        }
 
         // Read the triangles
         for( int f = 0 ; f < n_faces ; ++f )
@@ -71,81 +65,17 @@ namespace FileIO{
             myfile >> n_vertices_on_face;
             if( n_vertices_on_face == 3 )
             {
-                unsigned int triIndex = triangles.size();
                 unsigned int _v1 , _v2 , _v3;
                 myfile >> _v1 >> _v2 >> _v3;
                 triangles.push_back( Face(_v1, _v2, _v3) );
-
-                unsigned int vert[3] = {_v1, _v2, _v3};
-
-                // Add to vertexTriangles
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
-                        if(vertexTriangles[vert[k]][i] == triIndex){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexTriangles[vert[k]].push_back(triIndex);
-                    }
-                }
-
             }
             else if( n_vertices_on_face == 4 )
             {
                 unsigned int _v1 , _v2 , _v3 , _v4;
 
-                unsigned int triIndex = triangles.size();
-
                 myfile >> _v1 >> _v2 >> _v3 >> _v4;
                 triangles.push_back( Face(_v1, _v2, _v3) );
                 triangles.push_back( Face(_v1, _v3, _v4) );
-
-                unsigned int vert[3] = {_v1, _v2, _v3};
-
-                // First triangle
-
-                // triangles
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
-                        if(vertexTriangles[vert[k]][i] == triIndex){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexTriangles[vert[k]].push_back(triIndex);
-                    }
-                }
-
-                // Second triangle
-
-                vert[0] = _v1;
-                vert[1] = _v3;
-                vert[2] = _v4;
-                triIndex++;
-
-                for(int k=0; k<3; k++){
-                    bool found = false;
-
-                    for(unsigned int i=0; i<vertexTriangles[vert[k]].size(); i++){
-                        if(vertexTriangles[vert[k]][i] == triIndex){
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found == false){
-                        vertexTriangles[vert[k]].push_back(triIndex);
-                    }
-                }
             }
             else
             {

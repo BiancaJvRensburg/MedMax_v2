@@ -462,9 +462,9 @@ void Viewer::openOFF(QString filename) {
     std::vector<Vec3Df> &vertices = mesh.getVertices();
     std::vector<Triangle> &triangles = mesh.getTriangles();
     //std::vector< std::vector<unsigned int>> &neighbours = mesh.getVertexNeighbours();
-    std::vector< std::vector<unsigned int>> &vertexTriangles = mesh.getVertexTriangles();
+    //std::vector< std::vector<unsigned int>> &vertexTriangles = mesh.getVertexTriangles();
 
-    FileIO::openOFF(filename.toStdString(), vertices, triangles, vertexTriangles);
+    FileIO::openOFF(filename.toStdString(), vertices, triangles);
 
     mesh.update();
 
