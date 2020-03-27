@@ -19,8 +19,9 @@ void ViewerFibula::recieveFromFibulaMesh(const std::vector<int> &planes, const s
 std::vector<Vec> ViewerFibula::getPolyline(){
     std::vector<Vec> polylineInPlanes;
     Vec v;
+    std::vector<Vec> polyline;
 
-    createPolyline();
+    createPolyline(polyline);
 
     v = leftPlane->getPolylineVector(polyline[1]);
     polylineInPlanes.push_back(v);
@@ -37,7 +38,7 @@ std::vector<Vec> ViewerFibula::getPolyline(){
     return polylineInPlanes;
 }
 
-void ViewerFibula::createPolyline(){
+void ViewerFibula::createPolyline(std::vector<Vec> &polyline){
     polyline.clear();
 
     polyline.push_back(leftPlane->getPosition());
@@ -48,7 +49,7 @@ void ViewerFibula::createPolyline(){
     polyline.push_back(rightPlane->getPosition());
 }
 
-void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes){
+void ViewerFibula::repositionPlanes(std::vector<Vec>& polyline, std::vector<Vec>& axes){
     if(isGhostPlanes){
         resetMandibleInfo(polyline, axes);
         setPlaneOrientations();
@@ -60,7 +61,7 @@ void ViewerFibula::repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> 
     update();
 }
 
-void ViewerFibula::resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes){
+void ViewerFibula::resetMandibleInfo(std::vector<Vec>& polyline, std::vector<Vec>& axes){
     mandiblePolyline.clear();
     mandiblePolyline = polyline;
     mandibleAxes.clear();
@@ -77,7 +78,7 @@ void ViewerFibula::setPlanePositions(){
 
 void ViewerFibula::setPlaneOrientations(){
     if(mandiblePolyline.size()==0) return;
-    Vec normal = Vec(0,0,1);
+    Vec normal(0,0,1);
 
     // Initialise the planes' rotation
     repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
@@ -86,13 +87,13 @@ void ViewerFibula::setPlaneOrientations(){
 
     // Reset the rotation to line up with the fibula polyline
     std::vector<Vec> fibulaPolyline = getPolyline();
-    Quaternion bLeft = Quaternion(normal, fibulaPolyline[0]);
-    Quaternion bRight = Quaternion(-normal, fibulaPolyline[fibulaPolyline.size()-1]);
+    Quaternion bLeft(normal, fibulaPolyline[0]);
+    Quaternion bRight(-normal, fibulaPolyline[fibulaPolyline.size()-1]);
     leftPlane->rotate(bLeft);
     rightPlane->rotate(bRight);
 
     // Now we can move the normal to the mandible polyline from the fibula polyline
-    Quaternion s = Quaternion(normal, mandiblePolyline[0]);
+    Quaternion s(normal, mandiblePolyline[0]);
     leftPlane->rotate(s);
     s = Quaternion(-normal, mandiblePolyline[mandiblePolyline.size()-1]);
     rightPlane->rotate(s);
@@ -100,7 +101,7 @@ void ViewerFibula::setPlaneOrientations(){
     // Orientate the ghost planes
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
         // To fibula
-        Quaternion b = Quaternion(normal, fibulaPolyline[i+1]);
+        Quaternion b(normal, fibulaPolyline[i+1]);
         ghostPlanes[i]->rotate(b);
         // To mandible
         if(i%2==0) b = Quaternion(-normal, mandiblePolyline[i+1]);       // the mandible polyline is in relation to the forward facing plane
@@ -124,44 +125,24 @@ void ViewerFibula::setPlaneOrientations(){
 }
 
 void ViewerFibula::swivelToPolyline(std::vector<Vec>& fibulaPolyline){
-    Vec axis = Vec(0,0,1);
-    /*leftPlane->rotatePlane(axis, M_PI*2.0);
-    rightPlane->rotatePlane(axis, M_PI*2.0);*/
+    swivelPlane(leftPlane, mandiblePolyline[0], fibulaPolyline[0]);
 
-    mandiblePolyline[0].normalize();
-    fibulaPolyline[0].normalize();
-    Vec mandPoint = leftPlane->getLocalProjection(mandiblePolyline[0]);
-    Vec fibPoint = leftPlane->getLocalProjection(fibulaPolyline[0]);
-    mandPoint.normalize();
-    fibPoint.normalize();
-    double alpha = angle(mandPoint, fibPoint) + M_PI;
-    leftPlane->rotatePlane(axis, alpha);
-
-    if(ghostPlanes.size()!=0) {     // NOTE : always seems to be a rotation of 180 degrees
-        //ghostPlanes[0]->rotatePlane(axis, M_PI*2.0);
+    if(ghostPlanes.size()!=0) {
         for(unsigned int i=1; i<ghostPlanes.size()-2; i+=2){
-            mandiblePolyline[i+1].normalize();
-            fibulaPolyline[i+1].normalize();
-            Vec mandPoint = ghostPlanes[i]->getLocalProjection(mandiblePolyline[i+1]);
-            Vec fibPoint = ghostPlanes[i]->getLocalProjection(fibulaPolyline[i+1]);
-            mandPoint.normalize();
-            fibPoint.normalize();
-            double alpha = angle(mandPoint, fibPoint) + M_PI;
-            ghostPlanes[i]->rotatePlane(axis, alpha);
-            //ghostPlanes[i+1]->rotatePlane(axis, alpha);
+            swivelPlane(ghostPlanes[i], mandiblePolyline[i+1], fibulaPolyline[i+1]);
         }
-        //ghostPlanes[ghostPlanes.size()-1]->rotatePlane(axis, M_PI*2.0);
     }
 
-    unsigned int polySize = mandiblePolyline.size()-1;
-    mandiblePolyline[polySize].normalize();
-    fibulaPolyline[polySize].normalize();
-    mandPoint = rightPlane->getLocalProjection(mandiblePolyline[polySize]);
-    fibPoint = rightPlane->getLocalProjection(fibulaPolyline[polySize]);
-    mandPoint.normalize();
-    fibPoint.normalize();
-    alpha = angle(mandPoint, fibPoint) + M_PI;
-    rightPlane->rotatePlane(axis, alpha);
+    unsigned long long polySize = mandiblePolyline.size()-1;
+    swivelPlane(rightPlane, mandiblePolyline[polySize], fibulaPolyline[polySize]);
+}
+
+void ViewerFibula::swivelPlane(Plane *p, const Vec &fibPoly, const Vec &mandPoly){
+    Vec axis(0,0,1);
+    Vec mandPoint = p->getLocalProjection(mandPoly);
+    Vec fibPoint = p->getLocalProjection(fibPoly);
+    double alpha = angle(mandPoint, fibPoint) + M_PI;
+    p->rotatePlane(axis, alpha);
 }
 
 // Rotate the end plane to match the mandibule

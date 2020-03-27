@@ -28,7 +28,7 @@ void Viewer::draw() {
     if(isDrawMesh) mesh.drawCut();   // draw the cut versions
 
     if(isCurve){
-        if(isGhostPlanes && isGhostActive) drawPolyline();
+        //if(isGhostPlanes && isGhostActive) drawPolyline();
 
         // draw the planes
         glColor4f(1.0, 0, 0, leftPlane->getAlpha());
@@ -68,14 +68,13 @@ std::vector<Vec> Viewer::updatePolyline(){
         return angles;   // return an empty vector
     }
 
-    updateMeshPolyline();
+    std::vector<Vec> polyline;
+    updateMeshPolyline(polyline);
 
-    return getPolylinePlaneAngles();
+    return getPolylinePlaneAngles(polyline);
 }
 
-void Viewer::updateMeshPolyline(){
-    polyline.clear();       // The vector of the points of the polyline (the locations of the planes)
-
+void Viewer::updateMeshPolyline(std::vector<Vec> &polyline){
     const Vec &p0 = leftPlane->getPosition();
     polyline.push_back(p0);
 
@@ -89,7 +88,7 @@ void Viewer::updateMeshPolyline(){
 }
 
 // Get each polyline in the coordinates of its plane
-std::vector<Vec> Viewer::getPolylinePlaneAngles(){
+std::vector<Vec> Viewer::getPolylinePlaneAngles(std::vector<Vec> &polyline){
     std::vector<Vec> angles;        // There are always 2 intersections for each polyline segment
 
     if(polyline.size()==0) return angles;
@@ -106,7 +105,7 @@ std::vector<Vec> Viewer::getPolylinePlaneAngles(){
     return angles;
 }
 
-void Viewer::drawPolyline(){
+/*void Viewer::drawPolyline(){
     glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
 
@@ -127,7 +126,7 @@ void Viewer::drawPolyline(){
 
     glDisable(GL_DEPTH);
     glDisable(GL_DEPTH_TEST);
-}
+}*/
 
 void Viewer::toUpdate(){
     update();

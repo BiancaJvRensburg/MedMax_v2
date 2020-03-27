@@ -37,13 +37,14 @@ Q_SIGNALS:
 private:
     void findGhostLocations(unsigned int nb, double distance[]); // finds the location of the ghost planes + the right plane
     void initSignals();
-    void createPolyline();
+    void createPolyline(std::vector<Vec> &polyline);
     void matchToMandibleFrame(Plane* p1, Plane* p2, Vec a, Vec b, Vec c, Vec x, Vec y, Vec z);
-    void repositionPlanes(std::vector<Vec> polyline, std::vector<Vec> axes);
+    void repositionPlanes(std::vector<Vec>& polyline, std::vector<Vec>& axes);
     void setPlaneOrientations();
     void setPlanePositions();
-    void resetMandibleInfo(std::vector<Vec> polyline, std::vector<Vec> axes);
+    void resetMandibleInfo(std::vector<Vec>& polyline, std::vector<Vec>& axes);
     void swivelToPolyline(std::vector<Vec>& fibulaPolyline);
+    void swivelPlane(Plane *p, const Vec& fibPoly, const Vec& mandPoly);
     void findIndexesFromDistances();
     void findClosestPoint(unsigned int pNb, Vec &a, Vec &b);
     Vec findMinZ(const std::vector<unsigned int> &tIndex, Plane &tempPlane);

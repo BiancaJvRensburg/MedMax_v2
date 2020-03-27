@@ -87,7 +87,7 @@ protected:
     Curve *curve;
     std::vector<Plane*> ghostPlanes;
     std::vector<unsigned int> ghostLocation;
-    std::vector<Vec> polyline;  // just a list of vertex coordinates
+    // std::vector<Vec> polyline;  // just a list of vertex coordinates
     int nbGhostPlanes;
     int currentNbGhostPlanes;
     bool isGhostPlanes;
@@ -112,12 +112,12 @@ private:
     void matchPlaneToFrenet(Plane* p, unsigned int index);
     void handlePlaneMoveStart();
     void handlePlaneMoveEnd();
-    void updateMeshPolyline();
+    void updateMeshPolyline(std::vector<Vec> &polyline);
     void rotateFrame(Frame& f, Vec axis, double angle);
     void balanceGhostPlanes();
 
     std::vector<Vec> getReferenceAxes();        // get all the z axes in terms of their directors
-    std::vector<Vec> getPolylinePlaneAngles();      // returns the polyline in the coordinates of each plane, one for each side of the plane
+    std::vector<Vec> getPolylinePlaneAngles(std::vector<Vec> &polyline);      // returns the polyline in the coordinates of each plane, one for each side of the plane
     int partition(int sorted[], int start, int end);
     void quicksort(int sorted[], int start, int end);
 
