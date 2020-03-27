@@ -16,7 +16,7 @@ public:
     void generateBSpline(unsigned int& nbU, unsigned int degree);
     void generateCatmull(unsigned int& nbU);
 
-    Vec* getCurve(){ return curve; }
+    std::vector<Vec>& getCurve(){ return curve; }
     Vec& getPoint(unsigned int index){ return curve[index]; }
     unsigned int& getNbU(){ return nbU; }
 
@@ -42,7 +42,7 @@ Q_SIGNALS:
 private:
     std::vector<ControlPoint*> TabControlPoint;
     unsigned int nbControlPoint;
-    Vec *curve;
+    std::vector<Vec> curve;
     unsigned int nbU;
 
     unsigned int degree;
@@ -50,24 +50,24 @@ private:
     unsigned int knotIndex;
 
     // BSpline
-    std::vector<double> generateUniformKnotVector(unsigned int k);
+    void generateUniformKnotVector(unsigned int k, std::vector<double>& kv);
     Vec deBoor(double u, unsigned int i, unsigned int r);
-    Vec* splineDerivative(unsigned int k);
+    void splineDerivative(unsigned int k, std::vector<Vec> &c);
     Vec deBoorDerivative(double u, unsigned int i, unsigned int r, unsigned int k);
 
     // Catmull rom
     void catmullrom();  // calculate the spline and the first derivative
     void calculateCatmullPoints(Vec& c, Vec& cp, Vec& cpp, double t);
 
-    std::vector<double> generateCatmullKnotVector(double alpha);
+    void generateCatmullKnotVector(double alpha, std::vector<double>& knotV);
 
     void initConnections();
 
     unsigned int getClosestDistance(double target, unsigned int indexS, unsigned int a, unsigned int b);       // get the index which is closest to the target distance
 
     // Frenet frame
-    Vec* dt;
-    Vec* d2t;
+    std::vector<Vec> dt;
+    std::vector<Vec> d2t;
 };
 
 #endif // CURVE_H

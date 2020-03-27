@@ -24,10 +24,10 @@ void Curve::generateBSpline(unsigned int& nbU, unsigned int degree){
     this->degree = degree;
     this->knotIndex = 0;
 
-    this->knotVector = generateUniformKnotVector(0);
-    curve = splineDerivative(0);
-    dt =  splineDerivative(1);
-    d2t = splineDerivative(2);
+    generateUniformKnotVector(0, this->knotVector);
+    splineDerivative(0, curve);
+    splineDerivative(1, dt);
+    splineDerivative(2, d2t);
 }
 
 void Curve::generateCatmull(unsigned int& n){
@@ -38,7 +38,7 @@ void Curve::generateCatmull(unsigned int& n){
     this->knotIndex = 0;
     this->degree = 3;
 
-    this->knotVector = generateCatmullKnotVector(0.3);
+    generateCatmullKnotVector(0.3, this->knotVector);
     catmullrom();
 }
 
@@ -54,11 +54,10 @@ Vec Curve::deBoor(double u, unsigned int j, unsigned int r){
 
 
 // Returns the kth derivative of the curve ( 0 <= k <= 2 )
-Vec* Curve::splineDerivative(unsigned int k){
-
+void Curve::splineDerivative(unsigned int k, std::vector<Vec> &c){
+    c.clear();
+    c.resize(nbU);
     this->knotIndex = 0;
-
-    Vec *c = new Vec[static_cast<unsigned long long>(nbU)];
 
     for(unsigned int i=0; i<nbU; i++){
         double u = (1.0 / static_cast<double>(nbU-1)) * static_cast<double>(i);
@@ -68,7 +67,6 @@ Vec* Curve::splineDerivative(unsigned int k){
 
         c[i] += Vec(deBoorDerivative(u, knotIndex, degree, k));
     }
-    return c;
 }
 
 Vec Curve::deBoorDerivative(double u, unsigned int j, unsigned int r, unsigned int k){
@@ -88,11 +86,11 @@ Vec Curve::deBoorDerivative(double u, unsigned int j, unsigned int r, unsigned i
     return deBoor(u, j, r);
 }
 
-std::vector<double> Curve::generateUniformKnotVector(unsigned int a){
+void Curve::generateUniformKnotVector(unsigned int a, std::vector<double>& kv){
     unsigned int k = degree - a;
     unsigned int n = nbControlPoint - a;
     unsigned int m = n + k + 1;
-    std::vector<double> kv;
+
     kv.resize(static_cast<unsigned long long>(m));
 
     double denom = static_cast<double>(m) - 2.0* static_cast<double>(k) - 1.0;
@@ -100,17 +98,14 @@ std::vector<double> Curve::generateUniformKnotVector(unsigned int a){
     for(unsigned int i=0; i<=k; i++) kv[i] = 0;
     for(unsigned int i=k+1; i<m-k-1; i++) kv[i] = static_cast<double>(i-k) / denom;
     for(unsigned int i=m-k-1; i<m; i++) kv[i] = 1.0;
-
-    return kv;
 }
 
 void Curve::reintialiseCurve(){
-   catmullrom();
+    catmullrom();
     Q_EMIT curveReinitialised();
 }
 
-std::vector<double> Curve::generateCatmullKnotVector(double alpha){
-    std::vector<double> kv;
+void Curve::generateCatmullKnotVector(double alpha, std::vector<double>& kv){
     kv.resize(static_cast<unsigned long long>(nbControlPoint));
 
     kv[0] = 0;
@@ -119,18 +114,16 @@ std::vector<double> Curve::generateCatmullKnotVector(double alpha){
         Vec p = TabControlPoint[i]->getPoint() - TabControlPoint[i-1]->getPoint();
         kv[i] =  pow(p.norm(),alpha) + kv[i-1];
     }
-
-    return kv;
 }
 
 // Catmull rom
 void Curve::calculateCatmullPoints(Vec& c, Vec& cp, Vec& cpp, double t){
     Vec p[4] = {TabControlPoint[knotIndex-1]->getPoint(), TabControlPoint[knotIndex]->getPoint(), TabControlPoint[knotIndex+1]->getPoint(), TabControlPoint[knotIndex+2]->getPoint()};
 
-    double t0 = knotVector[knotIndex-1];
-    double t1 = knotVector[knotIndex];
-    double t2 = knotVector[knotIndex+1];
-    double t3 = knotVector[knotIndex+2];
+    const double &t0 = knotVector[knotIndex-1];
+    const double &t1 = knotVector[knotIndex];
+    const double &t2 = knotVector[knotIndex+1];
+    const double &t3 = knotVector[knotIndex+2];
 
     Vec a1 = (t1-t)/(t1-t0)*p[0] + (t-t0)/(t1-t0)*p[1];
     Vec a2 = (t2-t)/(t2-t1)*p[1] + (t-t1)/(t2-t1)*p[2];
@@ -158,9 +151,12 @@ void Curve::catmullrom(){
     unsigned int nbSeg = nbControlPoint-3;
     unsigned int uPerSeg = nbU/nbSeg;
 
-    curve = new Vec[static_cast<unsigned long long>(nbU)];
-    dt = new Vec[static_cast<unsigned long long>(nbU)];
-    d2t = new Vec[static_cast<unsigned long long>(nbU)];
+    curve.clear();
+    curve.resize(nbU);
+    dt.clear();
+    dt.resize(nbU);
+    d2t.clear();
+    d2t.resize(nbU);
 
     for(unsigned int j=1; j<=nbSeg; j++){
         unsigned int it=0;
@@ -208,8 +204,6 @@ unsigned int Curve::getClosestDistance(double target, unsigned int indexS, unsig
 unsigned int Curve::indexForLength(unsigned int indexS, double length){
     unsigned int i=0;
 
-    //std::cout << "Index : " << indexS << "   length : " << length << std::endl;
-
     if(length > 0){
         while(indexS+i < nbU-1 && discreteLength(indexS, indexS+i) < length) i++;
         if(i!=0) i = getClosestDistance(length, indexS, i, i-1);
@@ -230,7 +224,7 @@ void Curve::draw(){
       glColor3f(0.0, 1.0, 0.0);
 
       for(unsigned int i=0; i<nbU; i++){
-        Vec p = curve[i];
+        const Vec &p = curve[i];
         glVertex3f(static_cast<float>(p.x), static_cast<float>(p.y), static_cast<float>(p.z));
       }
 
@@ -258,7 +252,7 @@ void Curve::drawControl(){
 
 // Frenet frame
 Vec Curve::tangent(unsigned int index){
-    Vec t = Vec(dt[index].x, dt[index].y, dt[index].z);
+    Vec t(dt[index].x, dt[index].y, dt[index].z);
     t.normalize();
 
     return t;
