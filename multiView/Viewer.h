@@ -78,7 +78,7 @@ protected:
     Vec getCustomProjection(Vec a, Vec normal);        // project a onto a plane defined by the normal
     void repositionPlane(Plane* p, unsigned int index);
 
-    void constructCurve();
+    virtual void constructCurve();
 
     ManipulatedFrame* viewerFrame;
 

@@ -14,7 +14,7 @@ public:
         disconnect((ManipulatedFrame*)mf, &ManipulatedFrame::manipulated, this, &ControlPoint::cntrlMoved);
     }*/
 
-    void setPosition(Vec& p){ this->p = p; }
+    void setPosition(Vec& p){ this->p = p; mf.setPosition(getX(), getY(), getZ()); }
 
     void matchCurvepoint(CurvePoint &c);
     Quaternion getOrientation(){ return mf.orientation(); }

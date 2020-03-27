@@ -2,7 +2,6 @@
 
 Plane::Plane(double s, Movable status, Vec& pos, float alpha) : cp(pos)
 {
-    //Vec position = Vec(0, 0, 0);
     size = s;
     rotationPercentage = 0;
     normal = Vec(0, 0, 1);
@@ -81,7 +80,6 @@ void Plane::rotatePlaneXY(double percentage){
 
 void Plane::setPosition(Vec pos){
     cp.setPosition(pos);
-    cp.getFrame().setPosition(cp.getX(), cp.getY(), cp.getZ());
 }
 
 // Set the base from a basis x,y,z
@@ -106,9 +104,9 @@ void Plane::setFrameFromBasis(Vec x, Vec y, Vec z){
 bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
 
     // Put it all into local coordinates
-    Vec tr0 = cp.getFrame().localCoordinatesOf(v0);
-    Vec tr1 = cp.getFrame().localCoordinatesOf(v1);
-    Vec tr2 = cp.getFrame().localCoordinatesOf(v2);
+    const Vec &tr0 = cp.getFrame().localCoordinatesOf(v0);
+    const Vec &tr1 = cp.getFrame().localCoordinatesOf(v1);
+    const Vec &tr2 = cp.getFrame().localCoordinatesOf(v2);
 
     Vec tr[3] = {tr0, tr1, tr2};
 
@@ -137,12 +135,12 @@ bool Plane::isIntersection(Vec v0, Vec v1, Vec v2){
 }
 
 double Plane::getSign(Vec v){
-    Vec tr0 = cp.getFrame().localCoordinatesOf(v);
+    const Vec &tr0 = cp.getFrame().localCoordinatesOf(v);
     return tr0.z/(abs(tr0.z));
 }
 
 Vec Plane::getProjection(Vec p){
-    Vec localP = cp.getFrame().localCoordinatesOf(p);       // convert into local coordinates
+    const Vec &localP = cp.getFrame().localCoordinatesOf(p);       // convert into local coordinates
     double alpha = (localP * normal);
     Vec newP = localP - normal *alpha;
     return cp.getFrame().localInverseCoordinatesOf(newP);   // convert back into original coordinate system
@@ -170,10 +168,10 @@ void Plane::setOrientationFromOtherReference(std::vector<Vec> &frame, unsigned i
 bool Plane::isIntersectionPlane(Vec &v0, Vec &v1, Vec &v2, Vec &v3){
 
     // Put it all into local coordinates
-    Vec tr0 = cp.getFrame().localCoordinatesOf(v0);
-    Vec tr1 = cp.getFrame().localCoordinatesOf(v1);
-    Vec tr2 = cp.getFrame().localCoordinatesOf(v2);
-    Vec tr3 = cp.getFrame().localCoordinatesOf(v3);
+    const Vec &tr0 = cp.getFrame().localCoordinatesOf(v0);
+    const Vec &tr1 = cp.getFrame().localCoordinatesOf(v1);
+    const Vec &tr2 = cp.getFrame().localCoordinatesOf(v2);
+    const Vec &tr3 = cp.getFrame().localCoordinatesOf(v3);
 
     Vec tr[4] = {tr0, tr1, tr2, tr3};
 
