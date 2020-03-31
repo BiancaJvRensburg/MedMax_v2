@@ -25,7 +25,7 @@ public Q_SLOTS:
     void cutMesh();
     void uncutMesh();
 
-    void noGhostPlanesToRecieve(std::vector<Vec>, std::vector<Vec>);
+    void noGhostPlanesToRecieve(std::vector<Vec>, std::vector<Vec>, double);
 
     void recieveAxes(std::vector<Vec>);
     void recieveFromFibulaMesh(const std::vector<int>&, const std::vector<Vec>&, const std::vector<std::vector<int>>&, const std::vector<int>&, const std::vector<Vec>&, int);
@@ -57,6 +57,7 @@ private:
     bool isPlanesRecieved;
 
     int indexOffset;
+    int prevOffset;
     int maxOffset;
     std::vector<Vec> mandiblePolyline;      // the last mandible polyline we recieved
     std::vector<Vec> mandibleAxes;          // the last mandible axes we recieved

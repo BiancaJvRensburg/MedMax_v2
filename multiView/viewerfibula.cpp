@@ -3,6 +3,7 @@
 ViewerFibula::ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMax, int fibulaOffset) : Viewer (parent, camera, sliderMax)
 {
     indexOffset = 0;
+    prevOffset = 0;
     maxOffset = fibulaOffset;
     isPlanesRecieved = false;
     isCutSignal = false;
@@ -55,8 +56,8 @@ void ViewerFibula::repositionPlanes(std::vector<Vec>& polyline, std::vector<Vec>
         setPlaneOrientations();
    }
     else{
-        repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
-        repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
+        repositionPlane(rightPlane, curveIndexR);
+        repositionPlane(leftPlane, curveIndexL);
     }
     update();
 }
@@ -69,10 +70,10 @@ void ViewerFibula::resetMandibleInfo(std::vector<Vec>& polyline, std::vector<Vec
 }
 
 void ViewerFibula::setPlanePositions(){
-    leftPlane->setPosition(curve->getPoint( static_cast<unsigned int>(static_cast<int>(curveIndexL) + indexOffset)));
-    rightPlane->setPosition(curve->getPoint(static_cast<unsigned int>(static_cast<int>(curveIndexR) + indexOffset)));
+    leftPlane->setPosition(curve->getPoint(curveIndexL));
+    rightPlane->setPosition(curve->getPoint(curveIndexR));
     for(unsigned int i=0; i<ghostPlanes.size(); i++){
-        ghostPlanes[i]->setPosition(curve->getPoint(static_cast<unsigned int>(static_cast<int>(ghostLocation[i]) + indexOffset)));
+        ghostPlanes[i]->setPosition(curve->getPoint(ghostLocation[i]));
     }
 }
 
@@ -81,9 +82,9 @@ void ViewerFibula::setPlaneOrientations(){
     Vec normal(0,0,1);
 
     // Initialise the planes' rotation
-    repositionPlane(rightPlane, static_cast<unsigned int>(static_cast<int>(curveIndexR)+indexOffset));
-    repositionPlane(leftPlane, static_cast<unsigned int>(static_cast<int>(curveIndexL)+indexOffset));
-    for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], static_cast<unsigned int>(static_cast<int>(ghostLocation[i])+indexOffset));
+    repositionPlane(rightPlane, curveIndexR);
+    repositionPlane(leftPlane, curveIndexL);
+    for(unsigned int i=0; i<ghostPlanes.size(); i++) repositionPlane(ghostPlanes[i], ghostLocation[i]);
 
     // Reset the rotation to line up with the fibula polyline
     std::vector<Vec> fibulaPolyline = getPolyline();
@@ -173,7 +174,9 @@ void ViewerFibula::movePlanes(int position){
     // Check that it this offset doesn't exceed the size of the fibula
     if(static_cast<int>(curveIndexL) + offset < static_cast<int>(nbU) && static_cast<int>(curveIndexL) + offset > 0 && static_cast<int>(curveIndexR) + offset < static_cast<int>(nbU) && static_cast<int>(curveIndexR) + offset > 0){
         indexOffset = offset;
-        repositionPlanes(mandiblePolyline, mandibleAxes);
+        findIndexesFromDistances();
+        setPlanePositions();
+        update();
     }
 
     mesh.setTransfer(false);
@@ -195,8 +198,8 @@ void ViewerFibula::addGhostPlanes(unsigned int nb){
         ghostPlanes.push_back(new Plane(25.0, Movable::STATIC, pos, leftPlane->getAlpha()));
 
         // If we're too far along the fibula, take it all back
-        int overload = static_cast<int>(ghostLocation[i]) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve
-        if(overload > 0) indexOffset -= overload;
+        /*int overload = static_cast<int>(ghostLocation[i]) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve
+        if(overload > 0) indexOffset -= overload;*/
     }
 }
 
@@ -216,22 +219,31 @@ void ViewerFibula::findGhostLocations(unsigned int nb, double distance[]){
 void ViewerFibula::findIndexesFromDistances(){
     ghostLocation.clear();
     unsigned int nb = static_cast<unsigned int>(distances.size()-1);
+    int shift = indexOffset - prevOffset;
+    curveIndexL = static_cast<unsigned int>(static_cast<int>(curveIndexL) + shift);
+    prevOffset = indexOffset;
 
-    unsigned int index = curve->indexForLength(curveIndexL+indexOffset, distances[0]);
-    ghostLocation.push_back(index);
-
-    for(unsigned int i=1; i<nb; i++){
-        index = curve->indexForLength(ghostLocation[i-1], distances[i]);
+    if(nb!=0){
+        unsigned int index = curve->indexForLength(curveIndexL, distances[0]);
         ghostLocation.push_back(index);
+
+        for(unsigned int i=1; i<nb; i++){
+            index = curve->indexForLength(ghostLocation[i-1], distances[i]);
+            ghostLocation.push_back(index);
+        }
+
+        curveIndexR = curve->indexForLength(ghostLocation[nb-1], distances[nb]);
     }
 
-    curveIndexR = curve->indexForLength(ghostLocation[nb-1], distances[nb]);        // place the right plane after the last ghost plane (left plane doesn't move)
+    else curveIndexR = curve->indexForLength(curveIndexL, distances[nb]); // place the right plane after the last ghost plane (left plane doesn't move)
 }
 
 // Don't wait for ghost planes, go ahead and cut
-void ViewerFibula::noGhostPlanesToRecieve(std::vector<Vec> mandPolyline, std::vector<Vec> axes){
+void ViewerFibula::noGhostPlanesToRecieve(std::vector<Vec> mandPolyline, std::vector<Vec> axes, double dist){
     isPlanesRecieved = true;
     isGhostPlanes = true;
+    distances.clear();
+    distances.push_back(dist);
     repositionPlanes(mandPolyline, axes);
     handleCut();
 }
@@ -256,7 +268,7 @@ void ViewerFibula::movePlaneDistance(double distance, std::vector<Vec> mandPolyl
     if(ghostPlanes.size()==0) newIndex = curve->indexForLength(curveIndexL, distance);
     else newIndex = curve->indexForLength(ghostLocation[ghostPlanes.size()-1], distance);
 
-    if(static_cast<unsigned int>(static_cast<int>(newIndex) + indexOffset) >= nbU) return;      // This should never happen
+    if(newIndex >= nbU) return;      // This should never happen
     else curveIndexR = newIndex;
 
     repositionPlanes(mandPolyline, axes);
@@ -271,11 +283,11 @@ void ViewerFibula::middlePlaneMoved(unsigned int nb, double distances[], std::ve
     findGhostLocations(nb, distances);
 
     // If we're too far along the fibula, take it all back
-    int overload = static_cast<int>(curveIndexR) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve
+    /*int overload = static_cast<int>(curveIndexR) + indexOffset - static_cast<int>(curve->getNbU()) + 1;   // The amount by which the actual index passes the end of the curve
     if(overload > 0){
         indexOffset -= overload;
         Q_EMIT setPlaneSliderValue(static_cast<int>( (static_cast<double>(indexOffset)/static_cast<double>(nbU)) * static_cast<double>(maxOffset) ));
-    }
+    }*/
 
     repositionPlanes(mandPolyline, axes);
 

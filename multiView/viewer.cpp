@@ -321,7 +321,7 @@ void Viewer::cutMesh(){
 
     Q_EMIT preparingToCut();
 
-    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
+    if(nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes(), curve->discreteLength(curveIndexL, curveIndexR));
 
     Q_EMIT okToCut();
 
@@ -443,7 +443,7 @@ void Viewer::handlePlaneMoveEnd(){
 
     // Recut
     Q_EMIT preparingToCut();
-    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes());
+    if(!isSpaceForGhosts() || nbGhostPlanes==0) Q_EMIT noGhostPlanesToSend(updatePolyline(), getReferenceAxes(), curve->discreteLength(curveIndexL, curveIndexR));
     Q_EMIT okToCut();
 
     mesh.setIsCut(Side::INTERIOR, true, true);
