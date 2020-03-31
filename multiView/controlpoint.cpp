@@ -40,6 +40,7 @@ void ControlPoint::draw(){
     else glColor3f(0.6f, 0, 0.4f);*/
 
     glPointSize(10.0);
+    glColor3f(1.0, 0.0, 0.);
     glBegin(GL_POINTS);
         glVertex3d(0, 0, 0);
     glEnd();

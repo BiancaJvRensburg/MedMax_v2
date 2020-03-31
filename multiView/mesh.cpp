@@ -236,7 +236,10 @@ void Mesh::cutMesh(std::vector<std::vector<unsigned int>> &intersectionTriangles
 
 void Mesh::cutMandible(bool* truthTriangles, const std::vector<int> &planeNeighbours){
     for(unsigned int i=0; i<flooding.size(); i++){
-        if(planeNeighbours[static_cast<unsigned int>(flooding[i])]==-1){
+        int flood = flooding[i];
+        if(flood == -1) continue;
+        int neighbour = planeNeighbours[static_cast<unsigned int>(flood)];
+        if(neighbour ==-1){
             saveTrianglesToKeep(truthTriangles, i);
         }
     }
@@ -435,7 +438,7 @@ void Mesh::updatePlaneIntersections(Plane *p){
     updatePlaneIntersections();
 }
 
-void Mesh::floodNeighbour(unsigned int index, int id, std::vector<int> &planeNeighbours){
+/*void Mesh::floodNeighbour(unsigned int index, int id, std::vector<int> &planeNeighbours){
 
     if(flooding[index] == -1){      // Flood it
         flooding[index] = id;
@@ -455,12 +458,46 @@ void Mesh::floodNeighbour(unsigned int index, int id, std::vector<int> &planeNei
         }
         return;     // They're already neighbours
     }
+}*/
+
+void Mesh::floodNeighbour(unsigned int index, int id, std::vector<int> &planeNeighbours){
+    std::queue<unsigned int> toFlood;
+    toFlood.push(index);
+
+    while(toFlood.size()!=0){
+        index = toFlood.front();
+        int flood = flooding[index];
+        toFlood.pop();
+        if(flood == -1){      // Flood it
+            flooding[index] = id;
+            for(unsigned int i=0; i<oneRing[index].size(); i++){
+                toFlood.push(oneRing[index][i]);
+            }
+        }
+
+        else if(flood == id) continue;      // stop if the vertex is already flooded with the same value
+
+        else if(flood==id+static_cast<int>(planes.size()) || id==flood+static_cast<int>(planes.size())) continue;     // stop if we've found our own neg/pos side
+
+        else{       // else it already belongs to a different plane
+            if(planeNeighbours[static_cast<unsigned int>(id)]== -1){       // They're not already neighbours
+                planeNeighbours[static_cast<unsigned int>(id)] = flooding[index];     // equal to the old value
+                planeNeighbours[static_cast<unsigned int>(flooding[index])] = id;
+            }
+            //return;     // They're already neighbours
+        }
+    }
+
 }
 
 void Mesh::mergeFlood(const std::vector<int> &planeNeighbours){
     for(unsigned int i=0; i<flooding.size(); i++){
-        if(planeNeighbours[static_cast<unsigned int>(flooding[i])] != -1 && planeNeighbours[static_cast<unsigned int>(flooding[i])] < flooding[i]){     // From the two neighbours, set them both to the lowest value
-            flooding[i] = planeNeighbours[static_cast<unsigned int>(flooding[i])];
+        int flood = flooding[i];
+        if(flood != -1){
+            int neighbour = planeNeighbours[static_cast<unsigned int>(flood)];
+            if(neighbour != -1 && neighbour < flood){     // From the two neighbours, set them both to the lowest value
+                flooding[i] = neighbour;
+            }
         }
     }
 }

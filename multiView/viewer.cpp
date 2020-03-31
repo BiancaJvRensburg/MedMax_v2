@@ -46,6 +46,8 @@ void Viewer::draw() {
         glDisable(GL_DEPTH_TEST);
 
          curve->draw();
+         //curve->drawControl();
+         //for(unsigned int i=0; i<curve->getNbU(); i++) curve->drawTangent(i);
     }
 
     glPopMatrix();
