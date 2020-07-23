@@ -1,38 +1,46 @@
-# A multi-view application, with constrained camera displacements.
-
-# Four viewers are created, each displaying the same scene. The camera displacements are constrained
-# for three of the viewers to create the classical top, front, side views. The last viewer is a
-# classical 3D viewer.
-
-# Note that the four viewers share the same OpenGL context.
-
 TEMPLATE = app
 TARGET   = multiView
 
 HEADERS  = \
-    camerapathplayer.h \
-    controlpoint.h \
-    curvepoint.h \
-    curve.h \
-    mainwindow.h \
-    mesh.h \
-    meshreader.h \
-    plane.h \
-    standardcamera.h \
-    viewer.h \
-    Triangle.h \
-    Vec3D.h \
-    viewerfibula.h
+    Mesh/panda.h \
+    Mesh/simplemesh.h \
+    Polyline/box.h \
+    Curve/controlpoint.h \
+    Planes/curvepoint.h \
+    Curve/curve.h \
+    Display/mainwindow.h \
+    Mesh/mesh.h \
+    Mesh/meshreader.h \
+    Planes/plane.h \
+    Tools/point3.h \
+    Polyline/polyline.h \
+    Tools/savedstate.h \
+    Tools/standardcamera.h \
+    Tools/triangle.h \
+    Tools/vec3D.h \
+    Display/viewer.h \
+    Display/viewerfibula.h \
+    Manipulator/PCATools.h \
+    Manipulator/RectangleSelection.h \
+    Tools/GLUtilityMethods.h \
+    Manipulator/simplemanipulator.h
 SOURCES  = main.cpp \
-    camerapathplayer.cpp \
-    controlpoint.cpp \
-    curvepoint.cpp \
-    curve.cpp \
-    mainwindow.cpp \
-    mesh.cpp \
-    plane.cpp \
-    standardcamera.cpp \
-    viewer.cpp \
-    viewerfibula.cpp
+    Mesh/panda.cpp \
+    Mesh/simplemesh.cpp \
+    Polyline/box.cpp \
+    Curve/controlpoint.cpp \
+    Planes/curvepoint.cpp \
+    Curve/curve.cpp \
+    Display/mainwindow.cpp \
+    Mesh/mesh.cpp \
+    Planes/plane.cpp \
+    Polyline/polyline.cpp \
+    Tools/standardcamera.cpp \
+    Display/viewer.cpp \
+    Display/viewerfibula.cpp \
+    Tools/GLUtilityMethods.cpp \
+    Manipulator/simplemanipulator.cpp
 
 include( ../baseInclude.pri )
+INCLUDEPATH += "..\eigen-3.3.7\Eigen"
+INCLUDEPATH += "..\nanoflann\include"
