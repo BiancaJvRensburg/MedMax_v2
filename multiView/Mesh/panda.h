@@ -16,7 +16,8 @@ public:
     void draw();
 
     void setLocation(const Vec &v);
-    void setOrientation(const Quaternion &q){ f.setOrientation(q); }
+    void setOrientation(const Quaternion &q);
+    void setToPlane(const Vec &v, const Quaternion &q);
     void rotate(Vec axis, double angle){ f.rotate(Quaternion(axis, angle)); }
     void checkPanda();
     void setFrames();

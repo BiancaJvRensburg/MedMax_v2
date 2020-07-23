@@ -102,10 +102,6 @@ void Panda::setFrames(){
     tcpPanda[1] = ftcp.localTransformOf(Vec(0,1,0));
     tcpPanda[2] = ftcp.localTransformOf(Vec(0,0,1));
     tcpPanda[3] = ftcp.localCoordinatesOf(Vec(0,0,0));
-
-    /*std::cout << "TCP to panda : " << tcpToPanda[3].x << "," << tcpToPanda[3].y << "," << tcpToPanda[3].z << std::endl;
-    std::cout << "TCP to panda x : " << tcpToPanda[0].x << "," << tcpToPanda[0].y << "," << tcpToPanda[0].z << std::endl;
-    std::cout << "TCP to panda pos : " << tcpPanda[3].x << "," << tcpPanda[3].y << "," << tcpPanda[3].z << std::endl;*/
 }
 
 void Panda::checkPanda(){
@@ -134,9 +130,34 @@ void Panda::setLocation(const Vec &v){
     ftemp.setPosition(v);
 
     Vec pos = ftemp.localInverseCoordinatesOf(tcpPanda[3]);
-
-    std::cout << "TCP to panda : " << tcpPanda[3].x << "," << tcpPanda[3].y << "," << tcpPanda[3].z << std::endl;
-
-    std::cout << v.x << "," << v.y << "," << v.z << "  :  " << pos.x << "," << pos.y << "," << pos.z << std::endl;
     f.setPosition(pos);
+}
+
+void Panda::setOrientation(const Quaternion &q){
+    Frame ftemp;
+    ftemp.setOrientation(q);
+
+    Quaternion rotation;
+    Vec x = ftemp.localInverseTransformOf(tcpPanda[0]);
+    Vec y = ftemp.localInverseTransformOf(tcpPanda[1]);
+    Vec z = ftemp.localInverseTransformOf(tcpPanda[2]);
+    rotation.setFromRotatedBasis(x,y,z);
+
+    f.setOrientation(rotation);
+}
+
+void Panda::setToPlane(const Vec &v, const Quaternion &q){
+    Frame ftemp;
+    ftemp.setPositionAndOrientation(v, q);      // set it to our goal
+    ftemp.rotate(Quaternion(Vec(0,1,0), M_PI/2));       // rotate it to align to the correct axis
+
+    Quaternion rotation;
+    Vec x = ftemp.localInverseTransformOf(tcpPanda[0]);
+    Vec y = ftemp.localInverseTransformOf(tcpPanda[1]);
+    Vec z = ftemp.localInverseTransformOf(tcpPanda[2]);
+    rotation.setFromRotatedBasis(x,y,z);
+
+    Vec pos = ftemp.localInverseCoordinatesOf(tcpPanda[3]);
+
+    f.setPositionAndOrientation(pos, rotation);
 }

@@ -433,13 +433,7 @@ void ViewerFibula::setPanda(){
 }
 
 void ViewerFibula::positionPanda(){
-    //panda.setFrames();
-
-    /*panda.setOrientation(leftPlane->getOrientation());
-    panda.rotate(Vec(0,1,0), M_PI/2);
-    pandaManipulator.setOrigin(leftPlane->getPosition());*/
-    panda.setLocation(leftPlane->getPosition());
-   // panda.checkPanda();
+    panda.setToPlane(leftPlane->getPosition(), leftPlane->getOrientation());
     update();
 }
 
