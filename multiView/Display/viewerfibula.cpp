@@ -6,7 +6,7 @@ ViewerFibula::ViewerFibula(QWidget *parent, StandardCamera *camera, int sliderMa
     isFibula = true;
     pandaManipulator.setDisplayScale(25.);
 
-    connect(&pandaManipulator, &SimpleManipulator::moved, this, &ViewerFibula::handlePandaManipulated);
+    connect(&pandaManipulator, &PandaManipulator::moved, this, &ViewerFibula::handlePandaManipulated);
 }
 
 /*void ViewerFibula::draw(){
@@ -428,16 +428,21 @@ void ViewerFibula::slidePolyline(int pos){
 }
 
 void ViewerFibula::setPanda(){
-    positionPanda();
     pandaManipulator.activate();
+    positionPanda();
 }
 
 void ViewerFibula::positionPanda(){
     panda.setToPlane(leftPlane->getPosition(), leftPlane->getOrientation());
+    pandaManipulator.setOrigin(panda.getPandaLinkLocation());
+    Vec y,z;
+    panda.getFreeAxes(y,z);
+    pandaManipulator.setRepY(y);
+    pandaManipulator.setRepZ(z);
     update();
 }
 
-void ViewerFibula::handlePandaManipulated(unsigned int id, Vec origin, int mode){
-    panda.setLocation(origin);
+void ViewerFibula::handlePandaManipulated(Vec origin){
+    panda.setPandaLinkLocation(origin);
     update();
 }

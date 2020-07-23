@@ -9,6 +9,7 @@
 #include "Mesh/mesh.h"
 #include "Tools/savedstate.h"
 #include "Mesh/panda.h"
+#include "Manipulator/pandamanipulator.h"
 
 using namespace qglviewer;
 
@@ -150,6 +151,7 @@ protected:
 
 
     Panda panda;
+    PandaManipulator pandaManipulator;
 
 private:
     void constructPolyline(const std::vector<Vec>& polyPoints);

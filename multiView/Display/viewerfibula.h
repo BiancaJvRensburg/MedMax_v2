@@ -34,7 +34,7 @@ public Q_SLOTS:
     void reprojectToMesh();
     void slidePolyline(int);
     void setPanda();
-    void handlePandaManipulated(unsigned int, Vec, int);
+    void handlePandaManipulated(Vec);
 
 Q_SIGNALS:
     void okToPlacePlanes(const std::vector<Vec>&);
@@ -67,7 +67,6 @@ private:
     std::vector<double> saveDistances;
     double polylineOffset = 0.001;
 
-    SimpleManipulator pandaManipulator;
 };
 
 #endif // VIEWERFIBULA_H

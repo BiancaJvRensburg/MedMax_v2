@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET   = multiView
 
 HEADERS  = \
+    Manipulator/pandamanipulator.h \
     Mesh/panda.h \
     Mesh/simplemesh.h \
     Polyline/box.h \
@@ -25,6 +26,7 @@ HEADERS  = \
     Tools/GLUtilityMethods.h \
     Manipulator/simplemanipulator.h
 SOURCES  = main.cpp \
+    Manipulator/pandamanipulator.cpp \
     Mesh/panda.cpp \
     Mesh/simplemesh.cpp \
     Polyline/box.cpp \
